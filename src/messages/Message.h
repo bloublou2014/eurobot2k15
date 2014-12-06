@@ -10,8 +10,9 @@ using namespace boost::posix_time;
 namespace robot{
 
 enum MessageType{
+    NOTIFICATION,
     COMMAND,
-    NOTIFICATION
+    COMMAND_RESPONSE
 };
 
 class Message{

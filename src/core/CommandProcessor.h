@@ -4,6 +4,7 @@
 #include <map>
 
 #include "messages/Command.h"
+#include "messages/CommandResponse.h"
 
 using namespace std;
 
@@ -15,6 +16,7 @@ public:
     bool processCommand(Command*);
 protected:
     bool registerCommand(const string& commandName, commandCallback callback);
+    bool sendResponse(CommandResponse* response);
 private:
     map<string,commandCallback> registeredCommandCallbacks;
 };

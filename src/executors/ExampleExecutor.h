@@ -12,6 +12,9 @@ public:
 
     void init();
     void processTestEvent(Notification* notification);
+
+protected:
+    void main();
 };
 
 }

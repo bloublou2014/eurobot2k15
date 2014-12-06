@@ -15,4 +15,9 @@ bool CommandProcessor::processCommand(Command* command){
     return false;
 }
 
+bool CommandProcessor::sendResponse(CommandResponse* response){
+    //TODO: implement
+    return true;
+}
+
 }

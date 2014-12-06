@@ -11,7 +11,6 @@ class AbstractExecutor: public Node, public NotificationHandler, public CommandP
 public:
     AbstractExecutor(const string& _name):Node(string("_name")){}
 
-    void init();
     void processTestEvent(Notification* notification);
 };
 

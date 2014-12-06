@@ -1,0 +1,2 @@
+libraries that must be included
+	/boost	boost library, more on redmine

@@ -16,4 +16,8 @@ void  ExampleExecutor::processTestEvent(Notification* notification){
      cout<<"Received notification! Yea! from: "<<notification->getSource()<<endl;
 }
 
+void ExampleExecutor::main(){
+    cout<<"Started thread"<<endl;
+}
+
 }

@@ -2,10 +2,13 @@
 #define _NODE_H
 
 #include <string>
+#include "boost/thread.hpp"
+#include "boost/date_time.hpp"
 
 #include "messages/Notification.h"
 
 using namespace std;
+using boost::thread;
 
 namespace robot{
 
@@ -18,10 +21,13 @@ public:
     virtual void start();
     virtual void stop();
 
+    void join();
 protected:
     void setName(const string& _name);
+    virtual void main()=0;
 private:
     string name;
+    boost::thread thread;
 };
 
 }
