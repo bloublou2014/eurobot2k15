@@ -1,0 +1,4 @@
+set(SRC_FILES
+    ${SRC_FILES}
+    PARENT_SCOPE
+)

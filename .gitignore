@@ -1,0 +1,9 @@
+.git/
+*.cpb
+CMakeCache.txt
+CMakeLists.txt.*
+cmake_install.cmake
+/bin
+CMakeFiles/
+Makefile
+/libs/boost
