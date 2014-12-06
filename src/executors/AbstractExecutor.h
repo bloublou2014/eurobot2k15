@@ -10,7 +10,6 @@ namespace robot{
 class AbstractExecutor: public Node, public NotificationHandler, public CommandProcessor{
 public:
     AbstractExecutor(const string& _name):Node(string("_name")){}
-
     void processTestEvent(Notification* notification);
 };
 

@@ -23,5 +23,4 @@ private:
 
 }
 
-
 #endif //_NOTIFICATIONHANDLER_H
