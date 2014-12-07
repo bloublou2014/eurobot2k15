@@ -2,14 +2,19 @@
 
 namespace robot{
 
+TaskState AbstractTask::getTaskState() const{
+    return state;
+}
+
 bool AbstractTask::sendCommand(Command* command, responseCallback success, responseCallback error, responseCallback progress){
     if (state==RUNNING){
-        return CommandSource(command, success, error, progress);
+        return CommandSource::sendCommand(command, success, error, progress);
     }else
         return false;
 }
 
 bool AbstractTask::passMessage(Message* message){
+    debug("Message received in task, adding to queue");
     queueLock.lock();
     instructionQueue.push(message);
     queueLock.unlock();
@@ -42,7 +47,10 @@ AbstractTask::Instruction AbstractTask::fetchInstruction(){
     while (instructionQueue.empty()) {
         queueNotEmpty.wait(lock);
     }
-    return instructionQueue.front();
+    debug("New instruction received");
+    AbstractTask::Instruction instr=instructionQueue.front();
+    instructionQueue.pop();
+    return instr;
 }
 
 void AbstractTask::setState(TaskState _state){
@@ -50,6 +58,7 @@ void AbstractTask::setState(TaskState _state){
 }
 
 void AbstractTask::main(){
+    debug("Tasks main thread started");
     setState(SUSPENDED);
     initScript();
 
@@ -60,7 +69,6 @@ void AbstractTask::main(){
             switch (message->getMessageType()) {
             case NOTIFICATION:
                 processNotification((Notification*)message);
-                break;
             case COMMAND_RESPONSE:
                 processCommandResponse((CommandResponse*)message);
                 break;
@@ -71,14 +79,17 @@ void AbstractTask::main(){
             switch(instr.type){
             case Instruction::Type::START:
                 setState(RUNNING);
+                //ovde treba updateovati heap u manageru
                 startScript();
                 break;
             case Instruction::Type::STOP:
                 setState(READY);
+                //ovde treba updateovati heap u manageru
                 stopScript();
                 break;
             case Instruction::Type::KILL:
                 setState(IMPOSSIBLE);
+                //ovde treba updateovati heap u manageru
                 taskKilled=true;
                 break;
             default:

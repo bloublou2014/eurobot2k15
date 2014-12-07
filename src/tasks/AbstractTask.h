@@ -1,8 +1,8 @@
 #ifndef _ABSTRACTTASK_H
 #define _ABSTRACTTASK_H
 
-#include "boost/thread/mutex.hpp"
-#include "boost/thread/condition_variable.hpp"
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/condition_variable.hpp>
 #include <queue>
 
 #include "core/Node.h"
@@ -15,26 +15,28 @@ using boost::condition_variable;
 using boost::unique_lock;
 
 enum TaskState{
-    READY,
-    RUNNING,
-    FINISHED,
-    IMPOSSIBLE,
-    SUSPENDED
+    IMPOSSIBLE=0,
+    FINISHED=1,
+    SUSPENDED=2,
+    READY=3,
+    RUNNING=4
 };
 
 namespace robot{
 
-class AbstractTask: public Node, public CommandSource, public NotificationHandler {
+class AbstractTask: public Node, protected CommandSource, protected NotificationHandler {
 public:
     AbstractTask(const string& name):Node(name), taskKilled(false){}
 
     bool passMessage(Message* message);
     TaskState getTaskState() const;
 
-    virtual void startTask();
-    virtual void stopTask();
-    virtual void killTask();
+    void startTask();
+    void stopTask();
+    void killTask();
 
+    //ovo bi trebao samo manager da poziva. Potrebno je atomicno promenuti stanje i updateovati heap.
+    void setState(TaskState _state);
 protected:
     struct Instruction{
         enum Type{
@@ -59,7 +61,7 @@ protected:
     virtual void startScript()=0;
     virtual void stopScript()=0;
 
-    //Override of CommandSource method, adding checking if task is premitted to send commands
+    //Override of CommandSource method, checking if task is premitted to send commands
     bool sendCommand(Command* command, responseCallback success, responseCallback error, responseCallback progress=NULL);
 private:
     mutex queueLock;
@@ -69,7 +71,7 @@ private:
     TaskState state;
     bool taskKilled;
 
-    void setState(TaskState _state);
+
 };
 
 }

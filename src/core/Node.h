@@ -4,11 +4,20 @@
 #include <string>
 #include "boost/thread.hpp"
 #include "boost/date_time.hpp"
+#include "boost/log/core.hpp"
+#include "boost/log/expressions.hpp"
+#include "boost/log/trivial.hpp"
 
 #include "messages/Notification.h"
 
 using namespace std;
 using boost::thread;
+namespace logging = boost::log;
+namespace sinks = boost::log::sinks;
+namespace src = boost::log::sources;
+namespace expr = boost::log::expressions;
+namespace attrs = boost::log::attributes;
+namespace keywords = boost::log::keywords;
 
 namespace robot{
 
@@ -25,6 +34,11 @@ public:
 protected:
     void setName(const string& _name);
     virtual void main()=0;
+
+    void debug(const string& message);
+    void error(const string& message);
+    void warning(const string& message);
+    void info(const string& message);
 private:
     string name;
     boost::thread thread;

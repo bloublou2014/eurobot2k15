@@ -1,22 +1,32 @@
 #include <iostream>
-#include "executors/ExampleExecutor.h"
+
+#include "core/TaskManager.h"
+#include "tasks/TestTask.h"
 
 using namespace std;
 using namespace robot;
 
 int main(int argn, char** argc){
-    ExampleExecutor ex;
-    ex.init();
-    ex.start();
+    TestTask t1("task1");
+    TestTask t2("task2");
+    TestTask t3("task3");
 
-    Notification n("testEvent","milan");
+    TaskManager taskMgr;
 
-    if (ex.processNotification(&n))
-        cout<<"success"<<endl;
-    else
-        cout<<"fail"<<endl;
+    taskMgr.init();
+    taskMgr.addTask(&t1);
+    taskMgr.addTask(&t2);
+    taskMgr.addTask(&t3);
+    taskMgr.start();
 
-    ex.join();
+
+    cout<<"Waiting to finish"<<endl;
+
+    Notification n1("testNotification","Milan");
+
+    taskMgr.receiveMessage(&n1);
+
+    taskMgr.join();
 
     return 0;
 }

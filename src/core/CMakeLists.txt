@@ -4,5 +4,7 @@ set(SRC_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/CommandProcessor.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/NotificationHandler.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/CommandSource.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/KeyValueStore.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/TaskManager.cpp
     PARENT_SCOPE
 )

@@ -78,9 +78,13 @@
       </Unit>
       <Unit filename="/home/milan/projects/eurobot2k15/software/src/core/CommandSource.cpp">
       </Unit>
+      <Unit filename="/home/milan/projects/eurobot2k15/software/src/core/KeyValueStore.cpp">
+      </Unit>
       <Unit filename="/home/milan/projects/eurobot2k15/software/src/core/Node.cpp">
       </Unit>
       <Unit filename="/home/milan/projects/eurobot2k15/software/src/core/NotificationHandler.cpp">
+      </Unit>
+      <Unit filename="/home/milan/projects/eurobot2k15/software/src/core/TaskManager.cpp">
       </Unit>
       <Unit filename="/home/milan/projects/eurobot2k15/software/src/executors/AbstractExecutor.cpp">
       </Unit>
@@ -96,15 +100,21 @@
       </Unit>
       <Unit filename="/home/milan/projects/eurobot2k15/software/src/tasks/AbstractTask.cpp">
       </Unit>
+      <Unit filename="/home/milan/projects/eurobot2k15/software/src/tasks/TestTask.cpp">
+      </Unit>
       <Unit filename="/home/milan/projects/eurobot2k15/software/src/Robot.h">
       </Unit>
       <Unit filename="/home/milan/projects/eurobot2k15/software/src/core/CommandProcessor.h">
       </Unit>
       <Unit filename="/home/milan/projects/eurobot2k15/software/src/core/CommandSource.h">
       </Unit>
+      <Unit filename="/home/milan/projects/eurobot2k15/software/src/core/KeyValueStore.h">
+      </Unit>
       <Unit filename="/home/milan/projects/eurobot2k15/software/src/core/Node.h">
       </Unit>
       <Unit filename="/home/milan/projects/eurobot2k15/software/src/core/NotificationHandler.h">
+      </Unit>
+      <Unit filename="/home/milan/projects/eurobot2k15/software/src/core/TaskManager.h">
       </Unit>
       <Unit filename="/home/milan/projects/eurobot2k15/software/src/executors/AbstractExecutor.h">
       </Unit>
@@ -119,6 +129,8 @@
       <Unit filename="/home/milan/projects/eurobot2k15/software/src/messages/Notification.h">
       </Unit>
       <Unit filename="/home/milan/projects/eurobot2k15/software/src/tasks/AbstractTask.h">
+      </Unit>
+      <Unit filename="/home/milan/projects/eurobot2k15/software/src/tasks/TestTask.h">
       </Unit>
       <Unit filename="/home/milan/projects/eurobot2k15/software/CMakeLists.txt">
           <Option virtualFolder="CMake Files\" />
