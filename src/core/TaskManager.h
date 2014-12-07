@@ -26,12 +26,13 @@ using std::pair;
 
 namespace robot{
 
+//Every task has its priority
 struct RankedTask{
     AbstractTask* task;
     int rank;
-    //fibonacci_heap<RankedTask, boost::heap::compare<compareRankedTask>>::handle_type handle;
 };
 
+//Used in priority queue for comparing task priority
 struct compareRankedTask{
     bool operator()(const RankedTask& t1, const RankedTask& t2)const{
         TaskState state1=t1.task->getTaskState();
@@ -51,19 +52,26 @@ class TaskManager: public Node{
 public:
     TaskManager():Node("TaskManager"),shouldStop(false){}
 
-    void updateStatus(AbstractTask* task, TaskState newState);
+    //task calls this to update its state
+    void updateStatus(AbstractTask* taskSender, TaskState newState);
     //TODO: must implement world class first
     bool getWorldProperty() const;
     bool setWorldProperty();
+    //Executor manager will send messages using this method
     bool receiveMessage(Message* message);
 
+    //Loading tasks
     bool addTask(AbstractTask* newTask);
 
+    //caled before thread is created to initialize values, or load configuration
     void init();
+    //called to stop
     void stop();
 protected:
+    //thread task
     void main();
     void startAllTasks();
+    //when new message is received in queue it needs to be forwarded to tasks
     void dispatchMessage();
 private:
     typedef pair<RankedTask,TaskQueue::handle_type> CachedRankedTask;

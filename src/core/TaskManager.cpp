@@ -2,12 +2,12 @@
 
 namespace robot{
 
-void TaskManager::updateStatus(AbstractTask* task, TaskState newState){
+void TaskManager::updateStatus(AbstractTask* taskSender, TaskState newState){
     debug("Updating status");
     {
         lock_guard<mutex> lock(heapModification);
-        taskCache.at(task->getName()).first.task->setState(newState);
-        orderedTasks.increase(taskCache.at(task->getName()).second);
+        taskCache.at(taskSender->getName()).first.task->setState(newState);
+        orderedTasks.increase(taskCache.at(taskSender->getName()).second);
     }
 }
 
@@ -57,7 +57,6 @@ void TaskManager::startAllTasks(){
 }
 
 void TaskManager::main(){
-    debug("Task manager main thread started");
     startAllTasks();
     dispatchMessage();
 }
@@ -75,19 +74,15 @@ Message* TaskManager::popNextMessage(){
 void TaskManager::dispatchMessage(){
     while(!shouldStop){
         Message* message=popNextMessage();
-        debug("New message received, dispatching");
         switch (message->getMessageType()) {
         case NOTIFICATION:
         {
             lock_guard<mutex> lock(heapModification);
-
             for (TaskQueue::ordered_iterator it=orderedTasks.ordered_begin();it!=orderedTasks.ordered_end();++it){
-                debug("Passing message to task");
                 it->task->passMessage(message);
             }
         }
-            //processNotification((Notification*)message);
-            break;
+        break;
         case COMMAND_RESPONSE:
             CommandResponse* resp=(CommandResponse*)message;
             string destination=resp->getDestination();
@@ -95,7 +90,6 @@ void TaskManager::dispatchMessage(){
                 lock_guard<mutex> lock(heapModification);
                 taskCache.at(destination).first.task->passMessage(message);
             }
-                //processCommandResponse((CommandResponse*)message);
             break;
         }
     }

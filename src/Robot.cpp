@@ -19,13 +19,20 @@ int main(int argn, char** argc){
     taskMgr.addTask(&t3);
     taskMgr.start();
 
-
     cout<<"Waiting to finish"<<endl;
 
-    Notification n1("testNotification","Milan");
 
-    taskMgr.receiveMessage(&n1);
 
+    while(true){
+        string topic;
+        string sender;
+        cout<<"Enter topic name: "<<endl;
+        cin>>topic;
+        cout<<"Enter sender name: "<<endl;
+        cin>>sender;
+        Notification* n=new Notification(topic,sender);
+        taskMgr.receiveMessage(n);
+    }
     taskMgr.join();
 
     return 0;

@@ -27,8 +27,8 @@ void Node::join(){
 }
 
 void Node::debug(const string& message){
-    cout<<"DEBUG: "<<name<<": "<<message<<endl;
-    //BOOST_LOG_TRIVIAL(loggging::trivial::debug)<<name<<": "<<message;
+    cout<<name<<" [D]: "<<message;
+    //BOOST_LOG_TRIVIAL(trace) << "A trace severity message";
 }
 
 void Node::error(const string& message){

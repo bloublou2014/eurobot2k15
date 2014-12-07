@@ -17,6 +17,7 @@ protected:
 private:
 
     void handleTestNotifications(Notification* testNotification);
+    void handleMilanNotifications(Notification* testNotification);
 };
 
 }

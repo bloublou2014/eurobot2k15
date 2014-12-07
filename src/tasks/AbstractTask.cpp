@@ -14,7 +14,6 @@ bool AbstractTask::sendCommand(Command* command, responseCallback success, respo
 }
 
 bool AbstractTask::passMessage(Message* message){
-    debug("Message received in task, adding to queue");
     queueLock.lock();
     instructionQueue.push(message);
     queueLock.unlock();
@@ -47,7 +46,6 @@ AbstractTask::Instruction AbstractTask::fetchInstruction(){
     while (instructionQueue.empty()) {
         queueNotEmpty.wait(lock);
     }
-    debug("New instruction received");
     AbstractTask::Instruction instr=instructionQueue.front();
     instructionQueue.pop();
     return instr;
@@ -58,7 +56,6 @@ void AbstractTask::setState(TaskState _state){
 }
 
 void AbstractTask::main(){
-    debug("Tasks main thread started");
     setState(SUSPENDED);
     initScript();
 
