@@ -5,6 +5,7 @@
 
 #include "messages/Command.h"
 #include "messages/CommandResponse.h"
+#include "core/AbstractMessageHandler.h"
 
 using namespace std;
 
@@ -14,11 +15,14 @@ class CommandProcessor{
 public:
     typedef void (CommandProcessor::*commandCallback)(Command* command);
     bool processCommand(Command*);
+    void setHandler(AbstractMessageHandler* _handler);
 protected:
     bool registerCommand(const string& commandName, commandCallback callback);
     bool sendResponse(CommandResponse* response);
+    bool sendResponseFromCommand(Command* commandToRespond,ResponseStatus _status=SUCCESS);
 private:
     map<string,commandCallback> registeredCommandCallbacks;
+    AbstractMessageHandler* handler;
 };
 
 }

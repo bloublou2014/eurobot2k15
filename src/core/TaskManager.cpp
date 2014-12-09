@@ -12,6 +12,7 @@ void TaskManager::updateStatus(AbstractTask* taskSender, TaskState newState){
 }
 
 bool TaskManager::addTask(AbstractTask* newTask){
+    newTask->registerManager(this);
     RankedTask rankedTask;
     rankedTask.task=newTask;
     rankedTask.rank=10;
@@ -33,16 +34,23 @@ bool TaskManager::setWorldProperty(){
     return false;
 }
 
-bool TaskManager::receiveMessage(Message* message){
-    debug("receiving message");
+bool TaskManager::sendMessage(Message* message){
     messageQueueLock.lock();
     messageQueue.push(message);
     messageQueueLock.unlock();
     messageQueueNotEmpty.notify_one();
+    return true;
+}
+
+bool TaskManager::receiveMessage(Message* message){
+    //TODO: add pipes to quickly process message before sending to other manager
+    executorManager->sendMessage(message);
 }
 
 void TaskManager::init(){
-    //TODO: Dynamicly load all tasks
+    for (TaskQueue::ordered_iterator it=orderedTasks.ordered_begin();it!=orderedTasks.ordered_end();++it){
+        it->task->init();
+    }
 }
 
 void TaskManager::stop(){
@@ -69,6 +77,10 @@ Message* TaskManager::popNextMessage(){
     Message* message=messageQueue.front();
     messageQueue.pop();
     return message;
+}
+
+void TaskManager::setExecutorManager(AbstractMessageHandler *_executorManager){
+    executorManager=_executorManager;
 }
 
 void TaskManager::dispatchMessage(){

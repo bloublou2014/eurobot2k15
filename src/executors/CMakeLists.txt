@@ -1,6 +1,10 @@
-set(SRC_FILES
-    ${SRC_FILES}
-    ${CMAKE_CURRENT_SOURCE_DIR}/ExampleExecutor
-    ${CMAKE_CURRENT_SOURCE_DIR}/AbstractExecutor
-    PARENT_SCOPE
+set(EXECUTORS_SRC
+    ExampleExecutor.cpp
+    AbstractExecutor.cpp
 )
+
+add_subdirectory(msg)
+
+add_library(executors ${EXECUTORS_SRC})
+
+target_link_libraries(executors core messages)

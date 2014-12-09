@@ -20,5 +20,7 @@ add_subdirectory(tasks)
 
 add_executable(eurobot2k15 ${SRC_FILES})
 
+target_link_libraries(eurobot2k15 core executors messages tasks)
+
 #link boost
 target_link_libraries(eurobot2k15 boost_chrono boost_filesystem boost_locale boost_serialization boost_signals boost_timer boost_thread boost_system boost_regex)

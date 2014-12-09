@@ -2,8 +2,9 @@
 
 namespace robot{
 
-void AbstractExecutor::processTestEvent(Notification* notification){
-
+void AbstractExecutor::registerManager(AbstractMessageHandler* manager){
+    CommandProcessor::setHandler(manager);
+    NotificationSource::setHandler(manager);
 }
 
 }

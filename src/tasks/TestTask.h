@@ -2,6 +2,8 @@
 #define _TESTTASK_H
 
 #include "tasks/AbstractTask.h"
+#include "executors/msg/TimePassed.h"
+#include "executors/msg/CountdownCommand.h"
 
 namespace robot{
 
@@ -15,9 +17,12 @@ protected:
 
     void init();
 private:
-
-    void handleTestNotifications(Notification* testNotification);
+    void handleTimePassNotification(Notification* notification);
     void handleMilanNotifications(Notification* testNotification);
+
+    void countdownSuccess(CommandResponse* resp);
+    void countdownProgress(CommandResponse* resp);
+    void countdownError(CommandResponse* resp);
 };
 
 }

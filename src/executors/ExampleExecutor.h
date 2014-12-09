@@ -1,20 +1,40 @@
 #ifndef _EXAMPLEEXECUTOR_H
 #define _EXAMPLEEXECUTOR_H
 
+#include <boost/thread/mutex.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/thread/thread.hpp>
+#include <queue>
+
 #include "AbstractExecutor.h"
+#include "msg/TimePassed.h"
+#include "msg/CountdownCommand.h"
+
+using boost::mutex;
+using std::queue;
 
 namespace robot{
 
 class ExampleExecutor: public AbstractExecutor{
 public:
     static string NAME;
-    ExampleExecutor():AbstractExecutor(NAME){}
+    ExampleExecutor():AbstractExecutor(NAME),currentCommand(NULL),counter(0),totalCounter(0){}
 
     void init();
-    void processTestEvent(Notification* notification);
-
+    void processProbeEvent(Notification* notification);
+    void countToN(Command* command);
 protected:
     void main();
+private:
+    mutex commandQueueLock;
+    queue<Command*> commandsToProcess;
+
+    Command* ExecuteNextCommand();
+
+    int totalCounter;
+    int counter;
+
+    Command* currentCommand;
 };
 
 }

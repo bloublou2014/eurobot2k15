@@ -1,7 +1,9 @@
 #include <iostream>
 
 #include "core/TaskManager.h"
+#include "core/ExecutorManager.h"
 #include "tasks/TestTask.h"
+#include "executors/ExampleExecutor.h"
 
 using namespace std;
 using namespace robot;
@@ -9,19 +11,27 @@ using namespace robot;
 int main(int argn, char** argc){
     TestTask t1("task1");
     TestTask t2("task2");
-    TestTask t3("task3");
+    ExampleExecutor e1;
+
+//    TestTask t3("task3");
 
     TaskManager taskMgr;
+    ExecutorManager execMgr;
 
-    taskMgr.init();
+    taskMgr.setExecutorManager(&execMgr);
+    execMgr.setTaskManager(&taskMgr);
+
     taskMgr.addTask(&t1);
     taskMgr.addTask(&t2);
-    taskMgr.addTask(&t3);
+    execMgr.addExecutor(&e1);
+
+    taskMgr.init();
+    execMgr.init();
+
     taskMgr.start();
+    execMgr.start();
 
-    cout<<"Waiting to finish"<<endl;
-
-
+    cout<<"Everything is started"<<endl;
 
     while(true){
         string topic;
@@ -31,9 +41,14 @@ int main(int argn, char** argc){
         cout<<"Enter sender name: "<<endl;
         cin>>sender;
         Notification* n=new Notification(topic,sender);
-        taskMgr.receiveMessage(n);
+        taskMgr.sendMessage(n);
     }
+
+//    Notification* n=new Notification("milan","jova");
+//    taskMgr.sendMessage(n);
+
     taskMgr.join();
+    execMgr.join();
 
     return 0;
 }

@@ -16,8 +16,18 @@ bool CommandProcessor::processCommand(Command* command){
 }
 
 bool CommandProcessor::sendResponse(CommandResponse* response){
-    //TODO: implement
+    handler->receiveMessage(response);
     return true;
+}
+
+void CommandProcessor::setHandler(AbstractMessageHandler* _handler){
+    handler=_handler;
+}
+
+bool CommandProcessor::sendResponseFromCommand(Command* commandToRespond,ResponseStatus _status){
+    CommandResponse* resp=new CommandResponse(commandToRespond->getSource(),commandToRespond->getDestination(),_status);
+    resp->setId(commandToRespond->getId());
+    return sendResponse(resp);
 }
 
 }

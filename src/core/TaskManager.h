@@ -13,6 +13,7 @@
 #include "core/Node.h"
 #include "tasks/AbstractTask.h"
 #include "messages/Message.h"
+#include "core/AbstractMessageHandler.h"
 
 using boost::heap::fibonacci_heap;
 using std::map;
@@ -48,7 +49,7 @@ struct compareRankedTask{
 
 typedef fibonacci_heap<RankedTask, boost::heap::compare<compareRankedTask>> TaskQueue;
 
-class TaskManager: public Node{
+class TaskManager: public Node, public AbstractMessageHandler{
 public:
     TaskManager():Node("TaskManager"),shouldStop(false){}
 
@@ -57,7 +58,9 @@ public:
     //TODO: must implement world class first
     bool getWorldProperty() const;
     bool setWorldProperty();
-    //Executor manager will send messages using this method
+    //Executor manager will send messages to tasks using this method
+    bool sendMessage(Message* message);
+    //Executor manager will receive messages from tasks and send pass them to executor manager
     bool receiveMessage(Message* message);
 
     //Loading tasks
@@ -67,6 +70,8 @@ public:
     void init();
     //called to stop
     void stop();
+
+    void setExecutorManager(AbstractMessageHandler* _executorManager);
 protected:
     //thread task
     void main();
@@ -85,6 +90,7 @@ private:
     queue<Message*> messageQueue;
 
     bool shouldStop;
+    AbstractMessageHandler* executorManager;
 };
 
 }

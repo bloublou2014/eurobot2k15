@@ -7,7 +7,11 @@ bool CommandSource::sendCommand(Command* command, responseCallback success, resp
     command->setId(++lastCommandId);
     callbackObjects.push_back(CallbackObject(lastCommandId,success, error, progress));
 
-    //TODO: send command to core
+    return handler->receiveMessage(command);
+}
+
+void CommandSource::setHandler(AbstractMessageHandler* _handler){
+    handler=_handler;
 }
 
 CommandSource::CallbackObject::CallbackObject(int _id,responseCallback _success,responseCallback _error,responseCallback _progress):
@@ -18,13 +22,16 @@ void CommandSource::processCommandResponse(CommandResponse* response){
     if((id=response->getId())!=Command::INVALID_ID){
         for (list<CommandSource::CallbackObject>::iterator it=callbackObjects.begin();it!=callbackObjects.end();++it){
             if (it->commandId==id){
-                if ((response->getStatus()==ResponseStatus::SUCCESS)&&(it->success!=NULL))
+                if ((response->getStatus()==ResponseStatus::SUCCESS)&&(it->success!=NULL)){
+                    callbackObjects.erase(it);
                     (this->*it->success)(response);
-                if ((response->getStatus()==ResponseStatus::ERROR)&&(it->error!=NULL))
+                }
+                if ((response->getStatus()==ResponseStatus::ERROR)&&(it->error!=NULL)){
+                    callbackObjects.erase(it);
                     (this->*it->error)(response);
+                }
                 if ((response->getStatus()==ResponseStatus::PROGRESS_UPDATE)&&(it->progress!=NULL))
                     (this->*it->progress)(response);
-                callbackObjects.erase(it);
                 return;
             }
         }

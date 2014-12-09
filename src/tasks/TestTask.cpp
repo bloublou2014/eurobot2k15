@@ -7,7 +7,7 @@ void TestTask::init(){
 }
 
 void TestTask::initScript(){
-    this->subscribe("testNotification",(notificationCallback)&TestTask::handleTestNotifications);
+    this->subscribe("timePassedNotification",(notificationCallback)&TestTask::handleTimePassNotification);
     this->subscribe("milan",(notificationCallback)&TestTask::handleMilanNotifications);
 }
 
@@ -19,12 +19,29 @@ void TestTask::stopScript(){
 
 }
 
-void TestTask::handleTestNotifications(Notification* testNotification){
-    debug("Hello, this notification has been handled. Received from: "+testNotification->getSource());
+void TestTask::handleTimePassNotification(Notification* notification){
+    TimePassedNotification* timeNotification=(TimePassedNotification*)notification;
+    debug("Hello, second passed: 5");
 }
 
 void TestTask::handleMilanNotifications(Notification* testNotification){
-    debug("Milan notification received from: "+testNotification->getSource());
+    debug("Milan notification received");
+    CountdownCommand* cmd=new CountdownCommand("ExampleExecutor",this->getName());
+    sendCommand(cmd,(responseCallback)&TestTask::countdownSuccess,
+                (responseCallback)&TestTask::countdownError,
+                (responseCallback)&TestTask::countdownProgress);
+}
+
+void TestTask::countdownSuccess(CommandResponse* resp){
+    debug("SUCCESS: ");
+}
+
+void TestTask::countdownProgress(CommandResponse* resp){
+    debug("PROGRESS: ");
+}
+
+void TestTask::countdownError(CommandResponse* resp){
+    debug("ERROR: ");
 }
 
 }

@@ -7,10 +7,10 @@ TaskState AbstractTask::getTaskState() const{
 }
 
 bool AbstractTask::sendCommand(Command* command, responseCallback success, responseCallback error, responseCallback progress){
-    if (state==RUNNING){
+    //if (state==RUNNING){
         return CommandSource::sendCommand(command, success, error, progress);
-    }else
-        return false;
+   // }else
+        //return false;
 }
 
 bool AbstractTask::passMessage(Message* message){
@@ -55,6 +55,11 @@ void AbstractTask::setState(TaskState _state){
     state=_state;
 }
 
+void AbstractTask::registerManager(AbstractMessageHandler* manager){
+    CommandSource::setHandler(manager);
+    NotificationSource::setHandler(manager);
+}
+
 void AbstractTask::main(){
     setState(SUSPENDED);
     initScript();
@@ -66,6 +71,7 @@ void AbstractTask::main(){
             switch (message->getMessageType()) {
             case NOTIFICATION:
                 processNotification((Notification*)message);
+                break;
             case COMMAND_RESPONSE:
                 processCommandResponse((CommandResponse*)message);
                 break;

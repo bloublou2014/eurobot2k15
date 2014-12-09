@@ -8,6 +8,8 @@
 #include "core/Node.h"
 #include "core/CommandSource.h"
 #include "core/NotificationHandler.h"
+#include "core/NotificationSource.h"
+#include "core/AbstractMessageHandler.h"
 
 using std::queue;
 using boost::mutex;
@@ -25,7 +27,7 @@ enum TaskState{
 
 namespace robot{
 
-class AbstractTask: public Node, protected CommandSource, protected NotificationHandler {
+class AbstractTask: public Node, protected CommandSource, protected NotificationHandler, public NotificationSource{
 public:
     AbstractTask(const string& name):Node(name), taskKilled(false){}
 
@@ -41,6 +43,8 @@ public:
 
     //ovo bi trebao samo manager da poziva. Potrebno je atomicno promenuti stanje i updateovati heap.
     void setState(TaskState _state);
+
+    void registerManager(AbstractMessageHandler* manager);
 protected:
     struct Instruction{
         enum Type{
@@ -77,6 +81,8 @@ private:
 
     TaskState state;
     bool taskKilled;
+
+    AbstractMessageHandler* handler;
 };
 
 }
