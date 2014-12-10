@@ -4,6 +4,7 @@
 #include "core/ExecutorManager.h"
 #include "tasks/TestTask.h"
 #include "executors/ExampleExecutor.h"
+#include "plugins/WebServer.h"
 
 using namespace std;
 using namespace robot;
@@ -12,8 +13,6 @@ int main(int argn, char** argc){
     TestTask t1("task1");
     TestTask t2("task2");
     ExampleExecutor e1;
-
-//    TestTask t3("task3");
 
     TaskManager taskMgr;
     ExecutorManager execMgr;
@@ -32,6 +31,9 @@ int main(int argn, char** argc){
     execMgr.start();
 
     cout<<"Everything is started"<<endl;
+
+    WebServer server(8080);
+    server.start();
 
     while(true){
         string topic;

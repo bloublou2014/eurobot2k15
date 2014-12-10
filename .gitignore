@@ -2,8 +2,10 @@
 *.cpb
 CMakeCache.txt
 CMakeLists.txt.*
+*.cbp
 cmake_install.cmake
 /bin
 CMakeFiles/
 Makefile
 /libs/boost
+/libs/mongoose-cpp

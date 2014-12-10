@@ -9,13 +9,14 @@
 
 namespace robot{
 
-class AbstractExecutor: public Node, public NotificationHandler, public CommandProcessor, public NotificationSource{
-public:
-    AbstractExecutor(const string& _name):Node(_name){}
-    void registerManager(AbstractMessageHandler* manager);
-private:
-    AbstractMessageHandler* handler;
-};
+    class AbstractExecutor: public Node, public NotificationHandler, public CommandProcessor, public NotificationSource
+    {
+        public:
+            AbstractExecutor(const string& _name):Node(_name){}
+            void registerManager(AbstractMessageHandler* manager);
+        private:
+            AbstractMessageHandler* handler;
+    };
 
 }
 
