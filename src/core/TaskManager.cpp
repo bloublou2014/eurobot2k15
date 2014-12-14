@@ -54,19 +54,35 @@ void TaskManager::init(){
 }
 
 void TaskManager::stop(){
-    //TODO: Stop all tasks
+    debug("Stopping task manager");
+    shouldStop=true;
+    this->sendMessage(new StopMessage("Task Manager"));
 }
 
 void TaskManager::startAllTasks(){
+    debug("Starting all tasks");
     for (TaskQueue::ordered_iterator it=orderedTasks.ordered_begin();it!=orderedTasks.ordered_end();++it){
-        debug("Starting task");
         it->task->start();
     }
 }
 
+void TaskManager::stopAllTasks(){
+    debug("Stopping all tasks");
+    for (TaskQueue::ordered_iterator it=orderedTasks.ordered_begin();it!=orderedTasks.ordered_end();++it){
+        it->task->killTask();
+    }
+
+    debug("Joingn on all tasks");
+    for (TaskQueue::ordered_iterator it=orderedTasks.ordered_begin();it!=orderedTasks.ordered_end();++it){
+        it->task->join();
+    }
+}
+
 void TaskManager::main(){
+    shouldStop=false;
     startAllTasks();
     dispatchMessage();
+    debug("*** Finished ***");
 }
 
 Message* TaskManager::popNextMessage(){
@@ -86,6 +102,7 @@ void TaskManager::setExecutorManager(AbstractMessageHandler *_executorManager){
 void TaskManager::dispatchMessage(){
     while(!shouldStop){
         Message* message=popNextMessage();
+        if (shouldStop) break;
         switch (message->getMessageType()) {
         case NOTIFICATION:
         {
@@ -105,6 +122,7 @@ void TaskManager::dispatchMessage(){
             break;
         }
     }
+    stopAllTasks();
 }
 
 }

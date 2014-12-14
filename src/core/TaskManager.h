@@ -14,6 +14,7 @@
 #include "tasks/AbstractTask.h"
 #include "messages/Message.h"
 #include "core/AbstractMessageHandler.h"
+#include "messages/StopMessage.h"
 
 using boost::heap::fibonacci_heap;
 using std::map;
@@ -76,6 +77,7 @@ protected:
     //thread task
     void main();
     void startAllTasks();
+    void stopAllTasks();
     //when new message is received in queue it needs to be forwarded to tasks
     void dispatchMessage();
 private:

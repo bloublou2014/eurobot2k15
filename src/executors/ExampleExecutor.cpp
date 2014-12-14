@@ -24,9 +24,15 @@ void ExampleExecutor::countToN(Command* command){
     commandQueueLock.unlock();
 }
 
+void ExampleExecutor::stop(){
+    shouldStop=true;
+}
+
 void ExampleExecutor::main(){
+    shouldStop=false;
     cout<<"Started thread"<<endl;
     while (true){
+        if (shouldStop) break;
        boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
        counter++;
        if ((counter%5)==0){
@@ -44,8 +50,8 @@ void ExampleExecutor::main(){
            debug("Sending progress update");
            sendResponseFromCommand(currentCommand,PROGRESS_UPDATE);
        }
-
     }
+    debug("Stopping execution");
 }
 
 Command* ExampleExecutor::ExecuteNextCommand(){

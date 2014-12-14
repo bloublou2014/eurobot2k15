@@ -23,6 +23,8 @@ public:
     void init();
     void processProbeEvent(Notification* notification);
     void countToN(Command* command);
+
+    void stop();
 protected:
     void main();
 private:
@@ -33,6 +35,8 @@ private:
 
     int totalCounter;
     int counter;
+
+    bool shouldStop;
 
     Command* currentCommand;
 };

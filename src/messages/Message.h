@@ -12,7 +12,8 @@ namespace robot{
 enum MessageType{
     NOTIFICATION,
     COMMAND,
-    COMMAND_RESPONSE
+    COMMAND_RESPONSE,
+    STOP_MESSAGE
 };
 
 class Message{

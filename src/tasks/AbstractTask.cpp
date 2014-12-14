@@ -35,6 +35,7 @@ void AbstractTask::stopTask(){
 }
 
 void AbstractTask::killTask(){
+    debug("Killing task");
     queueLock.lock();
     instructionQueue.push(Instruction(Instruction::Type::KILL));
     queueLock.unlock();

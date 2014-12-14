@@ -1,11 +1,10 @@
 #include "WebServer.h"
 
 namespace robot {
-void WebServer::start(){
-    thread=boost::thread(&WebServer::main,this);
-}
 
 void WebServer::main(){
+    MyController myCnontroller;
+    server.registerController(&myCnontroller);
     server.setOption("enable_directory_listing", "false");
     server.setOption("document_root", "web");
 
@@ -16,6 +15,7 @@ void WebServer::main(){
             stopRequest.wait(lock);
         }
         server.stop();
+        debug("Stopping");
     }
 }
 

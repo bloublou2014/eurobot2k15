@@ -14,6 +14,7 @@
 #include "executors/AbstractExecutor.h"
 #include "messages/Message.h"
 #include "core/AbstractMessageHandler.h"
+#include "messages/StopMessage.h"
 
 using std::map;
 using std::string;
@@ -50,6 +51,7 @@ protected:
 
     void main();
     void startAllExecutors();
+    void stopAllExecutors();
     void dispatcheMessage();
 private:
     shared_mutex executorsMapManipulation;

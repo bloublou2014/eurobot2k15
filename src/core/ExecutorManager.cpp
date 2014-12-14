@@ -39,12 +39,16 @@ void ExecutorManager::init(){
 }
 
 void ExecutorManager::stop(){
-
+    debug("Stopping executor manager");
+    shouldStop=true;
+    this->sendMessage(new StopMessage("Executor manager"));
 }
 
 void ExecutorManager::main(){
+    shouldStop=false;
     startAllExecutors();
     dispatcheMessage();
+    debug("*** Finished ***");
 }
 
 void ExecutorManager::startAllExecutors(){
@@ -69,6 +73,7 @@ Message* ExecutorManager::popNextMessage(){
 void ExecutorManager::dispatcheMessage(){
     while(!shouldStop){
         Message* message=popNextMessage();
+        if (shouldStop) break;
         switch (message->getMessageType()) {
         case NOTIFICATION:
         {
@@ -91,6 +96,21 @@ void ExecutorManager::dispatcheMessage(){
         default:
             break;
         }
+    }
+    stopAllExecutors();
+}
+
+void ExecutorManager::stopAllExecutors(){
+    boost::shared_lock<shared_mutex> lock(executorsMapManipulation);
+    map<string,AbstractExecutor*>::const_iterator it=executorsMap.cbegin();
+    debug("Stopping all executors");
+    for (;it!=executorsMap.cend();++it){
+        it->second->stop();
+    }
+
+    debug("Waiting to join on executors");
+    for (;it!=executorsMap.cend();++it){
+        it->second->join();
     }
 }
 
