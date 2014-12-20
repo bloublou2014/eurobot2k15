@@ -18,4 +18,8 @@ void Message::setSource(const string& _source){
     source=_source;
 }
 
+Message::~Message(){
+
+}
+
 }

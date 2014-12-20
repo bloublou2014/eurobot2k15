@@ -18,13 +18,13 @@ enum MessageType{
     STOP_MESSAGE
 };
 
-class UMessage{
+class Message{
 public:
-    UMessage(MessageType _type, const string& _from):type(_type),source(_from){
+    Message(MessageType _type, const string& _from):type(_type),source(_from){
         sentTime=second_clock::local_time();
     }
 
-    UMessage(MessageType _type):type(_type){
+    Message(MessageType _type):type(_type){
         sentTime=second_clock::local_time();
     }
 
@@ -34,8 +34,7 @@ public:
 
     void setSource(const string& _source);
 
-    virtual ~UMessage(){
-    }
+    virtual ~Message();
 
 protected:
 
@@ -45,7 +44,7 @@ private:
     ptime sentTime;
 };
 
-typedef boost::shared_ptr<UMessage> Message;
+//typedef boost::shared_ptr<UMessage> Message;
 
 }
 

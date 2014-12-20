@@ -7,9 +7,9 @@ using namespace std;
 
 namespace robot{
 
-class Notification : public UMessage {
+class Notification : public Message {
 public:
-    Notification(const string& _topic, const string& _sender):UMessage(NOTIFICATION, _sender), topic(_topic){}
+    Notification(const string& _topic, const string& _sender):Message(NOTIFICATION, _sender), topic(_topic){}
     string getTopic() const;
 private:
     string topic;

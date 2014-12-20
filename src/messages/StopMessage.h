@@ -10,7 +10,6 @@ public:
     StopMessage(const string& _sender):Message(STOP_MESSAGE,_sender){}
 protected:
 private:
-
 };
 
 }

@@ -12,9 +12,9 @@ enum ResponseStatus{
     PROGRESS_UPDATE
 };
 
-class CommandResponse:public UMessage{
+class CommandResponse:public Message{
 public:
-    CommandResponse(const string& _to, const string& _sender, ResponseStatus _status=SUCCESS):UMessage(COMMAND_RESPONSE, _sender),
+    CommandResponse(const string& _to, const string& _sender, ResponseStatus _status=SUCCESS):Message(COMMAND_RESPONSE, _sender),
         destination(_to),status(_status),id(Command::INVALID_ID){
     }
 

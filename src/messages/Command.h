@@ -5,14 +5,14 @@
 
 namespace robot {
 
-class Command:public UMessage{
+class Command:public Message{
 public:
     static int INVALID_ID;  //-1
 
-    Command(const string& _commandName, const string& _to, const string& _sender):UMessage(COMMAND, _sender),
+    Command(const string& _commandName, const string& _to, const string& _sender):Message(COMMAND, _sender),
         destination(_to), commandName(_commandName), id(INVALID_ID){}
 
-    Command(const string& _commandName, const string& _to):UMessage(COMMAND),commandName(_commandName),id(INVALID_ID),
+    Command(const string& _commandName, const string& _to):Message(COMMAND),commandName(_commandName),id(INVALID_ID),
         destination(_to){}
 
     void setDestination(const string& _destination);
