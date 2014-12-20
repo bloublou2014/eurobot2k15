@@ -1,13 +1,7 @@
-#include "CountdownCommand.h"
+#include "MotionCommand.h"
 
-namespace robot {
+namespace motion {
 
-void CountdownCommand::setCountdownValue(int _value){
-    value=_value;
-}
-
-int CountdownCommand::getCountdownValue() const{
-    return value;
-}
+string MotionCommand::NAME="MotionCommand";
 
 }

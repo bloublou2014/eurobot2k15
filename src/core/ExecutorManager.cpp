@@ -108,6 +108,7 @@ void ExecutorManager::stopAllExecutors(){
         it->second->stop();
     }
 
+    it=executorsMap.cbegin();
     debug("Waiting to join on executors");
     for (;it!=executorsMap.cend();++it){
         it->second->join();

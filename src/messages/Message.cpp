@@ -14,4 +14,8 @@ ptime Message::getSentTime() const{
     return sentTime;
 }
 
+void Message::setSource(const string& _source){
+    source=_source;
+}
+
 }

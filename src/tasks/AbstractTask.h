@@ -16,6 +16,8 @@ using boost::mutex;
 using boost::condition_variable;
 using boost::unique_lock;
 
+namespace robot{
+
 //lowest prority states have lowest values
 enum TaskState{
     IMPOSSIBLE=0,
@@ -24,8 +26,6 @@ enum TaskState{
     READY=3,
     RUNNING=4
 };
-
-namespace robot{
 
 class AbstractTask: public Node, protected CommandSource, protected NotificationHandler, public NotificationSource{
 public:

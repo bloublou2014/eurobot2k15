@@ -8,4 +8,4 @@ add_subdirectory(msg)
 
 add_library(executors ${EXECUTORS_SRC})
 
-target_link_libraries(executors core messages)
+target_link_libraries(executors core messages utils drivers)

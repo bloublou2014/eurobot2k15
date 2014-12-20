@@ -8,7 +8,7 @@
 #include "MotionDriver.h"
 #include <stdio.h>
 
-namespace drivers
+namespace motion
 {
 
 MotionDriver::MotionDriver(geometry::Point2D initPosition, RobotType robotType, int initOrientation, int initSpeed):io_mutex(new boost::mutex())

@@ -5,18 +5,22 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/thread/thread.hpp>
 #include <queue>
+#include <map>
 
 #include "AbstractExecutor.h"
+#include "executors/msg/MotionCommand.h"
+#include "drivers/motion/MotionDriver.h"
 
+using namespace robot;
 using boost::mutex;
 using std::queue;
 
-namespace robot{
+namespace motion{
 
 class MotionExecutor: public AbstractExecutor{
 public:
     static string NAME;
-    ExampleExecutor():AbstractExecutor(NAME),currentCommand(NULL),counter(0),totalCounter(0){}
+    MotionExecutor():AbstractExecutor(NAME),currentMotionCommand(NULL){}
 
     void init();
     void stop();
@@ -27,15 +31,22 @@ protected:
 private:
     mutex commandQueueLock;
     queue<Command*> commandsToProcess;
-
-    Command* ExecuteNextCommand();
-
-    int totalCounter;
-    int counter;
+    MotionCommand* getNextMotionCommand();
 
     bool shouldStop;
 
-    Command* currentCommand;
+    MotionCommand* currentMotionCommand;
+    MotionDriver driver;
+    typedef void (MotionExecutor::*motionCommandHandle)(MotionCommand* _motionCommand);
+    typedef map<MotionCommand::MotionType,motionCommandHandle> MotionCommandsHandleMap;
+    MotionCommandsHandleMap motionHandles;
+
+    void moveToPosition(MotionCommand* _motionCommand);
+    void moveForward(MotionCommand* _motionCommand);
+    void rotateFor(MotionCommand* _motionCommand);
+    void rotateTo(MotionCommand* _motionCommand);
+    void moveArc(MotionCommand* _motionCommand);
+    void stopMovement(MotionCommand* _motionCommand);
 };
 
 }

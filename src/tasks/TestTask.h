@@ -3,7 +3,10 @@
 
 #include "tasks/AbstractTask.h"
 #include "executors/msg/TimePassed.h"
-#include "executors/msg/CountdownCommand.h"
+
+#include "executors/msg/MotionCommand.h"
+
+using namespace motion;
 
 namespace robot{
 
@@ -17,12 +20,15 @@ protected:
 
     void init();
 private:
-    void handleTimePassNotification(Notification* notification);
     void handleMilanNotifications(Notification* testNotification);
 
-    void countdownSuccess(CommandResponse* resp);
-    void countdownProgress(CommandResponse* resp);
-    void countdownError(CommandResponse* resp);
+    void moveForwardSuccess(CommandResponse* resp);
+    void rotateForSuccess(CommandResponse* resp);
+    void rotateToSuccess(CommandResponse* resp);
+    void moveArcSuccess(CommandResponse* resp);
+    void stopMovementSuccess(CommandResponse* resp);
+
+    void motionError(CommandResponse* resp);
 };
 
 }

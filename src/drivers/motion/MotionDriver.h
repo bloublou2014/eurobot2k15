@@ -10,11 +10,11 @@
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/thread/thread.hpp>
-#include <utils/geometry/Point2D.h>
 
 #include "utils/uart/UartConnection.h"
+#include "utils/geometry/Point2D.h"
 
-namespace drivers
+namespace motion
 {
 
 class MotionDriver {

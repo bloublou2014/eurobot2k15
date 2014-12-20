@@ -7,6 +7,8 @@ TaskState AbstractTask::getTaskState() const{
 }
 
 bool AbstractTask::sendCommand(Command* command, responseCallback success, responseCallback error, responseCallback progress){
+    command->setSource(getName());
+
     //if (state==RUNNING){
         return CommandSource::sendCommand(command, success, error, progress);
    // }else
