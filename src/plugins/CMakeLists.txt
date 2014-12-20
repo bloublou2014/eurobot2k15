@@ -1,5 +1,4 @@
 set(PLUGINS_SRC
-    WebServer.cpp
 )
 
 add_library(plugins ${PLUGINS_SRC})

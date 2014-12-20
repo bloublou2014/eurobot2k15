@@ -22,6 +22,7 @@ add_subdirectory(executors)
 add_subdirectory(messages)
 add_subdirectory(tasks)
 add_subdirectory(plugins)
+add_subdirectory(utils)
 
 add_executable(eurobot2k15 ${SRC_FILES})
 
@@ -29,5 +30,3 @@ target_link_libraries(eurobot2k15 core executors messages tasks plugins)
 
 #link boost
 target_link_libraries(eurobot2k15 boost_chrono boost_filesystem boost_locale boost_serialization boost_signals boost_timer boost_thread boost_system boost_regex boost_log)
-#link moongose cpp
-target_link_libraries(eurobot2k15 mongoose)

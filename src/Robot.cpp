@@ -5,21 +5,18 @@
 #include "core/ExecutorManager.h"
 #include "tasks/TestTask.h"
 #include "executors/ExampleExecutor.h"
-#include "plugins/WebServer.h"
 
 using namespace std;
 using namespace robot;
 
 TaskManager taskMgr;
 ExecutorManager execMgr;
-WebServer server(8888);
 
 void signalHandler(int sigNum){
     cout<<"Stopping robot execution!"<<endl;
 
     taskMgr.stop();
     execMgr.stop();
-    server.stop();
 }
 
 int main(int argn, char** argc){
@@ -41,8 +38,6 @@ int main(int argn, char** argc){
 
     taskMgr.start();
     execMgr.start();
-    server.start();
-
     cout<<"Everything is started"<<endl;
 
 //    while(true){
@@ -62,7 +57,6 @@ int main(int argn, char** argc){
     //server.join();
     taskMgr.join();
     execMgr.join();
-    server.join();
 
     return 0;
 }

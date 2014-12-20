@@ -1,0 +1,5 @@
+set(DRIVERS_SRC
+    ${DRIVERS_SRC}
+    ${CMAKE_CURRENT_SOURCE_DIR}/MotionDriver.cpp
+    PARENT_SCOPE
+)

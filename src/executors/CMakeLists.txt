@@ -1,6 +1,7 @@
 set(EXECUTORS_SRC
     ExampleExecutor.cpp
     AbstractExecutor.cpp
+    MotionExecutor.cpp
 )
 
 add_subdirectory(msg)
