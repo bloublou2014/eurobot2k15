@@ -1,15 +1,14 @@
 if(CMAKE_CROSSCOMPILING)
     message("CONFIGURING FOR CROSS COMPILE")
-    #todo
+
+    include_directories(${PROJECT_SOURCE_DIR}/libs/boost_arm)
+    link_directories(${PROJECT_SOURCE_DIR}/libs/boost_arm/stage/lib)
 else()
     message("CONFIGURING FOR LINUX")
 
     #boost include
     include_directories(${PROJECT_SOURCE_DIR}/libs/boost)
     link_directories(${PROJECT_SOURCE_DIR}/libs/boost/stage/lib)
-    #mongoose-cpp include
-    include_directories(${PROJECT_SOURCE_DIR}/libs/mongoose-cpp)
-    link_directories(${PROJECT_SOURCE_DIR}/libs/mongoose-cpp)
 endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
