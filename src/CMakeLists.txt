@@ -1,6 +1,10 @@
 if(CMAKE_CROSSCOMPILING)
     message("CONFIGURING FOR CROSS COMPILE")
 
+	include_directories(${TOOLCHAIN_INCLUDE})
+	link_directories(${TOOLCHAIN_LIB})
+
+	#boost include
     include_directories(${PROJECT_SOURCE_DIR}/libs/boost_arm)
     link_directories(${PROJECT_SOURCE_DIR}/libs/boost_arm/stage/lib)
 else()
@@ -24,6 +28,8 @@ add_subdirectory(plugins)
 add_subdirectory(utils)
 
 add_executable(eurobot2k15 ${SRC_FILES})
+
+target_link_libraries(eurobot2k15 pthread)
 
 target_link_libraries(eurobot2k15 core executors messages tasks plugins)
 
