@@ -60,7 +60,7 @@ public:
         MotionCommand(MOVE_TO_POSITION), position(_position),direction(_direction){}
 
     Point2D getPosition() const {return position;}
-        MotionDriver::MovingDirection getDirection() const{return direction;}
+    MotionDriver::MovingDirection getDirection() const{return direction;}
 private:
     Point2D position;
     MotionDriver::MovingDirection direction;
@@ -74,7 +74,6 @@ public:
     Point2D getCenter() const{return center;}
     int getAngle() const{return angle;}
     MotionDriver::MovingDirection getDirection() const{return direction;}
-
 private:
     Point2D center;
     int angle;
@@ -86,7 +85,6 @@ public:
     StopMovement():MotionCommand(STOP){}
 private:
 };
-
 
 class MotionCommandResponse : public CommandResponse{
 public:

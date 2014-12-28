@@ -5,6 +5,7 @@
 #include "executors/msg/TimePassed.h"
 
 #include "executors/msg/MotionCommand.h"
+#include "executors/msg/GetMotionState.h"
 
 using namespace motion;
 
@@ -21,6 +22,7 @@ protected:
     void init();
 private:
     void handleMilanNotifications(Notification* testNotification);
+    void handleMotionNotification(Notification* testNotification);
 
     void moveForwardSuccess(CommandResponse* resp);
     void rotateForSuccess(CommandResponse* resp);
@@ -29,6 +31,8 @@ private:
     void stopMovementSuccess(CommandResponse* resp);
 
     void motionError(CommandResponse* resp);
+
+    void motionStateReceived(CommandResponse* resp);
 };
 
 }

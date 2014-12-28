@@ -8,6 +8,7 @@ void TestTask::init(){
 
 void TestTask::initScript(){
     this->subscribe("milan",(notificationCallback)&TestTask::handleMilanNotifications);
+    this->subscribe("MotionNotification",(notificationCallback)&TestTask::handleMotionNotification);
 }
 
 void TestTask::startScript(){
@@ -18,25 +19,48 @@ void TestTask::stopScript(){
 
 }
 
+//MotionNotification
+
+void TestTask::handleMotionNotification(Notification* resp){
+    GetMotionStateResponse* stateResponse=(GetMotionStateResponse*)resp;
+    MotionState state= stateResponse->getState();
+
+    stringstream sstr;
+    sstr<<"position: (";
+    sstr<<state.Position.getX();
+    sstr<<", ";
+    sstr<<state.Position.getY();
+    sstr<<"); speed: ";
+    sstr<<(int)state.Speed;
+    sstr<<" state: ";
+    sstr<<state.State;
+
+    debug(sstr.str());
+}
+
 void TestTask::handleMilanNotifications(Notification* testNotification){
     debug("Milan notification received");
-
-    MoveForward* cmd=new MoveForward(200);
+    //get MOtion state
+    GetMotionState* getCmd=new GetMotionState();
+    sendCommand(getCmd, (responseCallback)&TestTask::motionStateReceived,
+                (responseCallback)&TestTask::motionError);
+    //Send motion command
+    MoveForward* cmd=new MoveForward(500);
     sendCommand(cmd,(responseCallback)&TestTask::moveForwardSuccess,
                 (responseCallback)&TestTask::motionError);
 }
 
 void TestTask::moveForwardSuccess(CommandResponse* resp){
     debug("Moved forward");
-    RotateFor* cmd=new RotateFor(180);
+    RotateFor* cmd=new RotateFor(90);
     sendCommand(cmd,(responseCallback)&TestTask::rotateForSuccess,
                 (responseCallback)&TestTask::motionError);
 }
 
 void TestTask::rotateForSuccess(CommandResponse* resp){
     debug("Rotated for success");
-    RotateTo* cmd=new RotateTo(90);
-    sendCommand(cmd,(responseCallback)&TestTask::rotateToSuccess,
+    MoveForward* cmd=new MoveForward(500);
+    sendCommand(cmd,(responseCallback)&TestTask::moveForwardSuccess,
                 (responseCallback)&TestTask::motionError);
 }
 
@@ -63,6 +87,24 @@ void TestTask::stopMovementSuccess(CommandResponse* resp){
 
 void TestTask::motionError(CommandResponse* resp){
     debug("Error in motion");
+}
+
+void TestTask::motionStateReceived(CommandResponse* resp){
+    debug("Motion state received");
+    GetMotionStateResponse* stateResponse=(GetMotionStateResponse*)resp;
+    MotionState state= stateResponse->getState();
+
+    stringstream sstr;
+    sstr<<"position: (";
+    sstr<<state.Position.getX();
+    sstr<<", ";
+    sstr<<state.Position.getY();
+    sstr<<"); speed: ";
+    sstr<<state.Speed;
+    sstr<<" state: ";
+    sstr<<state.State;
+
+    debug(sstr.str());
 }
 
 }

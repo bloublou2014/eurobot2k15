@@ -129,7 +129,7 @@ int MotionDriver::getOrientation()
 
 MotionDriver::State MotionDriver::getState()
 {
-	return state;
+        return state;
 }
 
 int MotionDriver::getDirection()

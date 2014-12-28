@@ -9,7 +9,9 @@
 
 #include "AbstractExecutor.h"
 #include "executors/msg/MotionCommand.h"
+#include "executors/msg/GetMotionState.h"
 #include "drivers/motion/MotionDriver.h"
+#include "executors/msg/MotionNotification.h"
 
 using namespace robot;
 using boost::mutex;
@@ -26,6 +28,7 @@ public:
     void stop();
 
     void processMotionCommand(Command* command);
+    void processGetMotionState(Command* command);
 protected:
     void main();
 private:
@@ -34,6 +37,8 @@ private:
     MotionCommand* getNextMotionCommand();
 
     bool shouldStop;
+    mutex stateLock;
+    MotionState lastState;
 
     MotionCommand* currentMotionCommand;
     MotionDriver driver;
