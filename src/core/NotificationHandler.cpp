@@ -17,6 +17,7 @@ bool NotificationHandler::subscribe(const string& notificationType, notification
 
 bool NotificationHandler::unSubscribe(const string& notificationType){
     registeredNotificationCallbacks.erase(notificationType);
+    return true;
 }
 
 }

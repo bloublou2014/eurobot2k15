@@ -22,6 +22,7 @@ bool TaskManager::addTask(AbstractTask* newTask){
         CachedRankedTask cachedTask(rankedTask,handle);
         taskCache[newTask->getName()]=cachedTask;
     }
+    return true;
 }
 
 bool TaskManager::getWorldProperty() const{
@@ -45,6 +46,8 @@ bool TaskManager::sendMessage(Message* message){
 bool TaskManager::receiveMessage(Message* message){
     //TODO: add pipes to quickly process message before sending to other manager
     executorManager->sendMessage(message);
+
+    return true;
 }
 
 void TaskManager::init(){
@@ -105,21 +108,26 @@ void TaskManager::dispatchMessage(){
         if (shouldStop) break;
         switch (message->getMessageType()) {
         case NOTIFICATION:
-        {
-            lock_guard<mutex> lock(heapModification);
-            for (TaskQueue::ordered_iterator it=orderedTasks.ordered_begin();it!=orderedTasks.ordered_end();++it){
-                it->task->passMessage(message);
-            }
-        }
-        break;
-        case COMMAND_RESPONSE:
-            CommandResponse* resp=(CommandResponse*)message;
-            string destination=resp->getDestination();
             {
                 lock_guard<mutex> lock(heapModification);
-                taskCache.at(destination).first.task->passMessage(message);
+                for (TaskQueue::ordered_iterator it=orderedTasks.ordered_begin();it!=orderedTasks.ordered_end();++it){
+                    it->task->passMessage(message);
+                }
             }
-            break;
+        break;
+        case COMMAND_RESPONSE:
+            {
+                CommandResponse* resp=(CommandResponse*)message;
+                string destination=resp->getDestination();
+                {
+                    lock_guard<mutex> lock(heapModification);
+                    taskCache.at(destination).first.task->passMessage(message);
+                }
+            }
+        break;
+        default:
+            //Wrong message in queue
+            error("Wrong message in queue");
         }
     }
     stopAllTasks();

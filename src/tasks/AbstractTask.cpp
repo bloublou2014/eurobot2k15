@@ -20,6 +20,7 @@ bool AbstractTask::passMessage(Message* message){
     instructionQueue.push(message);
     queueLock.unlock();
     queueNotEmpty.notify_one();
+    return true;
 }
 
 void AbstractTask::startTask(){

@@ -33,12 +33,11 @@ private:
 
     Command* ExecuteNextCommand();
 
+    Command* currentCommand;
     int totalCounter;
     int counter;
 
     bool shouldStop;
-
-    Command* currentCommand;
 };
 
 }

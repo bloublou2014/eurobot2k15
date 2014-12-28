@@ -3,7 +3,6 @@
 
 #include <list>
 
-#include "messages/Command.h"
 #include "messages/CommandResponse.h"
 #include "core/AbstractMessageHandler.h"
 

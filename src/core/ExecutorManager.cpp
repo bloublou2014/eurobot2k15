@@ -4,11 +4,11 @@ namespace robot{
 
 
 bool ExecutorManager::getWorldProperty() const{
-
+    return true;
 }
 
 bool ExecutorManager::setWorldProperty(){
-
+    return true;
 }
 
 bool ExecutorManager::sendMessage(Message* message){
@@ -21,7 +21,7 @@ bool ExecutorManager::sendMessage(Message* message){
 
 bool ExecutorManager::receiveMessage(Message* message){
     //TODO: add pipes to quickly process message before sending to other manager
-    taskManager->sendMessage(message);
+    return taskManager->sendMessage(message);
 }
 
 bool ExecutorManager::addExecutor(AbstractExecutor* newExecutor){
@@ -29,6 +29,8 @@ bool ExecutorManager::addExecutor(AbstractExecutor* newExecutor){
     boost::upgrade_lock<shared_mutex> lock(executorsMapManipulation);
     boost::upgrade_to_unique_lock<shared_mutex> uniqueLock(lock);
     executorsMap[newExecutor->getName()]=newExecutor;
+
+    return true;
 }
 
 void ExecutorManager::init(){

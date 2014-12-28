@@ -1,7 +1,6 @@
 #ifndef _COMMANDRESPONSE_H
 #define _COMMANDRESPONSE_H
 
-#include "Message.h"
 #include "Command.h"
 
 namespace robot {
