@@ -1,2 +1,3 @@
 libraries that must be included
-	/boost	boost library, more on redmine
+	/boost	boost library, more on wiki page
+	/boost_arm boost library for arm crosscompile
