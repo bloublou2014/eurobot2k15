@@ -34,12 +34,12 @@ public:
     bool passMessage(Message* message);
     TaskState getTaskState() const;
 
-    //task manager will call this when task's state changes to RUNNING
-    void startTask();
-    //task manager will call this when task changes from RUNNING
-    void stopTask();
+    //task manager will call this when task's state changes from READY to RUNNING
+    bool runTask();
+    //task manager will call this when task changes from RUNNING to READY
+    bool pauseTask();
     //task manager will call this when task is terminated, task thread will be killed
-    void killTask();
+    void stop();
 
     //ovo bi trebao samo manager da poziva. Potrebno je atomicno promenuti stanje i updateovati heap.
     void setState(TaskState _state);
@@ -66,11 +66,13 @@ protected:
     void main();
 
     //this will be called when task's thread is created and it should be used to subsribe for desired events
-    virtual void initScript()=0;
+    virtual void onCreate()=0;
     //this will notify task that it has been started (changed state to RUNNING)
-    virtual void startScript()=0;
+    virtual void onRun()=0;
     //this will notify task that it has been stopped (changed state from RUNNING)
-    virtual void stopScript()=0;
+    virtual void onPause()=0;
+    //this will notify task that it has been stopped (changed state from RUNNING)
+    virtual void onDestroy()=0;
 
     //Override of CommandSource method, checking if task is premitted to send commands
     bool sendCommand(Command* command, responseCallback success, responseCallback error, responseCallback progress=NULL);

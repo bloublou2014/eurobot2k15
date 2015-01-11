@@ -23,21 +23,25 @@ bool AbstractTask::passMessage(Message* message){
     return true;
 }
 
-void AbstractTask::startTask(){
+bool AbstractTask::runTask(){
     queueLock.lock();
     instructionQueue.push(Instruction(Instruction::Type::START));
     queueLock.unlock();
     queueNotEmpty.notify_one();
+    //TODO: mora se uraditi provera da li se task moze pokrenuti
+    return true;
 }
 
-void AbstractTask::stopTask(){
+bool AbstractTask::pauseTask(){
     queueLock.lock();
     instructionQueue.push(Instruction(Instruction::Type::STOP));
     queueLock.unlock();
     queueNotEmpty.notify_one();
+    //TODO: isto se mora proveriti uslov za pauziranje
+    return true;
 }
 
-void AbstractTask::killTask(){
+void AbstractTask::stop(){
     debug("Killing task");
     queueLock.lock();
     instructionQueue.push(Instruction(Instruction::Type::KILL));
@@ -66,7 +70,7 @@ void AbstractTask::registerManager(AbstractMessageHandler* manager){
 
 void AbstractTask::main(){
     setState(SUSPENDED);
-    initScript();
+    onCreate();
 
     while(!taskKilled){
         Instruction instr=fetchInstruction();
@@ -87,17 +91,18 @@ void AbstractTask::main(){
             case Instruction::Type::START:
                 setState(RUNNING);
                 //ovde treba updateovati heap u manageru
-                startScript();
+                onRun();
                 break;
             case Instruction::Type::STOP:
                 setState(READY);
                 //ovde treba updateovati heap u manageru
-                stopScript();
+                onPause();
                 break;
             case Instruction::Type::KILL:
                 setState(IMPOSSIBLE);
                 //ovde treba updateovati heap u manageru
                 taskKilled=true;
+                onDestroy();
                 break;
             default:
                 break;

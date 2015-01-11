@@ -72,7 +72,7 @@ void TaskManager::startAllTasks(){
 void TaskManager::stopAllTasks(){
     debug("Stopping all tasks");
     for (TaskQueue::ordered_iterator it=orderedTasks.ordered_begin();it!=orderedTasks.ordered_end();++it){
-        it->task->killTask();
+        it->task->stop();
     }
 
     debug("Joingn on all tasks");

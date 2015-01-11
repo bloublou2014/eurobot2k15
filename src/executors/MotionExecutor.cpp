@@ -73,15 +73,12 @@ void MotionExecutor::main(){
             debug("Newer command received, sending error to old");
             sendResponseFromCommand(currentMotionCommand,ERROR);
         }
-//        if (newCommand!=NULL)
-//            currentMotionCommand=newCommand;
 
         /*Sad bi trebalo tu komandu odraditi*/
         if (newCommand!=NULL){
             (this->*motionHandles[newCommand->getMotionType()])(newCommand);
         }
 
-        /*refresh of driver, verovatno?*/
         driver.refreshData();
         MotionState newState;
         newState.Direction=driver.getDirection();
@@ -108,7 +105,7 @@ void MotionExecutor::main(){
            sendNotification(motionNotification);
         }
 
-        boost::this_thread::sleep(boost::posix_time::milliseconds(10));
+        boost::this_thread::sleep(boost::posix_time::milliseconds(5));
 
     }
     debug("Stopping execution");
@@ -116,41 +113,41 @@ void MotionExecutor::main(){
 
 void MotionExecutor::moveToPosition(MotionCommand* _motionCommand){
     MoveToPosition* command=(MoveToPosition*)_motionCommand;
-    debug("Moving to position: ");
+    debug("Moving to position");
     currentMotionCommand=_motionCommand;
     driver.moveToPosition(command->getPosition(),command->getDirection());
 }
 
 void MotionExecutor::moveForward(MotionCommand* _motionCommand){
     MoveForward* command=(MoveForward*)_motionCommand;
-    debug("Moving forward: ");
+    debug("Moving forward");
     currentMotionCommand=_motionCommand;
     driver.moveStraight(command->getDistance());
 }
 
 void MotionExecutor::rotateFor(MotionCommand* _motionCommand){
     RotateFor* command=(RotateFor*)_motionCommand;
-    debug("Rotating for: ");
+    debug("Rotating for");
     currentMotionCommand=_motionCommand;
     driver.rotateFor(command->getRelativeAngle());
 }
 
 void MotionExecutor::rotateTo(MotionCommand* _motionCommand){
     RotateTo* command=(RotateTo*)_motionCommand;
-    debug("Rotating to: ");
+    debug("Rotating to");
     currentMotionCommand=_motionCommand;
     driver.rotateFor(command->getAbsoluteAngle());
 }
 
 void MotionExecutor::moveArc(MotionCommand* _motionCommand){
     MoveArc* command=(MoveArc*)_motionCommand;
-    debug("Moving arc: ");
+    debug("Moving arc");
     currentMotionCommand=_motionCommand;
     driver.moveArc(command->getCenter(),command->getAngle(),command->getDirection());
 }
 
 void MotionExecutor::stopMovement(MotionCommand* _motionCommand){
-    debug("Stopping movement: ");
+    debug("Stopping movemen");
     currentMotionCommand=_motionCommand;
     driver.stop();
 }

@@ -15,9 +15,10 @@ class TestTask:public AbstractTask{
 public:
     TestTask(const string& name):AbstractTask(name){}
 protected:
-    void initScript();
-    void startScript();
-    void stopScript();
+    void onCreate();
+    void onRun();
+    void onPause();
+    void onDestroy();
 
     void init();
 private:
