@@ -27,14 +27,18 @@ int main(int argn, char** argc){
     TestTask t1("task1");
     TestTask t2("task2");
     ExampleExecutor e1;
-    MotionExecutor motionExec;
 
+#ifdef CROSS_COMPILING
+    MotionExecutor motionExec;
+#endif
     taskMgr.setExecutorManager(&execMgr);
     execMgr.setTaskManager(&taskMgr);
 
     taskMgr.addTask(&t1);
     execMgr.addExecutor(&e1);
+#ifdef CROSS_COMPILING
     execMgr.addExecutor(&motionExec);
+#endif
 
     taskMgr.init();
     execMgr.init();
