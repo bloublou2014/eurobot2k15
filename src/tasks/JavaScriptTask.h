@@ -22,6 +22,7 @@ public:
     static void InitV8Platform();
 protected:
 
+    //Task callbacks
     void onCreate();
     void onRun();
     void onPause();
@@ -29,34 +30,33 @@ protected:
 
     static void ReportException(v8::Isolate* isolate, v8::TryCatch* try_catch);
     static const char* ToCString(const v8::String::Utf8Value& value);
-
     static Handle<String> ReadScript(Isolate* isolate, const string& fileName);
     static Handle<ObjectTemplate> createLogTemplate(Isolate* isolate);
-    static JavaScriptTask* UnwrapLogger(Handle<Object> object);
+    static Logger* UnwrapLogger(Handle<Object> object);
 
-    Handle<Script> compileScript(Handle<String> scriptSource);
-    void runScript(Handle<Script> compiledScript);
-    bool executeGlobalFunction(Handle<Function> function, const int argc, Handle<Value> argv[]);
+    //Callback from JS functions
+    static void debugCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void warningCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void errorCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
 
     void createGlobalObjects();
+    Handle<Script> compileScript(Handle<String> scriptSource);
+    void runScript(Handle<Script> compiledScript);
+
+    bool executeGlobalFunction(Handle<Function> function, const int argc, Handle<Value> argv[]);
 
     inline Isolate* getIsolate() const;
-    Persistent<Context> taskContext;
+private:
+    std::string scriptName;
 
     //Global callback functions
     Persistent<Function> runCallback;
     Persistent<Function> pauseCallback;
 
-    static void debugCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
-    static void warningCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
-    static void errorCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
-
-private:
-    std::string scriptName;
-
     Persistent<ObjectTemplate> loggerTemplate;
 
     Isolate* isolate;
+    Persistent<Context> taskContext;
 };
 
 }

@@ -10,66 +10,70 @@ void JavaScriptTask::InitV8Platform(){
 }
 
 const char* JavaScriptTask::ToCString(const v8::String::Utf8Value& value) {
-  return *value ? *value : "<string conversion failed>";
+    return *value ? *value : "<string conversion failed>";
 }
 
 void JavaScriptTask::ReportException(v8::Isolate* isolate, v8::TryCatch* try_catch) {
-  static mutex exceptionLock;
+    static mutex exceptionLock;
     unique_lock<mutex> lock(exceptionLock);
 
     v8::HandleScope handle_scope(isolate);
-  v8::String::Utf8Value exception(try_catch->Exception());
-  const char* exception_string = ToCString(exception);
-  v8::Handle<v8::Message> message = try_catch->Message();
-  if (message.IsEmpty()) {
-    // V8 didn't provide any extra information about this error; just
-    // print the exception.
-    fprintf(stderr, "%s\n", exception_string);
-  } else {
-    // Print (filename):(line number): (message).
-    v8::String::Utf8Value filename(message->GetScriptOrigin().ResourceName());
-    const char* filename_string = ToCString(filename);
-    int linenum = message->GetLineNumber();
-    fprintf(stderr, "%s:%i: %s\n", filename_string, linenum, exception_string);
-    // Print line of source code.
-    v8::String::Utf8Value sourceline(message->GetSourceLine());
-    const char* sourceline_string = ToCString(sourceline);
-    fprintf(stderr, "%s\n", sourceline_string);
-    // Print wavy underline (GetUnderline is deprecated).
-    int start = message->GetStartColumn();
-    for (int i = 0; i < start; i++) {
-      fprintf(stderr, " ");
+    v8::String::Utf8Value exception(try_catch->Exception());
+    const char* exception_string = ToCString(exception);
+    v8::Handle<v8::Message> message = try_catch->Message();
+    if (message.IsEmpty()) {
+        // V8 didn't provide any extra information about this error; just
+        // print the exception.
+        fprintf(stderr, "%s\n", exception_string);
+    } else {
+        // Print (filename):(line number): (message).
+        v8::String::Utf8Value filename(message->GetScriptOrigin().ResourceName());
+        const char* filename_string = ToCString(filename);
+        int linenum = message->GetLineNumber();
+        fprintf(stderr, "%s:%i: %s\n", filename_string, linenum, exception_string);
+        // Print line of source code.
+        v8::String::Utf8Value sourceline(message->GetSourceLine());
+        const char* sourceline_string = ToCString(sourceline);
+        fprintf(stderr, "%s\n", sourceline_string);
+        // Print wavy underline (GetUnderline is deprecated).
+        int start = message->GetStartColumn();
+        for (int i = 0; i < start; i++) {
+            fprintf(stderr, " ");
+        }
+        int end = message->GetEndColumn();
+        for (int i = start; i < end; i++) {
+            fprintf(stderr, "^");
+        }
+        fprintf(stderr, "\n");
+        v8::String::Utf8Value stack_trace(try_catch->StackTrace());
+        if (stack_trace.length() > 0) {
+            const char* stack_trace_string = ToCString(stack_trace);
+            fprintf(stderr, "%s\n", stack_trace_string);
+        }
     }
-    int end = message->GetEndColumn();
-    for (int i = start; i < end; i++) {
-      fprintf(stderr, "^");
-    }
-    fprintf(stderr, "\n");
-    v8::String::Utf8Value stack_trace(try_catch->StackTrace());
-    if (stack_trace.length() > 0) {
-      const char* stack_trace_string = ToCString(stack_trace);
-      fprintf(stderr, "%s\n", stack_trace_string);
-    }
-  }
 }
 
 void JavaScriptTask::createGlobalObjects(){
     HandleScope scope(getIsolate());
 
-    Handle<Object> global=taskContext->Global();
+    v8::Local<v8::Context> context =
+            v8::Local<v8::Context>::New(getIsolate(), taskContext);
+    Handle<Object> global=context->Global();
 
+    //Creates logger template if its not already created
     if (loggerTemplate.IsEmpty()){
         Handle<ObjectTemplate> logger= createLogTemplate(getIsolate());
         loggerTemplate.Reset(getIsolate(), logger);
     }
 
+    //Creates logger object
     Handle<ObjectTemplate> templ=Local<ObjectTemplate>::New(getIsolate(),loggerTemplate);
     Local<Object> result=templ->NewInstance();
     Handle<External> loggerPtr=External::New(getIsolate(), this);
-
     result->SetInternalField(0, loggerPtr);
 
-    global->Set(v8::String::NewFromUtf8(getIsolate(), "logger"), result);
+    //Exposes logger to javascript global scope
+    global->Set(v8::String::NewFromUtf8(getIsolate(), "Logger"), result);
 }
 
 Handle<String> JavaScriptTask::ReadScript(Isolate* isolate, const string& fileName) {
@@ -94,10 +98,10 @@ Handle<String> JavaScriptTask::ReadScript(Isolate* isolate, const string& fileNa
     return result;
 }
 
-JavaScriptTask* JavaScriptTask::UnwrapLogger(Handle<Object> object){
+Logger* JavaScriptTask::UnwrapLogger(Handle<Object> object){
     Handle<External> field = Handle<External>::Cast(object->GetInternalField(0));
     void* ptr = field->Value();
-    return static_cast<JavaScriptTask*>(ptr);
+    return static_cast<Logger*>(ptr);
 }
 
 Isolate* JavaScriptTask::getIsolate() const{
@@ -158,7 +162,7 @@ void JavaScriptTask::onCreate(){
 
     Context::Scope contextScope(context);
 
-    CreateContext(context);
+    createGlobalObjects();
 
     Handle<String> script=ReadScript(getIsolate(), scriptName);
     if (script.IsEmpty()){
@@ -227,7 +231,7 @@ void JavaScriptTask::onDestroy(){
 /*---- Callbacks from JS ---- */
 
 void JavaScriptTask::debugCallback(const v8::FunctionCallbackInfo<v8::Value>& args){
-    JavaScriptTask* logger=UnwrapLogger(args.Holder());
+    Logger* logger=UnwrapLogger(args.Holder());
     if (args.Length() < 1) return;
     HandleScope scope(args.GetIsolate());
     Handle<Value> arg = args[0];
@@ -236,11 +240,21 @@ void JavaScriptTask::debugCallback(const v8::FunctionCallbackInfo<v8::Value>& ar
 }
 
 void JavaScriptTask::warningCallback(const v8::FunctionCallbackInfo<v8::Value>& args){
-
+    Logger* logger=UnwrapLogger(args.Holder());
+    if (args.Length() < 1) return;
+    HandleScope scope(args.GetIsolate());
+    Handle<Value> arg = args[0];
+    String::Utf8Value value(arg);
+    logger->warning(*value);
 }
 
 void JavaScriptTask::errorCallback(const v8::FunctionCallbackInfo<v8::Value>& args){
-
+    Logger* logger=UnwrapLogger(args.Holder());
+    if (args.Length() < 1) return;
+    HandleScope scope(args.GetIsolate());
+    Handle<Value> arg = args[0];
+    String::Utf8Value value(arg);
+    logger->error(*value);
 }
 
 }
