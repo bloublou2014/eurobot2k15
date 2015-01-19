@@ -1,6 +1,7 @@
 #ifndef _NOTIFICATIONHANDLER_H
 #define _NOTIFICATIONHANDLER_H
 
+#include <exception>
 #include <map>
 
 #include "messages/Notification.h"
@@ -19,6 +20,17 @@ protected:
     bool unSubscribe(const string& notificationType);
 private:
     map<string,notificationCallback> registeredNotificationCallbacks;
+};
+
+struct NotificationProcessingException: public std::exception{
+    NotificationProcessingException(const string& _reason):reason(_reason){}
+
+    const char* what() const throw (){
+        return reason.c_str();
+    }
+
+private:
+    string reason;
 };
 
 }

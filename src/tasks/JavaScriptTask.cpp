@@ -114,9 +114,8 @@ Handle<Script> JavaScriptTask::compileScript(Handle<String> scriptSource){
     TryCatch tryCatch;
     Local<Script> compiledScript=Script::Compile(scriptSource);
     if (compiledScript.IsEmpty()){
-        error("Script failed to compile");
-        //Script failed to compile, throw exception
         ReportException(getIsolate(), &tryCatch);
+        throw TaskExecutionException("Compiling script contains errors. Check stack trace for details.");
     }
     return scope.Escape(compiledScript);
 }
@@ -143,9 +142,8 @@ void JavaScriptTask::runScript(Handle<Script> compiledScript){
     TryCatch tryCatch;
     Local<Value> result=compiledScript->Run();
     if (result.IsEmpty()){
-        error("Script failed to run");
-        //Script failed to run, throw exception
         ReportException(getIsolate(), &tryCatch);
+        throw TaskExecutionException("Running script contains errors. Check stack trace for details.");
     }
 }
 
@@ -166,8 +164,7 @@ void JavaScriptTask::onCreate(){
 
     Handle<String> script=ReadScript(getIsolate(), scriptName);
     if (script.IsEmpty()){
-        //throw exception
-        return;
+        throw TaskExecutionException("Error reading file. Empty or nonexisting file.");
     }
 
     Local<Script> compiledScript=compileScript(script);
@@ -180,8 +177,7 @@ void JavaScriptTask::onCreate(){
     Handle<Value> pauseValue=context->Global()->Get(pauseName);
 
     if (!runValue->IsFunction() || !pauseValue->IsFunction()){
-        //Cant initialize, no start and stop functions defined in script, throw exception
-        return;
+        throw TaskExecutionException("Invalid script. Script must contain minumum onRun and onPause functions. Consult documentation.");
     }
 
     Handle<Function> run=Handle<Function>::Cast(runValue);

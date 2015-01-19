@@ -1,6 +1,7 @@
 #ifndef _ABSTRACTTASK_H
 #define _ABSTRACTTASK_H
 
+#include <exception>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
 #include <queue>
@@ -85,6 +86,17 @@ private:
     bool taskKilled;
 
     AbstractMessageHandler* handler;
+};
+
+struct TaskExecutionException: public std::exception{
+    TaskExecutionException(const string& _reason):reason(_reason){}
+
+    const char* what() const throw (){
+        return reason.c_str();
+    }
+
+private:
+    string reason;
 };
 
 }

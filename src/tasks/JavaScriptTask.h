@@ -34,7 +34,7 @@ protected:
     static Handle<ObjectTemplate> createLogTemplate(Isolate* isolate);
     static Logger* UnwrapLogger(Handle<Object> object);
 
-    //Callback from JS functions
+    //Logger callback functions
     static void debugCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
     static void warningCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
     static void errorCallback(const v8::FunctionCallbackInfo<v8::Value>& args);

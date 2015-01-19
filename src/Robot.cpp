@@ -30,7 +30,7 @@ int main(int argn, char** argc){
 
     TestTask t1("task1");
     TestTask t2("task2");
-    JavaScriptTask js1("js1","task1.js");
+    JavaScriptTask js1("js1","task1-1.js");
     JavaScriptTask js2("js2","task1.js");
     ExampleExecutor e1;
 

@@ -60,6 +60,7 @@ AbstractTask::Instruction AbstractTask::fetchInstruction(){
 }
 
 void AbstractTask::setState(TaskState _state){
+    //TODO: ovde treba updateovati heap u manageru
     state=_state;
 }
 
@@ -70,44 +71,53 @@ void AbstractTask::registerManager(AbstractMessageHandler* manager){
 
 void AbstractTask::main(){
     setState(SUSPENDED);
-    onCreate();
+    try{
+        onCreate();
 
-    while(!taskKilled){
-        Instruction instr=fetchInstruction();
-        if (instr.type==Instruction::Type::MESSAGE){
-            Message* message=instr.message;
-            switch (message->getMessageType()) {
-            case NOTIFICATION:
-                processNotification((Notification*)message);
-                break;
-            case COMMAND_RESPONSE:
-                processCommandResponse((CommandResponse*)message);
-                break;
-            default:
-                break;
-            }
-        }else{
-            switch(instr.type){
-            case Instruction::Type::START:
-                setState(RUNNING);
-                //ovde treba updateovati heap u manageru
-                onRun();
-                break;
-            case Instruction::Type::STOP:
-                setState(READY);
-                //ovde treba updateovati heap u manageru
-                onPause();
-                break;
-            case Instruction::Type::KILL:
-                setState(IMPOSSIBLE);
-                //ovde treba updateovati heap u manageru
-                taskKilled=true;
-                onDestroy();
-                break;
-            default:
-                break;
+        while(!taskKilled){
+            Instruction instr=fetchInstruction();
+            if (instr.type==Instruction::Type::MESSAGE){
+                Message* message=instr.message;
+                switch (message->getMessageType()) {
+                case NOTIFICATION:
+                    processNotification((Notification*)message);
+                    break;
+                case COMMAND_RESPONSE:
+                    processCommandResponse((CommandResponse*)message);
+                    break;
+                default:
+                    break;
+                }
+            }else{
+                switch(instr.type){
+                case Instruction::Type::START:
+                    setState(RUNNING);
+                    onRun();
+                    break;
+                case Instruction::Type::STOP:
+                    setState(READY);
+                    onPause();
+                    break;
+                case Instruction::Type::KILL:
+                    setState(IMPOSSIBLE);
+                    taskKilled=true;
+                    onDestroy();
+                    break;
+                default:
+                    break;
+                }
             }
         }
+    }
+    catch(TaskExecutionException& e){
+        setState(IMPOSSIBLE);
+        error("Task error. Reason:");
+        error(e.what());
+    }
+    catch(std::exception& e){
+        setState(IMPOSSIBLE);
+        error("Error! something bad has happend.");
+        error(e.what());
     }
 }
 
