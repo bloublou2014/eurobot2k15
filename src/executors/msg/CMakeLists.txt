@@ -5,5 +5,9 @@ set(EXECUTORS_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/MotionCommand.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/GetMotionState.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MotionNotification.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ModbusNotification.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ModbusCommand.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/GetModbusState.cpp
+
     PARENT_SCOPE
 )
