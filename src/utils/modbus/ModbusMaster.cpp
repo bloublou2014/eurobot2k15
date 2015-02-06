@@ -94,7 +94,7 @@ bool ModbusMaster::ModbusGetStartChar()
 	unsigned char attempts = 30;
 	signed char c;
 
-	//usleep(1*1000);
+    usleep(1*1000);
 
 	while(attempts > 0 && rs485.getChar((char*)&c) > 0)
 	{
@@ -500,4 +500,14 @@ bool ModbusMaster::ModbusReadHoldingRegisters(unsigned char slave_address, unsig
 
 	return true;
 }
+
+ModbusMaster* ModbusMaster::getModbusInstance(){
+    if (!instance){
+        instance = new ModbusMaster(B115200);
+    }
+    return instance;
+}
+
+ModbusMaster *ModbusMaster::instance = 0;
+
 }

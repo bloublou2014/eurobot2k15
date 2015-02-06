@@ -61,11 +61,12 @@ void MotionExecutor::stop(){
 void MotionExecutor::main(){
     shouldStop=false;
     debug("Started main thread execution");
-    while (true){
-        if (shouldStop){
+    while (!shouldStop){
+        /*if (shouldStop){
             driver.stop();
             break;
         }
+        */
 
         /*Dobavim sledecu komandu*/
         MotionCommand* newCommand=getNextMotionCommand();

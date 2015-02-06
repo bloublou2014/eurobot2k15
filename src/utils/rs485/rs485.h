@@ -15,13 +15,14 @@
 //namespace uart1
 //{
 
-class Uart1Connection {
+class rs485Connection {
 private:
     int fd;
+public:
     speed_t baudRate;
 public:
-    Uart1Connection(bool openNow = true, speed_t baudRate = B115200);
-    virtual ~Uart1Connection();
+    rs485Connection(bool openNow = true, speed_t baudRate = B115200);
+    virtual ~rs485Connection();
     int  openUart();
     void closeUart();
     void putString(const char *data, int dataSize);

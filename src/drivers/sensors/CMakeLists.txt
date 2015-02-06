@@ -1,0 +1,5 @@
+set(DRIVERS_SRC
+    ${DRIVERS_SRC}
+    ${CMAKE_CURRENT_SOURCE_DIR}/SensorDriver.cpp
+    PARENT_SCOPE
+)

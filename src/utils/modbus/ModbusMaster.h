@@ -3,20 +3,25 @@
 #define MODBUSMASTER_H_
 
 #include "utils/rs485/rs485.h"
-namespace modbus {
+namespace modbus{
 
 class ModbusMaster {
 private:
-	Uart1Connection rs485;
 
-	unsigned char ModbusAccumulate(unsigned char *data, int data_size);
-	int ModbusByteToASCII(unsigned char Byte, signed char *Nibble1, signed char *Nibble2);
-	int ModbusASCIIToByte(unsigned char *Byte, signed char Nibble1, signed char Nibble2);
-	int ModbusAsciify(unsigned char *byteMessage, signed char *asciiMessage, int byteMessageSize);
-	bool ModbusGetStartChar();
-	unsigned long calculateLRC(int sum);
+
+    unsigned char ModbusAccumulate(unsigned char *data, int data_size);
+    int ModbusByteToASCII(unsigned char Byte, signed char *Nibble1, signed char *Nibble2);
+    int ModbusASCIIToByte(unsigned char *Byte, signed char Nibble1, signed char Nibble2);
+    int ModbusAsciify(unsigned char *byteMessage, signed char *asciiMessage, int byteMessageSize);
+    bool ModbusGetStartChar();
+    unsigned long calculateLRC(int sum);
+    ModbusMaster(speed_t baudRate = B115200);
+
 public:
-	ModbusMaster(speed_t baudRate = B115200);
+    rs485Connection rs485;
+    //ModbusMaster(speed_t baudRate = B115200);
+    static ModbusMaster* getModbusInstance();
+    static ModbusMaster* instance;
 
     bool ModbusForceSingleCoil(unsigned char slave_address, unsigned short address, signed char data);
     bool ModbusReadCoilStatus(unsigned char slave_address, unsigned short address, unsigned short quantity, signed char *data);

@@ -5,7 +5,7 @@
 //namespace uart1
 //{
 
-Uart1Connection::Uart1Connection(bool openNow, speed_t baudRate):baudRate(baudRate)
+rs485Connection::rs485Connection(bool openNow, speed_t baudRate):baudRate(baudRate)
 {
 	fd = -1;
 	if(openNow)
@@ -14,12 +14,12 @@ Uart1Connection::Uart1Connection(bool openNow, speed_t baudRate):baudRate(baudRa
 	}
 }
 
-Uart1Connection::~Uart1Connection()
+rs485Connection::~rs485Connection()
 {
 	closeUart();
 }
 
-int Uart1Connection::openUart()
+int rs485Connection::openUart()
 {
     /* open the port */
     printf("opening device %s...", RS485_DEVICE);
@@ -76,14 +76,14 @@ int Uart1Connection::openUart()
     return 1;
 }
 
-void Uart1Connection::closeUart()
+void rs485Connection::closeUart()
 {
 	printf("close uart1\n");
     close(fd);
     fd = -1;
 }
 
-void Uart1Connection::putString(const char *data, int dataSize)
+void rs485Connection::putString(const char *data, int dataSize)
 {
 	//printf("putString %c%c%c%c\n",data[0],data[1],data[2],data[3]);
     if (fd != -1)
@@ -97,12 +97,12 @@ void Uart1Connection::putString(const char *data, int dataSize)
     }
 }
 
-void Uart1Connection::putChar(const char &data)
+void rs485Connection::putChar(const char &data)
 {
     putString(&data, 1);
 }
 
-int Uart1Connection::getString(char output[], int numOfBytes)
+int rs485Connection::getString(char output[], int numOfBytes)
 {
 	int rv,i,numOfBytesReceived;
 	fd_set set;
@@ -167,7 +167,7 @@ int Uart1Connection::getString(char output[], int numOfBytes)
     return numOfBytesReceived;
 }
 
-int Uart1Connection::getChar(char *data)
+int rs485Connection::getChar(char *data)
 {
     return getString(data, 1);
 }

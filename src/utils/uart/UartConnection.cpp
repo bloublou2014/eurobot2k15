@@ -43,12 +43,14 @@ void UartConnection::openUart()
 	//											immediately with a failure status if the output can't be written immediately.
 	//
 	//	O_NOCTTY - When set and path identifies a terminal device, open() shall not cause the terminal device to become the controlling terminal for the process.
-	uart0_filestream = open("/dev/ttyAMA0", O_RDWR | O_NOCTTY | O_NDELAY);		//Open in non blocking read/write mode
+
+    uart0_filestream = open("/dev/ttyAMA0", O_RDWR | O_NOCTTY | O_NDELAY);		//Open in non blocking read/write mode
+    // uart0_filestream = open("/dev/ttyS0", O_RDWR | O_NOCTTY | O_NDELAY); // koristio za kucnu radinost :P svakako znam da ovaj kom nece niko ni procitati :D :D
 	if (uart0_filestream == -1)
 	{
-		//ERROR - CAN'T OPEN SERIAL PORT
+        printf("ERROR - CAN'T OPEN SERIAL PORT");
 	}
-
+    printf("AMA0 opened");
 	//CONFIGURE THE UART
 	//The flags (defined in /usr/include/termios.h - see http://pubs.opengroup.org/onlinepubs/007908799/xsh/termios.h.html):
 	//	Baud rate:- B1200, B2400, B4800, B9600, B19200, B38400, B57600, B115200, B230400, B460800, B500000, B576000, B921600, B1000000, B1152000, B1500000, B2000000, B2500000, B3000000, B3500000, B4000000
@@ -118,6 +120,9 @@ void UartConnection::readAll(char output[], int numOfBytes)
 		if(currentByte >= numOfBytes) break;
 		printCont++;
 		if((printCont%200)==0) printf("uart readAll spin, retryCount=%d\n", (retryCount++)*200);
+        if ( retryCount > 20){
+            break;
+        }
 		usleep(5*1000);
 	}
 	// TODO ubaciti vremenski uslov da se ne zaglavi u while vecno

@@ -5,6 +5,6 @@
 #    PARENT_SCOPE
 #)
 
-add_library(tasks AbstractTask.cpp TestTask.cpp)
+add_library(tasks AbstractTask.cpp TestTask.cpp ServoTask.cpp)
 
 target_link_libraries(tasks core messages)
