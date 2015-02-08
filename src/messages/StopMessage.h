@@ -8,6 +8,10 @@ namespace robot {
 class StopMessage:public Message{
 public:
     StopMessage(const string& _sender):Message(STOP_MESSAGE,_sender){}
+
+    string getName() const{
+        return "StopMessage";
+    }
 protected:
 private:
 };

@@ -88,7 +88,7 @@ private:
 
 class MotionCommandResponse : public CommandResponse{
 public:
-    MotionCommandResponse(const string& to, const string& from, ResponseStatus _status=SUCCESS):CommandResponse(to,from,_status) {}
+    MotionCommandResponse(const string& to, const string& from, ResponseStatus _status=SUCCESS):CommandResponse("MotionCommandResponse", to,from,_status) {}
 private:
 };
 

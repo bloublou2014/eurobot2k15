@@ -2,18 +2,21 @@
 
 namespace javascript{
 
-JavaScriptMessageFactory::JavaScriptMessageFactory(Isolate *isolate){
-    registeredMessages["CountdownCommand"]=new JavaScriptMessage(isolate, CountdownCommand::CreateTemplate,CountdownCommand::CreateConstructorTemplate);
+void JavaScriptMessageFactory::init(Handle<Object> exportObject){
+    CountdownCommand::Init(exportObject);
 }
 
-JavaScriptMessageFactory::~JavaScriptMessageFactory(){
-    for (map<string, JavaScriptMessage*>::iterator it=registeredMessages.begin();it!=registeredMessages.end();++it){
-        delete it->second;
-    }
+Handle<Function> JavaScriptMessageFactory::getObjectConstructor(const string& name){
+    Isolate* isolate=Isolate::GetCurrent();
+
+    EscapableHandleScope scope(isolate);
+    Local<Function> result= Local<Function>::New(isolate, registeredConstructors[name]);
+    return scope.Escape(result);
 }
 
-JavaScriptMessage* JavaScriptMessageFactory::getMessageHandler(const string& name){
-    return registeredMessages[name];
+void JavaScriptMessageFactory::setObjectConstructor(const string& name, Handle<Function> newTemplate){
+    Isolate* isolate=Isolate::GetCurrent();
+    registeredConstructors[name].Reset(isolate, newTemplate);
 }
 
 }

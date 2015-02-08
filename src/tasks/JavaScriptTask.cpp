@@ -53,7 +53,7 @@ void JavaScriptTask::ReportException(v8::Isolate* isolate, v8::TryCatch* try_cat
     }
 }
 
-Handle<Object> JavaScriptTask::createObjectFromTemplate(javascript::ObjectTemplateBuilder builder, Persistent<ObjectTemplate>& objTemplate, void* internalField){
+Handle<Object> JavaScriptTask::createObjectFromTemplate(ObjectTemplateBuilder builder, Persistent<ObjectTemplate>& objTemplate, void* internalField){
     EscapableHandleScope scope(getIsolate());
 
     if (objTemplate.IsEmpty()){
@@ -76,14 +76,13 @@ void JavaScriptTask::createGlobalObjects(){
             v8::Local<v8::Context>::New(getIsolate(), taskContext);
     Handle<Object> global=context->Global();
 
+    /* Exposing builtin functions and objects */
     Local<Object> logger=createObjectFromTemplate(static_cast<ObjectTemplateBuilder>(&createLogTemplate), loggerTemplate, this);
     Local<Object> notification=createObjectFromTemplate(static_cast<ObjectTemplateBuilder>(&createNotificationTemplate), notificationTemplate, this);
-
-    Local<Function> countdownCommand=messageFactory->getMessageHandler("CountdownCommand")->createConstructorFunctoin(getIsolate());
-
     global->Set(v8::String::NewFromUtf8(getIsolate(), "Logger"), logger);
     global->Set(v8::String::NewFromUtf8(getIsolate(), "Notification"), notification);
-    global->Set(v8::String::NewFromUtf8(getIsolate(), "Countdown"), countdownCommand);
+
+    messageFactory->init(global);
 }
 
 Handle<String> JavaScriptTask::ReadScript(Isolate* isolate, const string& fileName) {
@@ -193,7 +192,7 @@ void JavaScriptTask::onCreate(){
 
     Context::Scope contextScope(context);
 
-    messageFactory=new JavaScriptMessageFactory(getIsolate());
+    messageFactory=new JavaScriptMessageFactory();
     isolate->SetData(0,messageFactory);
 
     createGlobalObjects();
@@ -258,6 +257,7 @@ void JavaScriptTask::onPause(){
 void JavaScriptTask::onDestroy(){
     debug("Exiting isolate");
     isolate->Exit();
+    delete messageFactory;
 }
 
 /*---- Callbacks from JS ---- */

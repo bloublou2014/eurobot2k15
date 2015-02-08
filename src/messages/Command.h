@@ -21,6 +21,8 @@ public:
     string getDestination() const;
     string getCommandName() const;
     int getId() const;
+
+    string getName() const;
 protected:
 private:
     string destination;

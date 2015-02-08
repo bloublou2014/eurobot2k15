@@ -11,6 +11,8 @@ class Notification : public Message {
 public:
     Notification(const string& _topic, const string& _sender):Message(NOTIFICATION, _sender), topic(_topic){}
     string getTopic() const;
+
+    string getName() const;
 private:
     string topic;
 };

@@ -13,9 +13,6 @@
 
 using namespace v8;
 using javascript::JavaScriptMessageFactory;
-using javascript::JavaScriptMessage;
-using javascript::ObjectTemplateBuilder;
-using javascript::ConstructorTemplateBuilder;
 
 using boost::mutex;
 using boost::unique_lock;
@@ -40,8 +37,7 @@ protected:
     static Handle<String> ReadScript(Isolate* isolate, const string& fileName);
 
     //Helper functions for exposing objects in javascript
-//    typedef Handle<ObjectTemplate> (*TemplateBuilder)(Isolate* isolate);
-//    typedef Handle<FunctionTemplate> (*FunctionTemplateBuilder)(Isolate* isolate);
+    typedef Handle<ObjectTemplate> (*ObjectTemplateBuilder)(Isolate* isolate);
     static Handle<ObjectTemplate> createLogTemplate(Isolate* isolate);
     static Handle<ObjectTemplate> createCommandTemplate(Isolate* isolate);
     static Handle<ObjectTemplate> createNotificationTemplate(Isolate* isolate);

@@ -34,6 +34,8 @@ public:
 
     void setSource(const string& _source);
 
+    virtual string getName() const=0;
+
     virtual ~Message();
 
 protected:

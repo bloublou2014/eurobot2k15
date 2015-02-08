@@ -4,7 +4,6 @@
 #include <string>
 #include <map>
 #include <src/v8.h>
-#include "utils/javascript/JavaScriptMessage.h"
 #include "utils/javascript/JavaScriptMessageProvider.h"
 
 #include "executors/msg/CountdownCommand.h"
@@ -12,7 +11,7 @@
 using std::string;
 using std::map;
 using namespace v8;
-/*Messages*/
+
 using robot::CountdownCommand;
 
 namespace javascript{
@@ -20,14 +19,14 @@ namespace javascript{
 class JavaScriptMessageFactory : public JavaScriptMessageProvider
 {
 public:
-    JavaScriptMessageFactory(Isolate* isolate);
-    ~JavaScriptMessageFactory();
+    JavaScriptMessageFactory(){}
 
-    JavaScriptMessage* getMessageHandler(const string& name);
+    void init(Handle<Object> exportObject);
 
-
+    Handle<Function> getObjectConstructor(const string& name);
+    void setObjectConstructor(const string &name, Handle<Function> newTemplate);
 private:
-    map<string, JavaScriptMessage*> registeredMessages;
+    map<string, Persistent<Function>> registeredConstructors;
 };
 
 }

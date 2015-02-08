@@ -18,4 +18,8 @@ int CommandResponse::getId() const{
     return id;
 }
 
+string CommandResponse::getName() const{
+    return name;
+}
+
 }

@@ -23,7 +23,7 @@ private:
 class GetMotionStateResponse : public CommandResponse{
 public:
     GetMotionStateResponse(const string& to, const string& from, MotionState _state, ResponseStatus _status=SUCCESS):
-        CommandResponse(to,from,_status), state(_state) {}
+        CommandResponse("GetMotionStateResponse",to,from,_status), state(_state) {}
 
     MotionState getState() const{return state;}
 private:
