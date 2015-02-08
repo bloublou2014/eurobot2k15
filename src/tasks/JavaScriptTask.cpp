@@ -53,6 +53,22 @@ void JavaScriptTask::ReportException(v8::Isolate* isolate, v8::TryCatch* try_cat
     }
 }
 
+Handle<Object> JavaScriptTask::createObjectFromTemplate(javascript::ObjectTemplateBuilder builder, Persistent<ObjectTemplate>& objTemplate, void* internalField){
+    EscapableHandleScope scope(getIsolate());
+
+    if (objTemplate.IsEmpty()){
+        Handle<ObjectTemplate> newTemplate= builder(getIsolate());
+        objTemplate.Reset(getIsolate(), newTemplate);
+    }
+
+    Handle<ObjectTemplate> templ=Local<ObjectTemplate>::New(getIsolate(), objTemplate);
+    Local<Object> result=templ->NewInstance();
+    Handle<External> refferencePtr=External::New(getIsolate(), internalField);
+    result->SetInternalField(0, refferencePtr);
+
+    return scope.Escape(result);
+}
+
 void JavaScriptTask::createGlobalObjects(){
     HandleScope scope(getIsolate());
 
@@ -60,20 +76,14 @@ void JavaScriptTask::createGlobalObjects(){
             v8::Local<v8::Context>::New(getIsolate(), taskContext);
     Handle<Object> global=context->Global();
 
-    //Creates logger template if its not already created
-    if (loggerTemplate.IsEmpty()){
-        Handle<ObjectTemplate> logger= createLogTemplate(getIsolate());
-        loggerTemplate.Reset(getIsolate(), logger);
-    }
+    Local<Object> logger=createObjectFromTemplate(static_cast<ObjectTemplateBuilder>(&createLogTemplate), loggerTemplate, this);
+    Local<Object> notification=createObjectFromTemplate(static_cast<ObjectTemplateBuilder>(&createNotificationTemplate), notificationTemplate, this);
 
-    //Creates logger object
-    Handle<ObjectTemplate> templ=Local<ObjectTemplate>::New(getIsolate(),loggerTemplate);
-    Local<Object> result=templ->NewInstance();
-    Handle<External> loggerPtr=External::New(getIsolate(), this);
-    result->SetInternalField(0, loggerPtr);
+    Local<Function> countdownCommand=messageFactory->getMessageHandler("CountdownCommand")->createConstructorFunctoin(getIsolate());
 
-    //Exposes logger to javascript global scope
-    global->Set(v8::String::NewFromUtf8(getIsolate(), "Logger"), result);
+    global->Set(v8::String::NewFromUtf8(getIsolate(), "Logger"), logger);
+    global->Set(v8::String::NewFromUtf8(getIsolate(), "Notification"), notification);
+    global->Set(v8::String::NewFromUtf8(getIsolate(), "Countdown"), countdownCommand);
 }
 
 Handle<String> JavaScriptTask::ReadScript(Isolate* isolate, const string& fileName) {
@@ -96,12 +106,6 @@ Handle<String> JavaScriptTask::ReadScript(Isolate* isolate, const string& fileNa
     Handle<String> result = String::NewFromUtf8(isolate, chars, String::kNormalString, size);
     delete[] chars;
     return result;
-}
-
-Logger* JavaScriptTask::UnwrapLogger(Handle<Object> object){
-    Handle<External> field = Handle<External>::Cast(object->GetInternalField(0));
-    void* ptr = field->Value();
-    return static_cast<Logger*>(ptr);
 }
 
 Isolate* JavaScriptTask::getIsolate() const{
@@ -138,6 +142,35 @@ Handle<ObjectTemplate> JavaScriptTask::createLogTemplate(Isolate* isolate){
     return scope.Escape(result);
 }
 
+Handle<ObjectTemplate> JavaScriptTask::createCommandTemplate(Isolate* isolate){
+    EscapableHandleScope scope(isolate);
+
+    Local<ObjectTemplate> result=ObjectTemplate::New(isolate);
+
+    return scope.Escape(result);
+}
+
+Handle<ObjectTemplate> JavaScriptTask::createNotificationTemplate(Isolate* isolate){
+    EscapableHandleScope scope(isolate);
+
+    Local<ObjectTemplate> result=ObjectTemplate::New(isolate);
+    result->SetInternalFieldCount(1);
+
+    result->Set(String::NewFromUtf8(isolate, "subscribe", String::kInternalizedString),
+                FunctionTemplate::New(isolate, subscripbeCallback));
+
+    result->Set(String::NewFromUtf8(isolate, "unsubscribe", String::kInternalizedString),
+                FunctionTemplate::New(isolate, unsubscribeCallback));
+
+    return scope.Escape(result);
+}
+
+JavaScriptTask* JavaScriptTask::UnwrapJavascriptTask(Handle<Object> object){
+    Handle<External> field = Handle<External>::Cast(object->GetInternalField(0));
+    void* ptr = field->Value();
+    return static_cast<JavaScriptTask*>(ptr);
+}
+
 void JavaScriptTask::runScript(Handle<Script> compiledScript){
     TryCatch tryCatch;
     Local<Value> result=compiledScript->Run();
@@ -159,6 +192,9 @@ void JavaScriptTask::onCreate(){
     taskContext.Reset(getIsolate(), context);
 
     Context::Scope contextScope(context);
+
+    messageFactory=new JavaScriptMessageFactory(getIsolate());
+    isolate->SetData(0,messageFactory);
 
     createGlobalObjects();
 
@@ -225,32 +261,47 @@ void JavaScriptTask::onDestroy(){
 }
 
 /*---- Callbacks from JS ---- */
-
+//Logger functions
 void JavaScriptTask::debugCallback(const v8::FunctionCallbackInfo<v8::Value>& args){
-    Logger* logger=UnwrapLogger(args.Holder());
+    JavaScriptTask* logger=UnwrapJavascriptTask(args.Holder());
     if (args.Length() < 1) return;
     HandleScope scope(args.GetIsolate());
     Handle<Value> arg = args[0];
-    String::Utf8Value value(arg);
-    logger->debug(*value);
+    if (arg->IsString()){
+        String::Utf8Value value(arg);
+        logger->debug(*value);
+    }
 }
 
 void JavaScriptTask::warningCallback(const v8::FunctionCallbackInfo<v8::Value>& args){
-    Logger* logger=UnwrapLogger(args.Holder());
+    JavaScriptTask* logger=UnwrapJavascriptTask(args.Holder());
     if (args.Length() < 1) return;
     HandleScope scope(args.GetIsolate());
     Handle<Value> arg = args[0];
-    String::Utf8Value value(arg);
-    logger->warning(*value);
+    if (arg->IsString()){
+        String::Utf8Value value(arg);
+        logger->warning(*value);
+    }
 }
 
 void JavaScriptTask::errorCallback(const v8::FunctionCallbackInfo<v8::Value>& args){
-    Logger* logger=UnwrapLogger(args.Holder());
+    JavaScriptTask* logger=UnwrapJavascriptTask(args.Holder());
     if (args.Length() < 1) return;
     HandleScope scope(args.GetIsolate());
     Handle<Value> arg = args[0];
-    String::Utf8Value value(arg);
-    logger->error(*value);
+    if (arg->IsString()){
+        String::Utf8Value value(arg);
+        logger->error(*value);
+    }
+}
+
+//Notification functions
+void JavaScriptTask::subscripbeCallback(const v8::FunctionCallbackInfo<v8::Value>& args){
+
+}
+
+void JavaScriptTask::unsubscribeCallback(const v8::FunctionCallbackInfo<v8::Value>& args){
+
 }
 
 }

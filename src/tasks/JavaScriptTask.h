@@ -8,8 +8,15 @@
 #include <include/libplatform/libplatform.h>
 
 #include "AbstractTask.h"
+#include "utils/javascript/JavaScriptMessageFactory.h"
+#include "executors/msg/CountdownCommand.h"
 
 using namespace v8;
+using javascript::JavaScriptMessageFactory;
+using javascript::JavaScriptMessage;
+using javascript::ObjectTemplateBuilder;
+using javascript::ConstructorTemplateBuilder;
+
 using boost::mutex;
 using boost::unique_lock;
 
@@ -31,13 +38,26 @@ protected:
     static void ReportException(v8::Isolate* isolate, v8::TryCatch* try_catch);
     static const char* ToCString(const v8::String::Utf8Value& value);
     static Handle<String> ReadScript(Isolate* isolate, const string& fileName);
+
+    //Helper functions for exposing objects in javascript
+//    typedef Handle<ObjectTemplate> (*TemplateBuilder)(Isolate* isolate);
+//    typedef Handle<FunctionTemplate> (*FunctionTemplateBuilder)(Isolate* isolate);
     static Handle<ObjectTemplate> createLogTemplate(Isolate* isolate);
-    static Logger* UnwrapLogger(Handle<Object> object);
+    static Handle<ObjectTemplate> createCommandTemplate(Isolate* isolate);
+    static Handle<ObjectTemplate> createNotificationTemplate(Isolate* isolate);
+
+    Handle<Object> createObjectFromTemplate(ObjectTemplateBuilder builder, Persistent<ObjectTemplate>& objTemplate, void* internalField);
+
+    static JavaScriptTask* UnwrapJavascriptTask(Handle<Object> object);
 
     //Logger callback functions
     static void debugCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
     static void warningCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
     static void errorCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
+    //Command callback functions
+    static void subscripbeCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void unsubscribeCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
+    //Notification callback functions
 
     void createGlobalObjects();
     Handle<Script> compileScript(Handle<String> scriptSource);
@@ -54,9 +74,15 @@ private:
     Persistent<Function> pauseCallback;
 
     Persistent<ObjectTemplate> loggerTemplate;
+    Persistent<ObjectTemplate> commandTemplate;
+    Persistent<ObjectTemplate> notificationTemplate;
+
+    Persistent<FunctionTemplate> countdownTemplate;
 
     Isolate* isolate;
     Persistent<Context> taskContext;
+
+    JavaScriptMessageFactory* messageFactory;
 };
 
 }

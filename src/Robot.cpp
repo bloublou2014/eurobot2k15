@@ -42,7 +42,7 @@ int main(int argn, char** argc){
     execMgr.setTaskManager(&taskMgr);
 
     taskMgr.addTask(&t1);
-    taskMgr.addTask(&js1);
+    //taskMgr.addTask(&js1);
     taskMgr.addTask(&js2);
     execMgr.addExecutor(&e1);
 #ifdef CROSS_COMPILING
