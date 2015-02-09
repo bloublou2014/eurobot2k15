@@ -18,6 +18,7 @@ void  ExampleExecutor::processProbeEvent(Notification* notification){
 }
 
 void ExampleExecutor::countToN(Command* command){
+    CountdownCommand a(12);
     debug("Received command to countdown");
     commandQueueLock.lock();
     commandsToProcess.push(command);

@@ -7,6 +7,7 @@
 #include "utils/javascript/JavaScriptMessageProvider.h"
 
 #include "executors/msg/CountdownCommand.h"
+#include "executors/msg/TimePassed.h"
 
 using std::string;
 using std::map;
@@ -25,8 +26,12 @@ public:
 
     Handle<Function> getObjectConstructor(const string& name);
     void setObjectConstructor(const string &name, Handle<Function> newTemplate);
+
+    Handle<Object> wrapObject(const string& name, Isolate* isolate, void* ptr);
+    void setObjectTemplate(const string& name, Handle<ObjectTemplate> tmpl);
 private:
     map<string, Persistent<Function>> registeredConstructors;
+    map<string, Persistent<ObjectTemplate>> registeredObjectTemplates;
 };
 
 }

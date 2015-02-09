@@ -24,6 +24,8 @@ public:
     JavaScriptTask(const string& _name, string _scriptName):AbstractTask(_name), scriptName(_scriptName){}
 
     static void InitV8Platform();
+
+    void handleNotifications(Notification* testNotification);
 protected:
 
     //Task callbacks
@@ -73,10 +75,9 @@ private:
     Persistent<ObjectTemplate> commandTemplate;
     Persistent<ObjectTemplate> notificationTemplate;
 
-    Persistent<FunctionTemplate> countdownTemplate;
-
     Isolate* isolate;
     Persistent<Context> taskContext;
+    map<string, Persistent<Function>> subscribedFunctions;
 
     JavaScriptMessageFactory* messageFactory;
 };

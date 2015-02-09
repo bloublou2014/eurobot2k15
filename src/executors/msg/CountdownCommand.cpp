@@ -25,6 +25,7 @@ void CountdownCommand::Init(Handle<Object> exports){
 
     JavaScriptMessageProvider* provider=static_cast<JavaScriptMessageProvider*>(isolate->GetData(0));
     provider->setObjectConstructor("CountdownCommand",tpl->GetFunction());
+    provider->setObjectTemplate("CountdownCommand", tpl->InstanceTemplate());
     exports->Set(String::NewFromUtf8(isolate, "CountdownCommand"), tpl->GetFunction());
 }
 

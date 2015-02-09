@@ -194,6 +194,7 @@ void JavaScriptTask::onCreate(){
 
     messageFactory=new JavaScriptMessageFactory();
     isolate->SetData(0,messageFactory);
+    isolate->SetData(1,this);
 
     createGlobalObjects();
 
@@ -260,6 +261,26 @@ void JavaScriptTask::onDestroy(){
     delete messageFactory;
 }
 
+void JavaScriptTask::handleNotifications(Notification* testNotification){
+    HandleScope scope(getIsolate());
+    Local<Context> context =Local<Context>::New(getIsolate(), taskContext);
+    Context::Scope contextScope(context);
+
+    TryCatch tryCatch;
+
+    //Handle<Object> notificatoin= messageFactory->wrapObject(testNotification->getName(),getIsolate(), testNotification);
+    int argc=1;
+    Handle<Value> argv[argc];
+    argv[0]=String::NewFromUtf8(getIsolate(),"Time passed");
+
+    Local<Function> func=Local<Function>::New(getIsolate(),subscribedFunctions[testNotification->getName()]);
+    Handle<Value> result= func->Call(context->Global(),argc, argv);
+    if (result.IsEmpty()){
+        ReportException(getIsolate(), &tryCatch);
+        throw TaskExecutionException("Running callback method function failed.");
+    }
+}
+
 /*---- Callbacks from JS ---- */
 //Logger functions
 void JavaScriptTask::debugCallback(const v8::FunctionCallbackInfo<v8::Value>& args){
@@ -297,7 +318,17 @@ void JavaScriptTask::errorCallback(const v8::FunctionCallbackInfo<v8::Value>& ar
 
 //Notification functions
 void JavaScriptTask::subscripbeCallback(const v8::FunctionCallbackInfo<v8::Value>& args){
+    Isolate* isolate=Isolate::GetCurrent();
 
+    if (args.Length()<2){
+        isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Cannot call constructor as function."));
+    }
+    String::Utf8Value paramName(args[0]->ToString());
+    string name(*paramName);
+
+    JavaScriptTask* currentVM=static_cast<JavaScriptTask*>(isolate->GetData(1));
+    currentVM->subscribedFunctions[name].Reset(isolate, args[1]);
+    currentVM->subscribe(name,(notificationCallback)&JavaScriptTask::handleNotifications);
 }
 
 void JavaScriptTask::unsubscribeCallback(const v8::FunctionCallbackInfo<v8::Value>& args){
