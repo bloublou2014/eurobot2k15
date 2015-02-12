@@ -14,7 +14,7 @@ using javascript::ObjectWrap;
 
 namespace robot {
 
-class CountdownCommand:public Command, public ObjectWrap{
+class CountdownCommand:public Command{
 public:
     /* Exports object */
     static void Init(Handle<Object> exports);

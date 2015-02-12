@@ -20,15 +20,24 @@ void JavaScriptMessageFactory::setObjectConstructor(const string& name, Handle<F
     registeredConstructors[name].Reset(isolate, newTemplate);
 }
 
-Handle<Object> JavaScriptMessageFactory::wrapObject(const string& name, Isolate* isolate, void* ptr){
+Handle<Object> JavaScriptMessageFactory::wrapObject(const string& name, Isolate* isolate, robot::Message* ptr){
     EscapableHandleScope scope(isolate);
 
     if (registeredObjectTemplates.find(name)!=registeredObjectTemplates.end()){
         //TODO: Fix, not working!
         Local<ObjectTemplate> tmpl= Local<ObjectTemplate>::New(isolate, registeredObjectTemplates[name]);
         Local<Object> result=tmpl->NewInstance();
-        ObjectWrap* wrap=static_cast<ObjectWrap*>(ptr);
-        result->SetAlignedPointerInInternalField(0, ptr);
+        ObjectWrap* oldObject=ObjectWrap::Unwrap<ObjectWrap>(result);
+        ObjectWrap* tp=static_cast<ObjectWrap*>(ptr);
+        tp->Wrap(result, isolate);
+//        TimePassedNotification* tp=static_cast<TimePassedNotification*>(result->GetAlignedPointerFromInternalField(0));
+//        TimePassedNotification* tp=ObjectWrap::Unwrap<TimePassedNotification>(result);
+//        int number=tp->getPassedTime();
+//        tp->passedTime=18;
+//        ObjectWrap* wrap=static_cast<ObjectWrap*>(ptr);
+//        wrap->Wrap(result,isolate);
+//        result->SetAlignedPointerInInternalField(0, ptr);
+        delete oldObject;
         return scope.Escape(result);
     }
     Local<Object> empty;

@@ -11,7 +11,7 @@ using javascript::ObjectWrap;
 
 namespace robot{
 
-class TimePassedNotification : public Notification, public ObjectWrap{
+class TimePassedNotification : public Notification{
 public:
     /* Exports object */
     static void Init(Handle<Object> exports);
@@ -23,8 +23,8 @@ public:
 
     TimePassedNotification(const string& sender,int time):Notification("TimePassedNotification",sender),passedTime(time){}
     int getPassedTime() const;
-protected:
-private:
+//protected:
+//private:
     int passedTime;
 };
 

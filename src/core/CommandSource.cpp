@@ -3,11 +3,11 @@
 
 namespace robot{
 
-bool CommandSource::sendCommand(Command* command, responseCallback success, responseCallback error, responseCallback progress){
+int CommandSource::sendCommand(Command* command, responseCallback success, responseCallback error, responseCallback progress){
     command->setId(++lastCommandId);
     callbackObjects.push_back(CallbackObject(lastCommandId,success, error, progress));
-
-    return handler->receiveMessage(command);
+    handler->receiveMessage(command);
+    return command->getId();
 }
 
 void CommandSource::setHandler(AbstractMessageHandler* _handler){

@@ -25,7 +25,7 @@ public:
 
     static void InitV8Platform();
 
-    void handleNotifications(Notification* testNotification);
+    bool processNotification(Notification* testNotification);
 protected:
 
     //Task callbacks

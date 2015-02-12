@@ -261,17 +261,22 @@ void JavaScriptTask::onDestroy(){
     delete messageFactory;
 }
 
-void JavaScriptTask::handleNotifications(Notification* testNotification){
+bool JavaScriptTask::processNotification(Notification* testNotification){
     HandleScope scope(getIsolate());
     Local<Context> context =Local<Context>::New(getIsolate(), taskContext);
     Context::Scope contextScope(context);
 
+    TimePassedNotification* passedTime=static_cast<TimePassedNotification*>(testNotification);
+    int pt=passedTime->getPassedTime();
+
     TryCatch tryCatch;
 
-    //Handle<Object> notificatoin= messageFactory->wrapObject(testNotification->getName(),getIsolate(), testNotification);
+    Handle<Object> obj=messageFactory->wrapObject(testNotification->getName(),getIsolate(),testNotification);
+
     int argc=1;
     Handle<Value> argv[argc];
-    argv[0]=String::NewFromUtf8(getIsolate(),"Time passed");
+    //argv[0]=String::NewFromUtf8(getIsolate(),"Time passed");
+    argv[0]=obj;
 
     Local<Function> func=Local<Function>::New(getIsolate(),subscribedFunctions[testNotification->getName()]);
     Handle<Value> result= func->Call(context->Global(),argc, argv);
@@ -279,6 +284,8 @@ void JavaScriptTask::handleNotifications(Notification* testNotification){
         ReportException(getIsolate(), &tryCatch);
         throw TaskExecutionException("Running callback method function failed.");
     }
+
+    return true;
 }
 
 /*---- Callbacks from JS ---- */
@@ -328,7 +335,6 @@ void JavaScriptTask::subscripbeCallback(const v8::FunctionCallbackInfo<v8::Value
 
     JavaScriptTask* currentVM=static_cast<JavaScriptTask*>(isolate->GetData(1));
     currentVM->subscribedFunctions[name].Reset(isolate, args[1]);
-    currentVM->subscribe(name,(notificationCallback)&JavaScriptTask::handleNotifications);
 }
 
 void JavaScriptTask::unsubscribeCallback(const v8::FunctionCallbackInfo<v8::Value>& args){

@@ -76,7 +76,7 @@ protected:
     virtual void onDestroy()=0;
 
     //Override of CommandSource method, checking if task is premitted to send commands
-    bool sendCommand(Command* command, responseCallback success, responseCallback error, responseCallback progress=NULL);
+    int sendCommand(Command* command, responseCallback success, responseCallback error, responseCallback progress=NULL);
 private:
     mutex queueLock;
     condition_variable queueNotEmpty;

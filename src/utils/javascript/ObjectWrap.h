@@ -12,7 +12,6 @@ public:
         refs_ = 0;
     }
 
-
     virtual ~ObjectWrap() {
         if (persistent().IsEmpty())
             return;
@@ -21,43 +20,50 @@ public:
         persistent().Reset();
     }
 
-
     template <class T>
     static inline T* Unwrap(v8::Handle<v8::Object> handle) {
         assert(!handle.IsEmpty());
         assert(handle->InternalFieldCount() > 0);
         // Cast to ObjectWrap before casting to T.  A direct cast from void
         // to T won't work right when T has more than one base class.
-        void* ptr = handle->GetAlignedPointerFromInternalField(0);
+        //void* ptr = handle->GetAlignedPointerFromInternalField(0);
+        v8::Handle<v8::External> field = v8::Handle<v8::External>::Cast(handle->GetInternalField(0));
+        void* ptr = field->Value();
         ObjectWrap* wrap = static_cast<ObjectWrap*>(ptr);
         return static_cast<T*>(wrap);
     }
-
 
     inline v8::Local<v8::Object> handle() {
         return handle(v8::Isolate::GetCurrent());
     }
 
-
     inline v8::Local<v8::Object> handle(v8::Isolate* isolate) {
         return v8::Local<v8::Object>::New(isolate, persistent());
     }
-
 
     inline v8::Persistent<v8::Object>& persistent() {
         return handle_;
     }
 
+    inline void Wrap(v8::Handle<v8::Object> handle, v8::Isolate* isolate) {
+        assert(handle->InternalFieldCount() > 0);
+        v8::Handle<v8::External> request_ptr = v8::External::New(isolate, this);
+        handle->SetInternalField(0,request_ptr);
+        //handle->SetAlignedPointerInInternalField(0, this);
+        persistent().Reset(isolate, handle);
+        MakeWeak();
+    }
 
 protected:
     inline void Wrap(v8::Handle<v8::Object> handle) {
         assert(persistent().IsEmpty());
         assert(handle->InternalFieldCount() > 0);
-        handle->SetAlignedPointerInInternalField(0, this);
+        v8::Handle<v8::External> request_ptr = v8::External::New(v8::Isolate::GetCurrent(), this);
+        handle->SetInternalField(0, request_ptr);
+        //handle->SetAlignedPointerInInternalField(0, this);
         persistent().Reset(v8::Isolate::GetCurrent(), handle);
         MakeWeak();
     }
-
 
     inline void MakeWeak(void) {
         persistent().SetWeak(this, WeakCallback);
@@ -108,7 +114,6 @@ private:
 
     v8::Persistent<v8::Object> handle_;
 };
-
 
 }
 

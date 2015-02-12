@@ -30,7 +30,7 @@ int main(int argn, char** argc){
 
     TestTask t1("task1");
     TestTask t2("task2");
-    JavaScriptTask js1("js1","task1-1.js");
+    JavaScriptTask js1("js1","task1.js");
     JavaScriptTask js2("js2","task1.js");
     ExampleExecutor e1;
 
@@ -42,8 +42,8 @@ int main(int argn, char** argc){
     execMgr.setTaskManager(&taskMgr);
 
     taskMgr.addTask(&t1);
-    //taskMgr.addTask(&js1);
-    taskMgr.addTask(&js2);
+    taskMgr.addTask(&js1);
+    //taskMgr.addTask(&js2);
     execMgr.addExecutor(&e1);
 #ifdef CROSS_COMPILING
     execMgr.addExecutor(&motionExec);

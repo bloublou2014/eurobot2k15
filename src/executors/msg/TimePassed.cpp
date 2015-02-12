@@ -38,9 +38,9 @@ void TimePassedNotification::New(const v8::FunctionCallbackInfo<v8::Value>& args
     Isolate* isolate = Isolate::GetCurrent();
     HandleScope scope(isolate);
 
-    if (args.IsConstructCall()) {
+    if (args.IsConstructCall()){
         // Invoked as constructor: `new MyObject(...)`
-        int value = args[0]->IsUndefined() ? 0 : args[0]->NumberValue();
+        int value = args[0]->IsUndefined() ? 42 : args[0]->NumberValue();
         TimePassedNotification* obj = new TimePassedNotification("ASD",value);
         obj->Wrap(args.This());
         args.GetReturnValue().Set(args.This());

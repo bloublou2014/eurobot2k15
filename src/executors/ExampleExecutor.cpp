@@ -36,8 +36,8 @@ void ExampleExecutor::main(){
         if (shouldStop) break;
        boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
        counter++;
-       if ((counter%5)==0){
-           TimePassedNotification* timePassed=new TimePassedNotification(getName(),5);
+       if ((counter%1)==0){
+           TimePassedNotification* timePassed=new TimePassedNotification(getName(),counter);
            sendNotification(timePassed);
         }
        Command* newCommand=ExecuteNextCommand();

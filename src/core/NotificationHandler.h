@@ -14,7 +14,7 @@ class NotificationHandler{
 public:
     typedef void (NotificationHandler::*notificationCallback)(Notification* notification);
 
-    bool processNotification(Notification* notification);
+    virtual bool processNotification(Notification* notification);
 protected:
     bool subscribe(const string& notificationType, notificationCallback callback);
     bool unSubscribe(const string& notificationType);

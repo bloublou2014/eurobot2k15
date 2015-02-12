@@ -17,7 +17,7 @@ public:
     void setHandler(AbstractMessageHandler* _handler);
 protected:
     typedef void (CommandSource::*responseCallback)(CommandResponse* response);
-    virtual bool sendCommand(Command* command, responseCallback success, responseCallback error, responseCallback progress=NULL);
+    virtual int sendCommand(Command* command, responseCallback success, responseCallback error, responseCallback progress=NULL);
 
     struct CallbackObject{
         CallbackObject(int,responseCallback,responseCallback,responseCallback);
