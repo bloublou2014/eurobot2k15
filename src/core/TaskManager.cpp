@@ -111,7 +111,7 @@ void TaskManager::dispatchMessage(){
             {
                 lock_guard<mutex> lock(heapModification);
                 for (TaskQueue::ordered_iterator it=orderedTasks.ordered_begin();it!=orderedTasks.ordered_end();++it){
-                    it->task->passMessage(message);
+                    it->task->passMessage(message->clone());
                 }
             }
         break;
@@ -121,7 +121,7 @@ void TaskManager::dispatchMessage(){
                 string destination=resp->getDestination();
                 {
                     lock_guard<mutex> lock(heapModification);
-                    taskCache.at(destination).first.task->passMessage(message);
+                    taskCache.at(destination).first.task->passMessage(message->clone());
                 }
             }
         break;
@@ -129,6 +129,7 @@ void TaskManager::dispatchMessage(){
             //Wrong message in queue
             error("Wrong message in queue");
         }
+        delete message;
     }
     stopAllTasks();
 }

@@ -24,19 +24,12 @@ Handle<Object> JavaScriptMessageFactory::wrapObject(const string& name, Isolate*
     EscapableHandleScope scope(isolate);
 
     if (registeredObjectTemplates.find(name)!=registeredObjectTemplates.end()){
-        //TODO: Fix, not working!
         Local<ObjectTemplate> tmpl= Local<ObjectTemplate>::New(isolate, registeredObjectTemplates[name]);
         Local<Object> result=tmpl->NewInstance();
         ObjectWrap* oldObject=ObjectWrap::Unwrap<ObjectWrap>(result);
         ObjectWrap* tp=static_cast<ObjectWrap*>(ptr);
         tp->Wrap(result, isolate);
-//        TimePassedNotification* tp=static_cast<TimePassedNotification*>(result->GetAlignedPointerFromInternalField(0));
-//        TimePassedNotification* tp=ObjectWrap::Unwrap<TimePassedNotification>(result);
-//        int number=tp->getPassedTime();
-//        tp->passedTime=18;
-//        ObjectWrap* wrap=static_cast<ObjectWrap*>(ptr);
-//        wrap->Wrap(result,isolate);
-//        result->SetAlignedPointerInInternalField(0, ptr);
+        oldObject->deleteRef();
         delete oldObject;
         return scope.Escape(result);
     }

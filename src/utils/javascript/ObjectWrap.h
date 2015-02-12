@@ -45,6 +45,10 @@ public:
         return handle_;
     }
 
+    inline void deleteRef() {
+        handle_.Reset();
+    }
+
     inline void Wrap(v8::Handle<v8::Object> handle, v8::Isolate* isolate) {
         assert(handle->InternalFieldCount() > 0);
         v8::Handle<v8::External> request_ptr = v8::External::New(isolate, this);

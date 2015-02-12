@@ -81,7 +81,7 @@ void ExecutorManager::dispatcheMessage(){
         {
             boost::shared_lock<shared_mutex> lock(executorsMapManipulation);
             for (map<string,AbstractExecutor*>::const_iterator it=executorsMap.cbegin();it!=executorsMap.cend();++it){
-                it->second->processNotification((Notification*)message);
+                it->second->processNotification(message->clone());
             }
         }
         break;
@@ -91,13 +91,14 @@ void ExecutorManager::dispatcheMessage(){
             map<string,AbstractExecutor*>::iterator destIt;
             boost::shared_lock<shared_mutex> lock(executorsMapManipulation);
             if ((destIt=executorsMap.find(command->getDestination()))!=executorsMap.end()){
-                destIt->second->processCommand(command);
+                destIt->second->processCommand(command->clone());
             }
         }
         break;
         default:
             break;
         }
+        delete message;
     }
     stopAllExecutors();
 }

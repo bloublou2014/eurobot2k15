@@ -22,9 +22,14 @@ public:
     static void ValueSetter(Local<String> property, Local<Value> value, const PropertyCallbackInfo<Value>& info);
 
     TimePassedNotification(const string& sender,int time):Notification("TimePassedNotification",sender),passedTime(time){}
+    TimePassedNotification(const TimePassedNotification& tpn):Notification(tpn),passedTime(tpn.passedTime){}
     int getPassedTime() const;
-//protected:
-//private:
+
+    Message* clone(){
+        return new TimePassedNotification(*this);
+    }
+protected:
+private:
     int passedTime;
 };
 

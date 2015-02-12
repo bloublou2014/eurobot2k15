@@ -16,6 +16,7 @@ public:
     CommandResponse(const string& _name, const string& _to, const string& _sender, ResponseStatus _status=SUCCESS):Message(COMMAND_RESPONSE, _sender),
         name(_name), destination(_to),status(_status),id(Command::INVALID_ID){
     }
+    CommandResponse(const CommandResponse& cr):Message(cr),destination(cr.destination),status(cr.status),name(cr.name),id(cr.id){}
 
     string getDestination() const;
     ResponseStatus getStatus() const;
@@ -23,6 +24,11 @@ public:
     int getId() const;
 
     string getName() const;
+
+    Message* clone(){
+        return new CommandResponse(*this);
+    }
+
 protected:
 private:
     string destination;

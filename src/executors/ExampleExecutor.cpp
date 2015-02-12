@@ -18,7 +18,6 @@ void  ExampleExecutor::processProbeEvent(Notification* notification){
 }
 
 void ExampleExecutor::countToN(Command* command){
-    CountdownCommand a(12);
     debug("Received command to countdown");
     commandQueueLock.lock();
     commandsToProcess.push(command);
@@ -34,7 +33,7 @@ void ExampleExecutor::main(){
     cout<<"Started thread"<<endl;
     while (true){
         if (shouldStop) break;
-       boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
+       //boost::this_thread::sleep(boost::posix_time::milliseconds(1));
        counter++;
        if ((counter%1)==0){
            TimePassedNotification* timePassed=new TimePassedNotification(getName(),counter);

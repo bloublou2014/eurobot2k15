@@ -20,13 +20,16 @@ enum MessageType{
 };
 
 class Message : public javascript::ObjectWrap{
-public:
+public:   
     Message(MessageType _type, const string& _from):type(_type),source(_from){
         sentTime=second_clock::local_time();
     }
 
     Message(MessageType _type):type(_type){
         sentTime=second_clock::local_time();
+    }
+
+    Message(const Message& message): type(message.type), source(message.source),sentTime(message.sentTime){
     }
 
     MessageType getMessageType() const;
@@ -39,6 +42,7 @@ public:
 
     virtual ~Message();
 
+    virtual Message* clone()=0;
 protected:
 
 private:
