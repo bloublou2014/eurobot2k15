@@ -83,6 +83,7 @@ void ExecutorManager::dispatcheMessage(){
             for (map<string,AbstractExecutor*>::const_iterator it=executorsMap.cbegin();it!=executorsMap.cend();++it){
                 it->second->processNotification(message->clone());
             }
+            delete message;
         }
         break;
         case COMMAND:
@@ -98,7 +99,6 @@ void ExecutorManager::dispatcheMessage(){
         default:
             break;
         }
-        delete message;
     }
     stopAllExecutors();
 }

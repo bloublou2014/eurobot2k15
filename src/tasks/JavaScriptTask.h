@@ -19,13 +19,24 @@ using boost::unique_lock;
 
 namespace robot{
 
+struct CommandResponseCallback{
+    Persistent<Function> success;
+    Persistent<Function> error;
+    Persistent<Function> progress;
+};
+
 class JavaScriptTask : public AbstractTask{
 public:
     JavaScriptTask(const string& _name, string _scriptName):AbstractTask(_name), scriptName(_scriptName){}
 
     static void InitV8Platform();
 
+    //Notification received callbacks
     bool processNotification(Notification* testNotification);
+    //Command response callbacks
+    void commandSuccess(CommandResponse* resp);
+    void commandError(CommandResponse* resp);
+    void commandProgress(CommandResponse* resp);
 protected:
 
     //Task callbacks
@@ -52,10 +63,12 @@ protected:
     static void debugCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
     static void warningCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
     static void errorCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
+    void callJavascriptCommandCallback(Persistent<Function>& function, CommandResponse* resp);
     //Command callback functions
+    static void sendCommandCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
+    //Notification callback functions
     static void subscripbeCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
     static void unsubscribeCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
-    //Notification callback functions
 
     void createGlobalObjects();
     Handle<Script> compileScript(Handle<String> scriptSource);
@@ -78,6 +91,7 @@ private:
     Isolate* isolate;
     Persistent<Context> taskContext;
     map<string, Persistent<Function>> subscribedFunctions;
+    map<int, CommandResponseCallback*> commandResponseCallbacks;
 
     JavaScriptMessageFactory* messageFactory;
 };

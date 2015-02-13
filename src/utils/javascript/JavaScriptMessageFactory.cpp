@@ -5,6 +5,7 @@ namespace javascript{
 void JavaScriptMessageFactory::init(Handle<Object> exportObject){
     robot::CountdownCommand::Init(exportObject);
     robot::TimePassedNotification::Init(exportObject);
+    robot::CommandResponse::Init(exportObject);
 }
 
 Handle<Function> JavaScriptMessageFactory::getObjectConstructor(const string& name){

@@ -8,6 +8,7 @@
 
 #include "executors/msg/CountdownCommand.h"
 #include "executors/msg/TimePassed.h"
+#include "messages/CommandResponse.h"
 
 using std::string;
 using std::map;

@@ -113,6 +113,7 @@ void TaskManager::dispatchMessage(){
                 for (TaskQueue::ordered_iterator it=orderedTasks.ordered_begin();it!=orderedTasks.ordered_end();++it){
                     it->task->passMessage(message->clone());
                 }
+                delete message;
             }
         break;
         case COMMAND_RESPONSE:
@@ -129,7 +130,6 @@ void TaskManager::dispatchMessage(){
             //Wrong message in queue
             error("Wrong message in queue");
         }
-        delete message;
     }
     stopAllTasks();
 }

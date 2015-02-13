@@ -79,8 +79,10 @@ void JavaScriptTask::createGlobalObjects(){
     /* Exposing builtin functions and objects */
     Local<Object> logger=createObjectFromTemplate(static_cast<ObjectTemplateBuilder>(&createLogTemplate), loggerTemplate, this);
     Local<Object> notification=createObjectFromTemplate(static_cast<ObjectTemplateBuilder>(&createNotificationTemplate), notificationTemplate, this);
+    Local<Object> command=createObjectFromTemplate(static_cast<ObjectTemplateBuilder>(&createCommandTemplate), commandTemplate, this);
     global->Set(v8::String::NewFromUtf8(getIsolate(), "Logger"), logger);
     global->Set(v8::String::NewFromUtf8(getIsolate(), "Notification"), notification);
+    global->Set(v8::String::NewFromUtf8(getIsolate(), "Command"), command);
 
     messageFactory->init(global);
 }
@@ -145,6 +147,10 @@ Handle<ObjectTemplate> JavaScriptTask::createCommandTemplate(Isolate* isolate){
     EscapableHandleScope scope(isolate);
 
     Local<ObjectTemplate> result=ObjectTemplate::New(isolate);
+    result->SetInternalFieldCount(1);
+
+    result->Set(String::NewFromUtf8(isolate, "send", String::kInternalizedString),
+                FunctionTemplate::New(isolate, sendCommandCallback));
 
     return scope.Escape(result);
 }
@@ -261,13 +267,55 @@ void JavaScriptTask::onDestroy(){
     delete messageFactory;
 }
 
-bool JavaScriptTask::processNotification(Notification* testNotification){
+
+void JavaScriptTask::commandSuccess(CommandResponse* resp){
+    if (commandResponseCallbacks.find(resp->getId())==commandResponseCallbacks.end()) return;
+    callJavascriptCommandCallback(commandResponseCallbacks[resp->getId()]->success,resp);
+    commandResponseCallbacks[resp->getId()]->success.Reset();
+    commandResponseCallbacks[resp->getId()]->error.Reset();
+    commandResponseCallbacks[resp->getId()]->progress.Reset();
+    delete commandResponseCallbacks[resp->getId()];
+}
+
+void JavaScriptTask::commandError(CommandResponse* resp){
+    if (commandResponseCallbacks.find(resp->getId())==commandResponseCallbacks.end()) return;
+    callJavascriptCommandCallback(commandResponseCallbacks[resp->getId()]->error,resp);
+    commandResponseCallbacks[resp->getId()]->success.Reset();
+    commandResponseCallbacks[resp->getId()]->error.Reset();
+    commandResponseCallbacks[resp->getId()]->progress.Reset();
+    delete commandResponseCallbacks[resp->getId()];
+}
+
+void JavaScriptTask::commandProgress(CommandResponse* resp){
+    if (commandResponseCallbacks.find(resp->getId())==commandResponseCallbacks.end()) return;
+    callJavascriptCommandCallback(commandResponseCallbacks[resp->getId()]->progress,resp);
+}
+
+void JavaScriptTask::callJavascriptCommandCallback(Persistent<Function>& function, CommandResponse* resp){
     HandleScope scope(getIsolate());
     Local<Context> context =Local<Context>::New(getIsolate(), taskContext);
     Context::Scope contextScope(context);
 
-    TimePassedNotification* passedTime=static_cast<TimePassedNotification*>(testNotification);
-    int pt=passedTime->getPassedTime();
+    TryCatch tryCatch;
+
+    Handle<Object> obj=messageFactory->wrapObject(resp->getName(),getIsolate(),resp);
+
+    int argc=1;
+    Handle<Value> argv[argc];
+    argv[0]=obj;
+
+    Local<Function> func=Local<Function>::New(getIsolate(), function);
+    Handle<Value> result= func->Call(context->Global(),argc, argv);
+    if (result.IsEmpty()){
+        ReportException(getIsolate(), &tryCatch);
+        throw TaskExecutionException("Running callback method function failed.");
+    }
+}
+
+bool JavaScriptTask::processNotification(Notification* testNotification){
+    HandleScope scope(getIsolate());
+    Local<Context> context =Local<Context>::New(getIsolate(), taskContext);
+    Context::Scope contextScope(context);
 
     TryCatch tryCatch;
 
@@ -275,7 +323,6 @@ bool JavaScriptTask::processNotification(Notification* testNotification){
 
     int argc=1;
     Handle<Value> argv[argc];
-    //argv[0]=String::NewFromUtf8(getIsolate(),"Time passed");
     argv[0]=obj;
 
     Local<Function> func=Local<Function>::New(getIsolate(),subscribedFunctions[testNotification->getName()]);
@@ -339,6 +386,38 @@ void JavaScriptTask::subscripbeCallback(const v8::FunctionCallbackInfo<v8::Value
 
 void JavaScriptTask::unsubscribeCallback(const v8::FunctionCallbackInfo<v8::Value>& args){
 
+}
+
+void JavaScriptTask::sendCommandCallback(const v8::FunctionCallbackInfo<v8::Value>& args){
+    Isolate* isolate=Isolate::GetCurrent();
+
+    if (args.Length()<3){
+        isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Not enaugh parameters."));
+    }
+
+    CommandResponseCallback* callback=new CommandResponseCallback();
+    callback->success.Reset(isolate, args[1]);
+    callback->error.Reset(isolate, args[2]);
+
+    if (args.Length()>3){
+        callback->progress.Reset(isolate,args[3]);
+    }
+
+    Local<Object> commandHandle=Local<Object>::Cast(args[0]);
+    Command* command=static_cast<Command*>(ObjectWrap::Unwrap<Command>(commandHandle)->clone());
+
+    int id;
+    JavaScriptTask* currentVM=static_cast<JavaScriptTask*>(isolate->GetData(1));
+    if (!callback->progress.IsEmpty()){
+        id=currentVM->sendCommand(command,(responseCallback)&JavaScriptTask::commandSuccess,
+                                  (responseCallback)&JavaScriptTask::commandError,
+                                  (responseCallback)&JavaScriptTask::commandProgress);
+    }else{
+        id=currentVM->sendCommand(command,(responseCallback)&JavaScriptTask::commandSuccess,
+                                  (responseCallback)&JavaScriptTask::commandError);
+    }
+
+    currentVM->commandResponseCallbacks[id]=callback;
 }
 
 }
