@@ -33,6 +33,7 @@ public:
     AbstractTask(const string& name):Node(name), taskKilled(false){}
 
     bool passMessage(Message* message);
+    bool isSubscribed(Notification *message);
     TaskState getTaskState() const;
 
     //task manager will call this when task's state changes from READY to RUNNING

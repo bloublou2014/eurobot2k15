@@ -74,12 +74,22 @@ void MotionExecutor::main(){
             sendResponseFromCommand(currentMotionCommand,ERROR);
         }
 
-        /*Sad bi trebalo tu komandu odraditi*/
-        if (newCommand!=NULL){
-            (this->*motionHandles[newCommand->getMotionType()])(newCommand);
+        try{
+            /*Sad bi trebalo tu komandu odraditi*/
+            if (newCommand!=NULL){
+                (this->*motionHandles[newCommand->getMotionType()])(newCommand);
+            }
+        }catch(...){
+            error("***** Error in UART communication! ****");
+            return;
         }
 
+        try{
         driver.refreshData();
+        }catch(...){
+            error("***** Error in UART communication! ****");
+            return;
+        }
         MotionState newState;
         newState.Direction=driver.getDirection();
         newState.Orientation=driver.getOrientation();
@@ -106,7 +116,6 @@ void MotionExecutor::main(){
         }
 
         boost::this_thread::sleep(boost::posix_time::milliseconds(5));
-
     }
     debug("Stopping execution");
 }

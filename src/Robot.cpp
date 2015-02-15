@@ -46,9 +46,10 @@ int main(int argn, char** argc){
     taskMgr.addTask(&t1);
     taskMgr.addTask(&js1);
     taskMgr.addTask(&js2);
-//    taskMgr.addTask(&js3);
-//    taskMgr.addTask(&js4);
+    taskMgr.addTask(&js3);
+    taskMgr.addTask(&js4);
     execMgr.addExecutor(&e1);
+
 #ifdef CROSS_COMPILING
     execMgr.addExecutor(&motionExec);
 #endif

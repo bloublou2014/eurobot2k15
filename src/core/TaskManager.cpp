@@ -109,9 +109,11 @@ void TaskManager::dispatchMessage(){
         switch (message->getMessageType()) {
         case NOTIFICATION:
             {
+                Notification* notification=(Notification*)message;
                 lock_guard<mutex> lock(heapModification);
                 for (TaskQueue::ordered_iterator it=orderedTasks.ordered_begin();it!=orderedTasks.ordered_end();++it){
-                    it->task->passMessage(message->clone());
+                    if (it->task->isSubscribed(notification))
+                        it->task->passMessage(notification->clone());
                 }
                 delete message;
             }
@@ -122,7 +124,7 @@ void TaskManager::dispatchMessage(){
                 string destination=resp->getDestination();
                 {
                     lock_guard<mutex> lock(heapModification);
-                    taskCache.at(destination).first.task->passMessage(message->clone());
+                    taskCache.at(destination).first.task->passMessage(message);
                 }
             }
         break;

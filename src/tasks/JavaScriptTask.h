@@ -32,7 +32,7 @@ public:
     static void InitV8Platform();
 
     //Notification received callbacks
-    bool processNotification(Notification* testNotification);
+    void notificationReceived(Notification* testNotification);
     //Command response callbacks
     void commandSuccess(CommandResponse* resp);
     void commandError(CommandResponse* resp);

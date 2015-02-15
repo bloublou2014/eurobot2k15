@@ -17,6 +17,10 @@ int AbstractTask::sendCommand(Command* command, responseCallback success, respon
     return -1;
 }
 
+bool AbstractTask::isSubscribed(Notification* message){
+    return NotificationHandler::isSubscribed(message);
+}
+
 bool AbstractTask::passMessage(Message* message){
     queueLock.lock();
     instructionQueue.push(message);

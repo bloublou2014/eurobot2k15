@@ -112,8 +112,12 @@ void UartConnection::readAll(char output[], int numOfBytes)
 	int currentByte=0;
 	int printCont=0;
 	int retryCount=0;
+
     while(true)
 	{
+        if (retryCount>=5){
+            throw "UART not available";
+        }
 		currentByte += readUart(output+currentByte, numOfBytes-currentByte);
 		if(currentByte >= numOfBytes) break;
 		printCont++;

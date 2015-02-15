@@ -312,7 +312,7 @@ void JavaScriptTask::callJavascriptCommandCallback(Persistent<Function>& functio
     }
 }
 
-bool JavaScriptTask::processNotification(Notification* testNotification){
+void JavaScriptTask::notificationReceived(Notification* testNotification){
     HandleScope scope(getIsolate());
     Local<Context> context =Local<Context>::New(getIsolate(), taskContext);
     Context::Scope contextScope(context);
@@ -331,8 +331,6 @@ bool JavaScriptTask::processNotification(Notification* testNotification){
         ReportException(getIsolate(), &tryCatch);
         throw TaskExecutionException("Running callback method function failed.");
     }
-
-    return true;
 }
 
 /*---- Callbacks from JS ---- */
@@ -382,10 +380,21 @@ void JavaScriptTask::subscripbeCallback(const v8::FunctionCallbackInfo<v8::Value
 
     JavaScriptTask* currentVM=static_cast<JavaScriptTask*>(isolate->GetData(1));
     currentVM->subscribedFunctions[name].Reset(isolate, args[1]);
+    currentVM->subscribe(name,(notificationCallback)&JavaScriptTask::notificationReceived);
 }
 
 void JavaScriptTask::unsubscribeCallback(const v8::FunctionCallbackInfo<v8::Value>& args){
+    Isolate* isolate=Isolate::GetCurrent();
 
+    if (args.Length()<1){
+        isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Invalid argument number."));
+    }
+    String::Utf8Value paramName(args[0]->ToString());
+    string name(*paramName);
+
+    JavaScriptTask* currentVM=static_cast<JavaScriptTask*>(isolate->GetData(1));
+    currentVM->subscribedFunctions[name].Reset();
+    currentVM->unSubscribe(name);
 }
 
 void JavaScriptTask::sendCommandCallback(const v8::FunctionCallbackInfo<v8::Value>& args){
@@ -416,7 +425,6 @@ void JavaScriptTask::sendCommandCallback(const v8::FunctionCallbackInfo<v8::Valu
         id=currentVM->sendCommand(command,(responseCallback)&JavaScriptTask::commandSuccess,
                                   (responseCallback)&JavaScriptTask::commandError);
     }
-
     currentVM->commandResponseCallbacks[id]=callback;
 }
 

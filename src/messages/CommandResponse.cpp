@@ -4,7 +4,7 @@ namespace robot {
 
 char* CommandResponse::NAME="CommandResponse";
 
-static void CommandResponse::Init(Handle<Object> exports){
+void CommandResponse::Init(Handle<Object> exports){
     Isolate* isolate = Isolate::GetCurrent();
     // Prepare constructor template
     Local<FunctionTemplate> tpl = FunctionTemplate::New(isolate, New);
@@ -17,7 +17,7 @@ static void CommandResponse::Init(Handle<Object> exports){
     exports->Set(String::NewFromUtf8(isolate, NAME), tpl->GetFunction());
 }
 
-static void CommandResponse::New(const v8::FunctionCallbackInfo<v8::Value>& args){
+void CommandResponse::New(const v8::FunctionCallbackInfo<v8::Value>& args){
     Isolate* isolate = Isolate::GetCurrent();
     HandleScope scope(isolate);
 
