@@ -12,6 +12,7 @@
 
 #include "core/Node.h"
 #include "tasks/AbstractTask.h"
+#include "tasks/JavaScriptTask.h"
 #include "messages/Message.h"
 #include "core/AbstractMessageHandler.h"
 #include "messages/StopMessage.h"

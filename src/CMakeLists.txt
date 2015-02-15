@@ -1,18 +1,30 @@
 if(CMAKE_CROSSCOMPILING)
     message("CONFIGURING FOR CROSS COMPILE")
 
-	include_directories(${TOOLCHAIN_INCLUDE})
-	link_directories(${TOOLCHAIN_LIB})
+    add_definitions(-DCROSS_COMPILING)
 
-	#boost include
+    include_directories(${TOOLCHAIN_INCLUDE})
+    link_directories(${TOOLCHAIN_LIB})
+
+    #boost include
     include_directories(${PROJECT_SOURCE_DIR}/libs/boost_arm)
     link_directories(${PROJECT_SOURCE_DIR}/libs/boost_arm/stage/lib)
+
+    #v8 include
+    include_directories(/home/milan/tools/v8)
+    link_directories(/home/milan/tools/v8/out/arm.release/obj.target/tools/gyp)
+    link_directories(/home/milan/tools/v8/out/arm.release/obj.target/third_party/icu)
 else()
     message("CONFIGURING FOR LINUX")
 
     #boost include
     include_directories(${PROJECT_SOURCE_DIR}/libs/boost)
     link_directories(${PROJECT_SOURCE_DIR}/libs/boost/stage/lib)
+
+    #v8 include
+    include_directories(/home/milan/tools/v8)
+    link_directories(/home/milan/tools/v8/out/x64.debug/obj.target/tools/gyp)
+    link_directories(/home/milan/tools/v8/out/x64.debug/obj.target/third_party/icu)
 endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -35,3 +47,6 @@ target_link_libraries(eurobot2k15 core executors messages tasks plugins)
 
 #link boost
 target_link_libraries(eurobot2k15 boost_chrono boost_filesystem boost_locale boost_serialization boost_signals boost_timer boost_thread boost_system boost_regex boost_log)
+#link v8
+set(V8_LIB -Wl,--start-group libv8_base.a libv8_libbase.a libv8_snapshot.a libv8_libplatform.a libicuuc.a libicui18n.a libicudata.a -Wl,--end-group)
+target_link_libraries(eurobot2k15 rt ${V8_LIB})

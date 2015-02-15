@@ -25,7 +25,7 @@ void CommandProcessor::setHandler(AbstractMessageHandler* _handler){
 }
 
 bool CommandProcessor::sendResponseFromCommand(Command* commandToRespond,ResponseStatus _status){
-    CommandResponse* resp=new CommandResponse(commandToRespond->getSource(),commandToRespond->getDestination(),_status);
+    CommandResponse* resp=new CommandResponse(CommandResponse::NAME, commandToRespond->getSource(),commandToRespond->getDestination(),_status);
     resp->setId(commandToRespond->getId());
     return sendResponse(resp);
 }

@@ -7,10 +7,14 @@ using namespace std;
 
 namespace robot{
 
-class Notification : public Message {
+class Notification : public Message{
 public:
     Notification(const string& _topic, const string& _sender):Message(NOTIFICATION, _sender), topic(_topic){}
+    Notification(const Notification& notification):Message(notification),topic(notification.topic){}
+
     string getTopic() const;
+
+    string getName() const;
 private:
     string topic;
 };

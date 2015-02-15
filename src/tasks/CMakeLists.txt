@@ -1,10 +1,9 @@
-#set(SRC_FILES
-#    ${SRC_FILES}
-#	${CMAKE_CURRENT_SOURCE_DIR}/AbstractTask.cpp
-#	${CMAKE_CURRENT_SOURCE_DIR}/TestTask.cpp
-#    PARENT_SCOPE
-#)
+set(TASKS_SRC
+	AbstractTask.cpp 
+	TestTask.cpp
+	JavaScriptTask.cpp
+)
 
-add_library(tasks AbstractTask.cpp TestTask.cpp)
+add_library(tasks ${TASKS_SRC})
 
 target_link_libraries(tasks core messages)

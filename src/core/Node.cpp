@@ -32,6 +32,7 @@ void Node::debug(const string& message){
 }
 
 void Node::error(const string& message){
+    cout<<name<<" [E]: "<<message<<endl;
     //BOOST_LOG_TRIVIAL(loggging::trivial::error)<<name<<": "<<message;
 }
 

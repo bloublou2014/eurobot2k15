@@ -6,6 +6,7 @@
 #include <boost/date_time.hpp>
 #include <boost/log/trivial.hpp>
 
+#include "Logger.h"
 #include "messages/Notification.h"
 
 using namespace std;
@@ -19,7 +20,7 @@ namespace keywords = boost::log::keywords;
 
 namespace robot{
 
-class Node{
+class Node : public Logger{
 public:
     Node(const string& _name):name(_name){}
     string getName() const;
