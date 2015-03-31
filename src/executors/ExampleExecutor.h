@@ -10,6 +10,7 @@
 #include "msg/TimePassed.h"
 #include "msg/CountdownCommand.h"
 
+
 using boost::mutex;
 using std::queue;
 
@@ -35,7 +36,7 @@ private:
 
     Command* currentCommand;
     int totalCounter;
-    int counter;
+    int counter = 0;
 
     bool shouldStop;
 };

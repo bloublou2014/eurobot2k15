@@ -81,10 +81,8 @@ void ExecutorManager::dispatcheMessage(){
         {
             boost::shared_lock<shared_mutex> lock(executorsMapManipulation);
             for (map<string,AbstractExecutor*>::const_iterator it=executorsMap.cbegin();it!=executorsMap.cend();++it){
-                if (it->second->isSubscribed(message))
-                    it->second->processNotification(message->clone());
+                it->second->processNotification((Notification*)message);
             }
-            delete message;
         }
         break;
         case COMMAND:

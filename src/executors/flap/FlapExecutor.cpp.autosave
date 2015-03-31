@@ -1,0 +1,20 @@
+#include "FlapExecutor.h"
+
+namespace executor {
+
+string FlapExecutor::NAME = "FlapExecutor";
+
+void FlapExecutor::suscribe(){
+    this->registerCommand(ActuatorCommand::NAME, static_cast<commandCallback>(&FlapExecutor::processActuatorCommand));
+    // dodati registrovanje get state commande // TODO
+}
+
+void FlapExecutor::mapping(){
+   
+}
+
+bool FlapExecutor::KickFunction(){
+    debug("TODO");
+    return false;
+}
+}

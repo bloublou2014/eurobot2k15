@@ -1,0 +1,227 @@
+#include "AbstractLiftExecutor.h"
+
+namespace executor {
+
+void AbstractLiftExecutor::init(){
+    //debug("AbstractExe is inited ");
+    suscribe();
+    maping();
+
+}
+
+void AbstractLiftExecutor::maping(){
+    debug("default maping");
+    actuatorHandles[ActuatorCommand::ActuatorType::GET_OBJECT]=static_cast<ActuatorCommandHandle>(&AbstractLiftExecutor::getObject);
+    actuatorHandles[ActuatorCommand::ActuatorType::UNLOAD_OBJECT]=static_cast<ActuatorCommandHandle>(&AbstractLiftExecutor::unLoadObject);
+    actuatorHandles[ActuatorCommand::ActuatorType::KICK]=static_cast<ActuatorCommandHandle>(&AbstractLiftExecutor::kick);
+    actuatorHandles[ActuatorCommand::ActuatorType::GET_POPCORN]=static_cast<ActuatorCommandHandle>(&AbstractLiftExecutor::getPopcorn);
+    actuatorHandles[ActuatorCommand::ActuatorType::SET_POSITION]=static_cast<ActuatorCommandHandle>(&AbstractLiftExecutor::setPosition);
+    actuatorHandles[ActuatorCommand::ActuatorType::SET_SPEED]=static_cast<ActuatorCommandHandle>(&AbstractLiftExecutor::setSpeed);
+
+    //servoHandles[ActuatorCommand::ServoType::DOOR_SERVO]=static_cast<ActuatorServoHandle>()
+}
+
+void AbstractLiftExecutor::suscribe(){
+    this->registerCommand(ActuatorCommand::NAME, static_cast<commandCallback>(&AbstractLiftExecutor::processActuatorCommand));
+}
+
+
+void AbstractLiftExecutor::stop(){
+    shouldStop = true;
+}
+
+void AbstractLiftExecutor::processActuatorCommand(Command *_command){
+    commandQueueLock.lock();
+    commandsToProcess.push(_command);
+    commandQueueLock.unlock();
+}
+
+ActuatorCommand* AbstractLiftExecutor::getNextCommand(){  // if there is more then one command = send error to old one onda execute new one , returns new command
+    ActuatorCommand* newCommand = NULL;
+    commandQueueLock.lock();
+
+    if(!commandsToProcess.empty()){
+        while(commandsToProcess.size() > 1){
+            Command* cmd = commandsToProcess.front();
+            commandsToProcess.pop();
+            debug("newer Command, seding error to old");
+            sendResponseFromCommand(cmd, ERROR);
+        }
+        newCommand =(ActuatorCommand*)commandsToProcess.front();
+        commandsToProcess.pop();
+    }
+
+    commandQueueLock.unlock();
+    return newCommand;
+}
+
+void AbstractLiftExecutor::main(){
+    shouldStop = false;
+    while(!shouldStop){
+        ActuatorCommand* newCommand = getNextCommand();
+        if (newCommand!= NULL && currentActuatorCommand!= NULL){
+            //send error to old command
+            debug("Newer command recived seding error to old one");
+            sendResponseFromCommand(currentActuatorCommand, ERROR);
+        }
+
+        if (newCommand!=NULL){
+            debug("executing new command");
+            (this->*actuatorHandles[newCommand->getActuatorType()])(newCommand); // do new command ( map static cast )
+
+        }
+
+    }
+}
+
+void AbstractLiftExecutor::getObject(ActuatorCommand * _command){
+    bool success;
+    GetObject* command = (GetObject*) _command;
+    currentActuatorCommand = command;
+    success =  GetObjectFunction();
+    if (success) {
+        currentActuatorCommand = NULL;
+    }
+}
+
+void AbstractLiftExecutor::unLoadObject(ActuatorCommand* _command){
+    bool success;
+    UnloadObject *command  = (UnloadObject*) _command;
+    currentActuatorCommand = command;
+    success = UnloadObjectFunction();
+    if (success){
+        currentActuatorCommand = NULL;
+    }
+}
+
+void AbstractLiftExecutor::kick(ActuatorCommand* _command){
+    bool success = false;
+    Kick* command = (Kick*) _command;
+    currentActuatorCommand = command;
+    success = KickFunction();
+    if (success){
+        currentActuatorCommand = NULL;
+    }
+}
+
+void AbstractLiftExecutor::getPopcorn(ActuatorCommand* _command){
+    bool success = false ;
+    GetPopcorn* command = (GetPopcorn*) _command;
+    currentActuatorCommand = command ;
+    success = GetPopcornFunction();
+    if (success){
+        currentActuatorCommand  = NULL;
+    }
+}
+
+void AbstractLiftExecutor::unLoadPopcorn(ActuatorCommand* _command){
+    bool success = false ;
+    UnloadPopcorn* command = (UnloadPopcorn*) _command;
+    currentActuatorCommand = command;
+    success = UnloadPopcornFunction();
+    if (success ){
+        currentActuatorCommand = NULL;
+    }
+}
+
+void AbstractLiftExecutor::setSpeed(ActuatorCommand *_command){
+    bool success = false ;
+    SetSpeed* command = (SetSpeed*) _command;
+    currentActuatorCommand = command;
+    success = SetSpeedFunction();
+    if (success){
+        currentActuatorCommand = NULL;
+    }
+}
+
+void AbstractLiftExecutor::setPosition(ActuatorCommand *_command){
+    bool success = false;
+    SetPosition* command  = (SetPosition*) _command;
+    currentActuatorCommand = command;
+    if (success){
+        currentActuatorCommand = NULL;
+    }
+}
+
+bool AbstractLiftExecutor::GetObjectFunction(){
+    debug("GetObject Default function");
+    debug("TODO"); 
+    grabHand.rotateToPosition(0); 
+    
+    // TODO
+   return false;
+}
+
+bool AbstractLiftExecutor::UnloadObjectFunction(){
+    // TODO
+    debug("unloadObject Default function");
+    debug("TODO");
+    return false;
+}
+
+bool AbstractLiftExecutor::GetPopcornFunction(){
+    // TODO
+    debug("GetPopcorn Default functiuon");
+    debug("TODO");
+    return false;
+}
+
+bool AbstractLiftExecutor::UnloadPopcornFunction(){
+    // TODO
+    debug("UnloadPopcorn Default function");
+    debug("TODO");
+    return false;
+}
+
+bool AbstractLiftExecutor::KickFunction(){
+    // TODO
+    debug("Kick Default function");
+    debug("TODO");
+    return false;
+}
+
+bool AbstractLiftExecutor::SetSpeedFunction(){
+    //TODO
+    debug("SetSpeed Defalut function");
+    debug("TODO");
+
+    return false;
+}
+
+bool AbstractLiftExecutor::SetPositionFunction(){
+    //TODO
+    debug("SetPosition Default function");
+    debug("TODO");
+
+    return false;
+}
+
+
+void AbstractLiftExecutor::SetGrabHandAddresses(unsigned char _slave_address, unsigned short _position_address, unsigned short _speed_address){
+    grabHand.setServoSlaveAddress(_slave_address);
+    grabHand.setServoPositionAddress(_position_address);
+    grabHand.setServoSpeedAddress(_speed_address);
+}
+
+void AbstractLiftExecutor::SetStorageDoorAddresses(unsigned char _slave_address, unsigned short _position_address, unsigned short _speed_address){
+    storageDoor.setServoSlaveAddress(_slave_address);
+    storageDoor.setServoPositionAddress(_position_address);
+    storageDoor.setServoSpeedAddress(_speed_address);
+}
+/*
+void AbstractLiftExecutor::SetSomThingAddresses(unsigned char _slave_address, unsigned short _position_address, unsigned short _speed_address){
+    someThing.setServoSlaveAddress(_slave_address);
+    someThing.setServoPositionAddress(_position_address);
+    someThing.setServoSpeedAddress(_speed_address);
+}
+*/
+void AbstractLiftExecutor::SetSensorCloseAddresses(unsigned char _slave_address, unsigned short _position_address){
+    sensorClose.setSlaveAddress(_slave_address);
+    sensorClose.setScanAddress(_position_address);
+}
+void AbstractLiftExecutor::SetSensorFarAddresses(unsigned char _slave_address, unsigned short _position_address){
+    sensorFar.setSlaveAddress(_slave_address);
+    sensorFar.setScanAddress(_position_address);
+}
+
+}

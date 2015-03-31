@@ -1,7 +1,6 @@
 #ifndef _ABSTRACTTASK_H
 #define _ABSTRACTTASK_H
 
-#include <exception>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
 #include <queue>
@@ -33,15 +32,14 @@ public:
     AbstractTask(const string& name):Node(name), taskKilled(false){}
 
     bool passMessage(Message* message);
-    bool isSubscribed(Notification *message);
     TaskState getTaskState() const;
 
-    //task manager will call this when task's state changes from READY to RUNNING
-    bool runTask();
-    //task manager will call this when task changes from RUNNING to READY
-    bool pauseTask();
+    //task manager will call this when task's state changes to RUNNING
+    void startTask();
+    //task manager will call this when task changes from RUNNING
+    void stopTask();
     //task manager will call this when task is terminated, task thread will be killed
-    void stop();
+    void killTask();
 
     //ovo bi trebao samo manager da poziva. Potrebno je atomicno promenuti stanje i updateovati heap.
     void setState(TaskState _state);
@@ -68,16 +66,14 @@ protected:
     void main();
 
     //this will be called when task's thread is created and it should be used to subsribe for desired events
-    virtual void onCreate()=0;
+    virtual void initScript()=0;
     //this will notify task that it has been started (changed state to RUNNING)
-    virtual void onRun()=0;
+    virtual void startScript()=0;
     //this will notify task that it has been stopped (changed state from RUNNING)
-    virtual void onPause()=0;
-    //this will notify task that it has been stopped (changed state from RUNNING)
-    virtual void onDestroy()=0;
+    virtual void stopScript()=0;
 
     //Override of CommandSource method, checking if task is premitted to send commands
-    int sendCommand(Command* command, responseCallback success, responseCallback error, responseCallback progress=NULL);
+    bool sendCommand(Command* command, responseCallback success, responseCallback error, responseCallback progress=NULL);
 private:
     mutex queueLock;
     condition_variable queueNotEmpty;
@@ -87,17 +83,6 @@ private:
     bool taskKilled;
 
     AbstractMessageHandler* handler;
-};
-
-struct TaskExecutionException: public std::exception{
-    TaskExecutionException(const string& _reason):reason(_reason){}
-
-    const char* what() const throw (){
-        return reason.c_str();
-    }
-
-private:
-    string reason;
 };
 
 }

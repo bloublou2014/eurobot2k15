@@ -19,5 +19,7 @@ void Message::setSource(const string& _source){
 }
 
 Message::~Message(){
+
 }
+
 }

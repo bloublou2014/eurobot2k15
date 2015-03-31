@@ -12,10 +12,6 @@ string Command::getCommandName() const{
     return commandName;
 }
 
-string Command::getName() const{
-    return commandName;
-}
-
 void Command::setId(int _id){
     id=_id;
 }

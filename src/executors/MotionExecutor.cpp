@@ -19,6 +19,7 @@ void MotionExecutor::init(){
     motionHandles[MotionCommand::MotionType::ROTATE_TO]=static_cast<motionCommandHandle>(&MotionExecutor::rotateTo);
     motionHandles[MotionCommand::MotionType::MOVE_ARC]=static_cast<motionCommandHandle>(&MotionExecutor::moveArc);
     motionHandles[MotionCommand::MotionType::STOP]=static_cast<motionCommandHandle>(&MotionExecutor::stopMovement);
+    motionHandles[MotionCommand::MotionType::SET_SPEED]=static_cast<motionCommandHandle>(&MotionExecutor::setSpeed);
 }
 
 void MotionExecutor::processMotionCommand(Command* command){
@@ -61,11 +62,12 @@ void MotionExecutor::stop(){
 void MotionExecutor::main(){
     shouldStop=false;
     debug("Started main thread execution");
-    while (true){
-        if (shouldStop){
+    while (!shouldStop){
+        /*if (shouldStop){
             driver.stop();
             break;
         }
+        */
 
         /*Dobavim sledecu komandu*/
         MotionCommand* newCommand=getNextMotionCommand();
@@ -73,23 +75,16 @@ void MotionExecutor::main(){
             debug("Newer command received, sending error to old");
             sendResponseFromCommand(currentMotionCommand,ERROR);
         }
+        //        if (newCommand!=NULL)
+        //            currentMotionCommand=newCommand;
 
-        try{
-            /*Sad bi trebalo tu komandu odraditi*/
-            if (newCommand!=NULL){
-                (this->*motionHandles[newCommand->getMotionType()])(newCommand);
-            }
-        }catch(...){
-            error("***** Error in UART communication! ****");
-            return;
+        /*Sad bi trebalo tu komandu odraditi*/
+        if (newCommand!=NULL){
+            (this->*motionHandles[newCommand->getMotionType()])(newCommand);
         }
 
-        try{
+        /*refresh of driver, verovatno?*/
         driver.refreshData();
-        }catch(...){
-            error("***** Error in UART communication! ****");
-            return;
-        }
         MotionState newState;
         newState.Direction=driver.getDirection();
         newState.Orientation=driver.getOrientation();
@@ -108,57 +103,65 @@ void MotionExecutor::main(){
         }
 
         if (lastState!=newState){
-           stateLock.lock();
-           lastState=newState;
-           stateLock.unlock();
-           MotionNotification* motionNotification=new MotionNotification(newState);
-           sendNotification(motionNotification);
+            stateLock.lock();
+            lastState=newState;
+            stateLock.unlock();
+            MotionNotification* motionNotification=new MotionNotification(newState);
+            sendNotification(motionNotification);
         }
 
-        boost::this_thread::sleep(boost::posix_time::milliseconds(5));
+        boost::this_thread::sleep(boost::posix_time::milliseconds(10));
+
     }
     debug("Stopping execution");
 }
 
 void MotionExecutor::moveToPosition(MotionCommand* _motionCommand){
     MoveToPosition* command=(MoveToPosition*)_motionCommand;
-    debug("Moving to position");
+    debug("Moving to position: ");
     currentMotionCommand=_motionCommand;
     driver.moveToPosition(command->getPosition(),command->getDirection());
 }
 
 void MotionExecutor::moveForward(MotionCommand* _motionCommand){
     MoveForward* command=(MoveForward*)_motionCommand;
-    debug("Moving forward");
+    debug("Moving forward: ");
     currentMotionCommand=_motionCommand;
     driver.moveStraight(command->getDistance());
 }
 
 void MotionExecutor::rotateFor(MotionCommand* _motionCommand){
     RotateFor* command=(RotateFor*)_motionCommand;
-    debug("Rotating for");
+    debug("Rotating for: ");
     currentMotionCommand=_motionCommand;
     driver.rotateFor(command->getRelativeAngle());
 }
 
 void MotionExecutor::rotateTo(MotionCommand* _motionCommand){
     RotateTo* command=(RotateTo*)_motionCommand;
-    debug("Rotating to");
+    debug("Rotating to: ");
     currentMotionCommand=_motionCommand;
     driver.rotateFor(command->getAbsoluteAngle());
 }
 
 void MotionExecutor::moveArc(MotionCommand* _motionCommand){
     MoveArc* command=(MoveArc*)_motionCommand;
-    debug("Moving arc");
+    debug("Moving arc: ");
     currentMotionCommand=_motionCommand;
     driver.moveArc(command->getCenter(),command->getAngle(),command->getDirection());
 }
 
 void MotionExecutor::stopMovement(MotionCommand* _motionCommand){
-    debug("Stopping movemen");
+    debug("Stopping movement: ");
     currentMotionCommand=_motionCommand;
     driver.stop();
+}
+
+void MotionExecutor::setSpeed(MotionCommand* _motionCommand){
+    SetSpeedMotion* command = (SetSpeedMotion*) _motionCommand;
+    debug("SetSpeed");
+    currentMotionCommand = _motionCommand;
+    driver.setSpeed(command->getSpeed());
 }
 
 }

@@ -52,6 +52,7 @@ private:
     void rotateTo(MotionCommand* _motionCommand);
     void moveArc(MotionCommand* _motionCommand);
     void stopMovement(MotionCommand* _motionCommand);
+    void setSpeed(MotionCommand* _motionCommand);
 };
 
 }

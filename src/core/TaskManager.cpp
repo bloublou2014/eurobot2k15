@@ -72,7 +72,7 @@ void TaskManager::startAllTasks(){
 void TaskManager::stopAllTasks(){
     debug("Stopping all tasks");
     for (TaskQueue::ordered_iterator it=orderedTasks.ordered_begin();it!=orderedTasks.ordered_end();++it){
-        it->task->stop();
+        it->task->killTask();
     }
 
     debug("Joingn on all tasks");
@@ -109,13 +109,10 @@ void TaskManager::dispatchMessage(){
         switch (message->getMessageType()) {
         case NOTIFICATION:
             {
-                Notification* notification=(Notification*)message;
                 lock_guard<mutex> lock(heapModification);
                 for (TaskQueue::ordered_iterator it=orderedTasks.ordered_begin();it!=orderedTasks.ordered_end();++it){
-                    if (it->task->isSubscribed(notification))
-                        it->task->passMessage(notification->clone());
+                    it->task->passMessage(message);
                 }
-                delete message;
             }
         break;
         case COMMAND_RESPONSE:

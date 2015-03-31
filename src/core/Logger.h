@@ -10,10 +10,10 @@ namespace robot{
 class Logger{
 public:
 protected:
-    virtual void debug(const string& message)=0;
-    virtual void info(const string& message)=0;
-    virtual void warning(const string& message)=0;
-    virtual void error(const string& message)=0;
+    void debug(const string& message);
+    void info(const string& message);
+    void warning(const string& message);
+    void error(const string& message);
 private:
 };
 

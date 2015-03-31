@@ -6,19 +6,13 @@ TaskState AbstractTask::getTaskState() const{
     return state;
 }
 
-int AbstractTask::sendCommand(Command* command, responseCallback success, responseCallback error, responseCallback progress){
+bool AbstractTask::sendCommand(Command* command, responseCallback success, responseCallback error, responseCallback progress){
     command->setSource(getName());
 
     //if (state==RUNNING){
         return CommandSource::sendCommand(command, success, error, progress);
    // }else
         //return false;
-
-    return -1;
-}
-
-bool AbstractTask::isSubscribed(Notification* message){
-    return NotificationHandler::isSubscribed(message);
 }
 
 bool AbstractTask::passMessage(Message* message){
@@ -29,25 +23,21 @@ bool AbstractTask::passMessage(Message* message){
     return true;
 }
 
-bool AbstractTask::runTask(){
+void AbstractTask::startTask(){
     queueLock.lock();
     instructionQueue.push(Instruction(Instruction::Type::START));
     queueLock.unlock();
     queueNotEmpty.notify_one();
-    //TODO: mora se uraditi provera da li se task moze pokrenuti
-    return true;
 }
 
-bool AbstractTask::pauseTask(){
+void AbstractTask::stopTask(){
     queueLock.lock();
     instructionQueue.push(Instruction(Instruction::Type::STOP));
     queueLock.unlock();
     queueNotEmpty.notify_one();
-    //TODO: isto se mora proveriti uslov za pauziranje
-    return true;
 }
 
-void AbstractTask::stop(){
+void AbstractTask::killTask(){
     debug("Killing task");
     queueLock.lock();
     instructionQueue.push(Instruction(Instruction::Type::KILL));
@@ -66,7 +56,6 @@ AbstractTask::Instruction AbstractTask::fetchInstruction(){
 }
 
 void AbstractTask::setState(TaskState _state){
-    //TODO: ovde treba updateovati heap u manageru
     state=_state;
 }
 
@@ -77,53 +66,43 @@ void AbstractTask::registerManager(AbstractMessageHandler* manager){
 
 void AbstractTask::main(){
     setState(SUSPENDED);
-    try{
-        onCreate();
+    initScript();
 
-        while(!taskKilled){
-            Instruction instr=fetchInstruction();
-            if (instr.type==Instruction::Type::MESSAGE){
-                Message* message=instr.message;
-                switch (message->getMessageType()) {
-                case NOTIFICATION:
-                    processNotification((Notification*)message);
-                    break;
-                case COMMAND_RESPONSE:
-                    processCommandResponse((CommandResponse*)message);
-                    break;
-                default:
-                    break;
-                }
-            }else{
-                switch(instr.type){
-                case Instruction::Type::START:
-                    setState(RUNNING);
-                    onRun();
-                    break;
-                case Instruction::Type::STOP:
-                    setState(READY);
-                    onPause();
-                    break;
-                case Instruction::Type::KILL:
-                    setState(IMPOSSIBLE);
-                    taskKilled=true;
-                    onDestroy();
-                    break;
-                default:
-                    break;
-                }
+    while(!taskKilled){
+        Instruction instr=fetchInstruction();
+        if (instr.type==Instruction::Type::MESSAGE){
+            Message* message=instr.message;
+            switch (message->getMessageType()) {
+            case NOTIFICATION:
+                processNotification((Notification*)message);
+                break;
+            case COMMAND_RESPONSE:
+                processCommandResponse((CommandResponse*)message);
+                break;
+            default:
+                break;
+            }
+        }else{
+            switch(instr.type){
+            case Instruction::Type::START:
+                setState(RUNNING);
+                //ovde treba updateovati heap u manageru
+                startScript();
+                break;
+            case Instruction::Type::STOP:
+                setState(READY);
+                //ovde treba updateovati heap u manageru
+                stopScript();
+                break;
+            case Instruction::Type::KILL:
+                setState(IMPOSSIBLE);
+                //ovde treba updateovati heap u manageru
+                taskKilled=true;
+                break;
+            default:
+                break;
             }
         }
-    }
-    catch(TaskExecutionException& e){
-        setState(IMPOSSIBLE);
-        error("Task error. Reason:");
-        error(e.what());
-    }
-    catch(std::exception& e){
-        setState(IMPOSSIBLE);
-        error("Error! something bad has happend.");
-        error(e.what());
     }
 }
 
