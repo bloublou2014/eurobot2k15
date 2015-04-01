@@ -35,7 +35,6 @@ void LiftRightExecutor::mapping(){
     doorF(OPEN_GET);
     handF(OPEN);
     liftF(LEVEL0);
-
 }
 
 bool LiftRightExecutor::GetObjectFunction(){

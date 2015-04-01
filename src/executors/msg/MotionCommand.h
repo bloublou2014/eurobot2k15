@@ -5,9 +5,11 @@
 #include "messages/CommandResponse.h"
 
 #include "drivers/motion/MotionDriver.h"
-
 using namespace robot;
 using geometry::Point2D;
+using namespace v8;
+using javascript::JavaScriptMessageProvider;
+using javascript::ObjectWrap;
 
 namespace motion {
 
@@ -33,8 +35,14 @@ private:
     MotionType type;
 };
 
-class MoveForward : public MotionCommand{
+class MoveForward : public MotionCommand{ // done
 public:
+    static string NAME;
+    /* Exports object */
+    static void Init(Handle<Object> exports);
+    /* Constructor */
+    static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
+
     MoveForward(int _distance):MotionCommand(MOVE_STRAIGHT), distance(_distance){}
     MoveForward(const MoveForward& mf):MotionCommand(mf),distance(mf.distance){}
     int getDistance() const{return distance;}
@@ -46,8 +54,14 @@ private:
     int distance;
 };
 
-class RotateFor : public MotionCommand{
+class RotateFor : public MotionCommand{ // done
 public:
+    static string NAME;
+    /* Exports object */
+    static void Init(Handle<Object> exports);
+    /* Constructor */
+    static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
+
     RotateFor(int _relativeAngle):MotionCommand(ROTATE_FOR), relativeAngle(_relativeAngle){}
     RotateFor(const RotateFor& rf):MotionCommand(rf),relativeAngle(rf.relativeAngle){}
     int getRelativeAngle() const{return relativeAngle;}
@@ -59,8 +73,15 @@ private:
     int relativeAngle;
 };
 
-class RotateTo : public MotionCommand{
+class RotateTo : public MotionCommand{ // done
 public:
+    static string NAME;
+    /* Exports object */
+    static void Init(Handle<Object> exports);
+    /* Constructor */
+    static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+
     RotateTo(int _absoluteAngle):MotionCommand(ROTATE_TO), absoluteAngle(_absoluteAngle){}
     RotateTo(const RotateTo& rt):MotionCommand(rt),absoluteAngle(rt.absoluteAngle){}
     int getAbsoluteAngle() const{return absoluteAngle;}
@@ -72,8 +93,15 @@ private:
     int absoluteAngle;
 };
 
-class MoveToPosition : public MotionCommand{
+class MoveToPosition : public MotionCommand{ // done
 public:
+    static string NAME;
+    /* Exports object */
+    static void Init(Handle<Object> exports);
+    /* Constructor */
+    static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+
     MoveToPosition(Point2D _position, MotionDriver::MovingDirection _direction= MotionDriver::MovingDirection::FORWARD):
         MotionCommand(MOVE_TO_POSITION), position(_position),direction(_direction){}
     MoveToPosition(const MoveToPosition& mtp):MotionCommand(mtp),position(mtp.position),direction(mtp.direction){}
@@ -88,8 +116,15 @@ private:
     MotionDriver::MovingDirection direction;
 };
 
-class MoveArc : public MotionCommand{
+class MoveArc : public MotionCommand{ // done
 public:
+    static string NAME;
+    /* Exports object */
+    static void Init(Handle<Object> exports);
+    /* Constructor */
+    static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+
     MoveArc(Point2D _center, int _angle, MotionDriver::MovingDirection _direction= MotionDriver::MovingDirection::FORWARD):
         MotionCommand(MOVE_ARC),center(_center), angle(_angle), direction(_direction){}
     MoveArc(const MoveArc& ma):MotionCommand(ma),center(ma.center),angle(ma.angle),direction(ma.direction){}
@@ -106,8 +141,14 @@ private:
     MotionDriver::MovingDirection direction;
 };
 
-class StopMovement : public MotionCommand{
+class StopMovement : public MotionCommand{ //done
 public:
+    static string NAME;
+    /* Exports object */
+    static void Init(Handle<Object> exports);
+    /* Constructor */
+    static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
+
     StopMovement():MotionCommand(STOP){}
     StopMovement(const StopMovement& sm):MotionCommand(sm){}
 
@@ -117,8 +158,14 @@ public:
 private:
 };
 
-class SetSpeedMotion : public MotionCommand{
+class SetSpeedMotion : public MotionCommand{ // done
 public:
+    static string NAME;
+    /* Exports object */
+    static void Init(Handle<Object> exports);
+    /* Constructor */
+    static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
+
     SetSpeedMotion(int _speed):MotionCommand(SET_SPEED), speed(_speed){}
     SetSpeedMotion(const SetSpeedMotion& rt):MotionCommand(rt),speed(rt.speed){}
     int getSpeed() const{return speed;}
@@ -132,6 +179,12 @@ private:
 
 class MotionCommandResponse : public CommandResponse{
 public:
+    static string NAME;
+    /* Exports object */
+    static void Init(Handle<Object> exports);
+    /* Constructor */
+    static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
+
     MotionCommandResponse(const string& to, const string& from, ResponseStatus _status=SUCCESS):CommandResponse("MotionCommandResponse", to,from,_status) {}
     MotionCommandResponse(const MotionCommandResponse& mcr):CommandResponse(mcr){}
 

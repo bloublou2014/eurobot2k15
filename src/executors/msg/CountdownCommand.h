@@ -34,7 +34,6 @@ public:
     Message* clone(){
         return new CountdownCommand(*this);
     }
-
 private:
     int value;
 };

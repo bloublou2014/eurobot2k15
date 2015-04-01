@@ -3,9 +3,18 @@
 namespace javascript{
 
 void JavaScriptMessageFactory::init(Handle<Object> exportObject){
+    //Dummy test commands
     robot::CountdownCommand::Init(exportObject);
     robot::TimePassedNotification::Init(exportObject);
     robot::CommandResponse::Init(exportObject);
+    //Motion commands
+    motion::MoveForward::Init(exportObject);
+    motion::RotateFor::Init(exportObject);
+    motion::RotateTo::Init(exportObject);
+    motion::MoveToPosition::Init(exportObject);
+    motion::MoveArc::Init(exportObject);
+    motion::StopMovement::Init(exportObject);
+    motion::SetSpeedMotion::Init(exportObject);
 }
 
 Handle<Function> JavaScriptMessageFactory::getObjectConstructor(const string& name){

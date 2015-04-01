@@ -1,7 +1,11 @@
 #ifndef _COMMANDRESPONSE_H
 #define _COMMANDRESPONSE_H
 
+
 #include "Command.h"
+#include "utils/javascript/JavaScriptMessageProvider.h"
+#include "utils/javascript/ObjectWrap.h"
+#include "utils/javascript/ObjectWrap.h"
 #include "utils/javascript/JavaScriptMessageProvider.h"
 #include "utils/javascript/ObjectWrap.h"
 

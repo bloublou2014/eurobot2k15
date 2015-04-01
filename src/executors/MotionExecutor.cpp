@@ -81,6 +81,7 @@ void MotionExecutor::main(){
             }
         }catch(...){
             error("***** Error in UART communication! ****");
+            sendResponseFromCommand(currentMotionCommand,ERROR);
             return;
         }
 

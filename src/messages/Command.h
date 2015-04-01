@@ -2,6 +2,9 @@
 #define _COMMAND_H
 
 #include "Message.h"
+#include "utils/javascript/ObjectWrap.h"
+#include "utils/javascript/JavaScriptMessageProvider.h"
+#include "utils/javascript/ObjectWrap.h"
 
 namespace robot {
 

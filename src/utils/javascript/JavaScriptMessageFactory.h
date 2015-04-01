@@ -8,6 +8,7 @@
 
 #include "executors/msg/CountdownCommand.h"
 #include "executors/msg/TimePassed.h"
+#include "executors/msg/MotionCommand.h"
 #include "messages/CommandResponse.h"
 
 using std::string;
