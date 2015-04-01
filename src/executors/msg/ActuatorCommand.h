@@ -58,15 +58,19 @@ public:
         ExecutorName[POPCORN] = "PopcornExecutor";
         ExecutorName[FLAP] = "FlapExecutor";
     }
+
+    ActuatorCommandType(const ActuatorCommandType& obj):ExecutorName(obj.ExecutorName){}
 };
 
 class ActuatorCommand: public ActuatorCommandType, public Command  {
 public:
     static string NAME;
     ActuatorCommand(): Command(ActuatorCommand::NAME, "tome"){}
+    ActuatorCommand(ActuatorType _type, Executors _executor): Command(ActuatorCommand::NAME, (ExecutorName[_executor]) )/* "LiftLeftExecutor")*/ ,type(_type){}
+    ActuatorCommand(const ActuatorCommand& obj):ActuatorCommandType(obj),Command(obj),type(obj.type){}
 
-    ActuatorCommand(ActuatorType _type, Executors _executor): Command(ActuatorCommand::NAME, (ExecutorName[_executor]) )/* "LiftLeftExecutor")*/ ,type(_type){
-
+    Message* clone(){
+        return new ActuatorCommand(*this);
     }
 
     ActuatorType getActuatorType() const {return type;}
@@ -78,12 +82,10 @@ private:
 class SetStartConfig: public ActuatorCommand{
 public:
     SetStartConfig(Executors _executor): ActuatorCommand(SET_START_CONFIG,_executor){}
-
 };
 
 class GetObject: public ActuatorCommand{
 public:
-
     GetObject(Executors _executor): ActuatorCommand(GET_OBJECT,_executor){}
 };
 
@@ -130,7 +132,7 @@ public:
 class SetSpeed: public ActuatorCommand {
 public:
     SetSpeed(Executors _executor, ServoType _servo,  int _value): ActuatorCommand(SET_SPEED, _executor), value(_value){}
-
+    SetSpeed(const SetSpeed& obj):ActuatorCommand(obj), value(obj.value), servo(obj.servo){}
     int getSpeed(){return value;}
 private:
     int value;
@@ -140,7 +142,7 @@ private:
 class SetPosition: public ActuatorCommand {
 public:
     SetPosition(Executors _executor, ServoType _servo,  int _value): ActuatorCommand(SET_POSITION, _executor), value(_value), servo(_servo){}
-
+    SetPosition(const SetPosition& obj):ActuatorCommand(obj),value(obj.value),servo(obj.servo){}
     int getPosition(){return value;}
 private:
     int value;

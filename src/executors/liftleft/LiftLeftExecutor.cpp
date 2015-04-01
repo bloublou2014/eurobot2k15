@@ -129,8 +129,8 @@ bool LiftLeftExecutor::UnloadObjectFunction(){
 
 void LiftLeftExecutor::processGetLiftState(Command* _command){
     debug("processGetLiftState");
-    LiftNotification* notify = new LiftNotification(lastState);
-    sendNotification(notify);
+   // LiftNotification* notify = new LiftNotification(lastState);
+    //sendNotification(notify);
 
 
     GetLiftStateResponse* resp = new GetLiftStateResponse(_command->getSource(), _command->getDestination(),lastState);

@@ -8,7 +8,7 @@
 #ifndef KRETACKIDRAJVER_H_
 #define KRETACKIDRAJVER_H_
 
-//#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/thread/thread.hpp>
 
 #include "utils/uart/UartConnection.h"
@@ -24,7 +24,6 @@ public:
 	enum RobotType {MALI = 1, VELIKI = -1};
 
 private:
-    boost::mutex *io_mutex;
 	geometry::Point2D position;
 	int orientation;
 	State state;
@@ -36,7 +35,7 @@ private:
 
 	int convertToInt(char msb, char lsb);
 	
-
+	boost::mutex *io_mutex;
 
 public:
 	MotionDriver(geometry::Point2D initPosition=geometry::Point2D(), RobotType robotType=VELIKI, int initOrientation=0, int initSpeed=100);

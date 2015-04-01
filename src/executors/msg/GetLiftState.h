@@ -16,6 +16,11 @@ public:
     static string NAME;
 
     GetLiftState(string _liftExecutorName):Command(NAME, _liftExecutorName){}
+    GetLiftState(const GetLiftState& obj):Command(obj){}
+
+    Message* clone(){
+        return new GetLiftState(*this);
+    }
 
 private:
 };
@@ -23,10 +28,13 @@ private:
 class GetLiftStateResponse : public CommandResponse{
 public:
     GetLiftStateResponse(const string& _to, const string &_from, LiftState _state, ResponseStatus _status=SUCCESS ):
-        CommandResponse(_to,_from,_status), state(_state){}
-
+        CommandResponse("LiftExecutorGetLiftState",_to,_from,_status), state(_state){}
+    GetLiftStateResponse(const GetLiftStateResponse& obj):CommandResponse(obj), state(obj.state){}
     LiftState getState()const{return state;}
 
+    Message* clone(){
+        return new GetLiftStateResponse(*this);
+    }
 private:
     LiftState state;
 };

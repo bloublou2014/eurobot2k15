@@ -56,7 +56,7 @@ void ServoTask::handleMilanNotifications(Notification* testNotification){
 
 
 
-            GetObject* cmd5 = new GetObject(ActuatorCommand::Executors::LIFT_LEFT);
+            //GetObject* cmd5 = new GetObject(ActuatorCommand::Executors::LIFT_LEFT);
             //            sendCommand(cmd5, (responseCallback)&ServoTask::rotateFor, (responseCallback)&ServoTask::error);
         }
         // boost::this_thread::sleep(boost::posix_time::milliseconds(1000));

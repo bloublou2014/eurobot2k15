@@ -129,8 +129,8 @@ bool LiftRightExecutor::GetObjectFunction(){
         stateLock.unlock();
 
 
-        LiftNotification* liftNotification1 = new LiftNotification(lastState);
-        sendNotification(liftNotification1);
+//        LiftNotification* liftNotification1 = new LiftNotification(lastState);
+//        sendNotification(liftNotification1);
 
         return true;
     }else{
@@ -160,8 +160,8 @@ bool LiftRightExecutor::UnloadObjectFunction(){
 
 void LiftRightExecutor::processGetLiftState(Command* _command){
     debug("processing get lift  state");
-    LiftNotification* liftNotification  = new LiftNotification(lastState);
-    sendNotification(liftNotification);
+    //LiftNotification* liftNotification  = new LiftNotification(lastState);
+    //sendNotification(liftNotification);
     GetLiftStateResponse* resp = new GetLiftStateResponse(_command->getSource(), _command->getDestination(),lastState);
     resp->setId(_command->getId());
     sendResponse(resp);

@@ -17,15 +17,24 @@ public:
     static string NAME;
 
     GetMotionState():Command("GetMotionState", "MotionExecutor"){}
+    GetMotionState(const GetMotionState& cmd):Command(cmd){}
+
+    Message* clone(){
+        return new GetMotionState(*this);
+    }
 private:
 };
 
 class GetMotionStateResponse : public CommandResponse{
 public:
     GetMotionStateResponse(const string& to, const string& from, MotionState _state, ResponseStatus _status=SUCCESS):
-        CommandResponse(to,from,_status), state(_state) {}
-
+        CommandResponse("GetMotionStateResponse",to,from,_status), state(_state) {}
+    GetMotionStateResponse(const GetMotionStateResponse& cr):CommandResponse(cr),state(cr.state){}
     MotionState getState() const{return state;}
+
+    Message* clone(){
+        return new GetMotionStateResponse(*this);
+    }
 private:
     MotionState state;
 };

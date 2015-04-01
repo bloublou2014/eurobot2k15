@@ -14,7 +14,7 @@ void ExampleExecutor::init(){
 }
 
 void  ExampleExecutor::processProbeEvent(Notification* notification){
-    cout<<"Received notification! Yea! from: "<<notification->getSource()<<endl;
+     cout<<"Received notification! Yea! from: "<<notification->getSource()<<endl;
 }
 
 void ExampleExecutor::countToN(Command* command){
@@ -33,23 +33,23 @@ void ExampleExecutor::main(){
     cout<<"Started thread"<<endl;
     while (true){
         if (shouldStop) break;
-        boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
-        counter++;
-        if ((counter%5)==0){
-            TimePassedNotification* timePassed=new TimePassedNotification(getName(),5);
-            sendNotification(timePassed);
+       boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
+       counter++;
+       if ((counter%5)==0){
+           TimePassedNotification* timePassed=new TimePassedNotification(getName(),counter);
+           sendNotification(timePassed);
         }
-        Command* newCommand=ExecuteNextCommand();
-        if (newCommand!=NULL && currentCommand!=NULL){
-            debug("Newer command received, sending error to old");
-            sendResponseFromCommand(currentCommand,ERROR);
-        }
-        if (newCommand!=NULL)
+       Command* newCommand=ExecuteNextCommand();
+       if (newCommand!=NULL && currentCommand!=NULL){
+           debug("Newer command received, sending error to old");
+           sendResponseFromCommand(currentCommand,ERROR);
+       }
+       if (newCommand!=NULL)
             currentCommand=newCommand;
-        if (currentCommand!=NULL){
-            debug("Sending progress update");
-            sendResponseFromCommand(currentCommand,PROGRESS_UPDATE);
-        }
+       if (currentCommand!=NULL){
+           debug("Sending progress update");
+           sendResponseFromCommand(currentCommand,PROGRESS_UPDATE);
+       }
     }
     debug("Stopping execution");
 }

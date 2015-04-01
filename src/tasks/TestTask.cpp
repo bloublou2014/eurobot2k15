@@ -6,25 +6,26 @@ void TestTask::init(){
 
 }
 
-void TestTask::initScript(){
+void TestTask::onCreate(){
     this->subscribe("milan",(notificationCallback)&TestTask::handleMilanNotifications);
     this->subscribe("MotionNotification",(notificationCallback)&TestTask::handleMotionNotification);
 }
 
-void TestTask::startScript(){
+void TestTask::onRun(){
     debug("Script is started");
 }
 
-void TestTask::stopScript(){
+void TestTask::onPause(){
 
 }
 
+void TestTask::onDestroy(){
 
+}
 
 //MotionNotification
 
 void TestTask::handleMotionNotification(Notification* resp){
-    debug("notification");
     GetMotionStateResponse* stateResponse=(GetMotionStateResponse*)resp;
     MotionState state= stateResponse->getState();
 
