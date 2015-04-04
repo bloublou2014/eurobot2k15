@@ -53,6 +53,19 @@ private:
     int id;
 };
 
+class DescribedResponse: public CommandResponse{
+    static char* NAME;
+    /* Exports object */
+    static void Init(Handle<Object> exports);
+    static void DescriptionGetter(Local<String> property, const PropertyCallbackInfo<Value>& info);
+
+    DescribedResponse(const string& to, const string& from, ResponseStatus& response, const string& _description)
+        :CommandResponse(NAME,to,from,response),description(_description){}
+    DescribedResponse(const DescribedResponse& obj):CommandResponse(obj),description(obj.description){}
+private:
+    string description;
+};
+
 }
 
 #endif //_COMMANDRESPONSE_H

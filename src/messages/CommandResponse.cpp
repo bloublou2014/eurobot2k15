@@ -55,4 +55,27 @@ string CommandResponse::getName() const{
     return name;
 }
 
+char* DescribedResponse::NAME="DescribedResponse";
+void DescribedResponse::Init(Handle<Object> exports){
+    Isolate* isolate = Isolate::GetCurrent();
+    // Prepare constructor template
+    Local<FunctionTemplate> tpl = FunctionTemplate::New(isolate, New);
+    tpl->SetClassName(String::NewFromUtf8(isolate, NAME));
+    tpl->InstanceTemplate()->SetAccessor(String::NewFromUtf8(isolate, "description"),
+                            DescriptionGetter);
+    tpl->InstanceTemplate()->SetInternalFieldCount(1);
+
+    JavaScriptMessageProvider* provider=static_cast<JavaScriptMessageProvider*>(isolate->GetData(0));
+    provider->setObjectConstructor(NAME,tpl->GetFunction());
+    provider->setObjectTemplate(NAME, tpl->InstanceTemplate());
+    exports->Set(String::NewFromUtf8(isolate, NAME), tpl->GetFunction());
+}
+
+void DescribedResponse::DescriptionGetter(Local<String> property, const PropertyCallbackInfo<Value>& info){
+//    Local<Object> self = info.Holder();
+//    DescribedResponse* command=Unwrap<DescribedResponse>(self);
+//    string value = command->passedTime;
+//    info.GetReturnValue().Set()
+}
+
 }

@@ -9,9 +9,13 @@
 #include "AbstractExecutor.h"
 #include "msg/TimePassed.h"
 #include "msg/CountdownCommand.h"
+#include "msg/MotionNotification.h"
+#include "msg/GetMotionState.h"
 
 using boost::mutex;
 using std::queue;
+using motion::MotionNotification;
+using motion::GetMotionStateResponse;
 
 namespace robot{
 

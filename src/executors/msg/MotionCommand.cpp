@@ -220,6 +220,37 @@ void MoveArc::New(const v8::FunctionCallbackInfo<v8::Value>& args) {
     }
 }
 
+string SetPosition::NAME="SetPosition";
+void SetPosition::Init(Handle<Object> exports){
+    Isolate* isolate = Isolate::GetCurrent();
+    // Prepare constructor template
+    Local<FunctionTemplate> tpl = FunctionTemplate::New(isolate, New);
+    tpl->SetClassName(String::NewFromUtf8(isolate, SetPosition::NAME.c_str()));
+    tpl->InstanceTemplate()->SetInternalFieldCount(1);
+
+    JavaScriptMessageProvider* provider=static_cast<JavaScriptMessageProvider*>(isolate->GetData(0));
+    provider->setObjectConstructor(SetPosition::NAME, tpl->GetFunction());
+    provider->setObjectTemplate(SetPosition::NAME, tpl->InstanceTemplate());
+    exports->Set(String::NewFromUtf8(isolate, SetPosition::NAME.c_str()), tpl->GetFunction());
+}
+
+void SetPosition::New(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    Isolate* isolate = Isolate::GetCurrent();
+    HandleScope scope(isolate);
+
+    if (args.IsConstructCall()) {
+        // Invoked as constructor: `new MyObject(...)`
+        int x = args[0]->IsUndefined() ? 0 : args[0]->NumberValue();
+        int y = args[1]->IsUndefined() ? 0 : args[1]->NumberValue();
+        int orientation = args[2]->IsUndefined() ? 0 : args[2]->NumberValue();
+        SetPosition* obj = new SetPosition(x,y,orientation);
+        obj->Wrap(args.This());
+        args.GetReturnValue().Set(args.This());
+    } else {
+        isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Cannot call constructor as function."));
+    }
+}
+
 } // end namespace
 
 

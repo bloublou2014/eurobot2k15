@@ -267,7 +267,6 @@ void JavaScriptTask::onDestroy(){
     delete messageFactory;
 }
 
-
 void JavaScriptTask::commandSuccess(CommandResponse* resp){
     if (commandResponseCallbacks.find(resp->getId())==commandResponseCallbacks.end()) return;
     callJavascriptCommandCallback(commandResponseCallbacks[resp->getId()]->success,resp);

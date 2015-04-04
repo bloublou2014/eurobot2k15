@@ -35,6 +35,8 @@ void CommandSource::processCommandResponse(CommandResponse* response){
                 return;
             }
         }
+    }else{
+        std::cout<<"Invalid ID"<<endl;
     }
 }
 

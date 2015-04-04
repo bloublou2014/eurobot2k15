@@ -19,6 +19,8 @@ void MotionExecutor::init(){
     motionHandles[MotionCommand::MotionType::ROTATE_TO]=static_cast<motionCommandHandle>(&MotionExecutor::rotateTo);
     motionHandles[MotionCommand::MotionType::MOVE_ARC]=static_cast<motionCommandHandle>(&MotionExecutor::moveArc);
     motionHandles[MotionCommand::MotionType::STOP]=static_cast<motionCommandHandle>(&MotionExecutor::stopMovement);
+    motionHandles[MotionCommand::MotionType::SET_SPEED]=static_cast<motionCommandHandle>(&MotionExecutor::setSpeed);
+    motionHandles[MotionCommand::MotionType::SET_POSITION]=static_cast<motionCommandHandle>(&MotionExecutor::setPosition);
 }
 
 void MotionExecutor::processMotionCommand(Command* command){
@@ -109,11 +111,18 @@ void MotionExecutor::main(){
         }
 
         if (lastState!=newState){
-           stateLock.lock();
-           lastState=newState;
-           stateLock.unlock();
-           MotionNotification* motionNotification=new MotionNotification(newState);
-           sendNotification(motionNotification);
+            if(currentMotionCommand!=NULL){
+                GetMotionStateResponse* progress=new GetMotionStateResponse(currentMotionCommand->getSource(),
+                         currentMotionCommand->getDestination(),newState,ResponseStatus::PROGRESS_UPDATE);
+                progress->setId(currentMotionCommand->getId());
+                sendResponse(progress);
+            }
+
+            stateLock.lock();
+            lastState=newState;
+            stateLock.unlock();
+            MotionNotification* motionNotification=new MotionNotification(newState);
+            sendNotification(motionNotification);
         }
 
         boost::this_thread::sleep(boost::posix_time::milliseconds(5));
@@ -155,6 +164,27 @@ void MotionExecutor::moveArc(MotionCommand* _motionCommand){
     currentMotionCommand=_motionCommand;
     driver.moveArc(command->getCenter(),command->getAngle(),command->getDirection());
 }
+
+void MotionExecutor::setSpeed(MotionCommand* _motionCommand){
+    debug("Setting speed");
+
+    SetSpeedMotion* command=(SetSpeedMotion*)_motionCommand;
+    currentMotionCommand=_motionCommand;
+    std::stringstream ss;
+    ss<<"Set speed @ "<<command->getSpeed();
+    debug(ss.str());
+    driver.setSpeed(command->getSpeed());
+}
+
+void MotionExecutor::setPosition(MotionCommand* _motionCommand){
+    debug("Setting position");
+    SetPosition* command=(SetPosition*)_motionCommand;
+    currentMotionCommand=_motionCommand;
+    std::stringstream ss;
+    debug(ss.str());
+    driver.setPositionAndOrientation(command->getPoint(),command->getOrientation());
+}
+
 
 void MotionExecutor::stopMovement(MotionCommand* _motionCommand){
     debug("Stopping movemen");

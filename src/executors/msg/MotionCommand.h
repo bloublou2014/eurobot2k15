@@ -22,6 +22,7 @@ public:
                      MOVE_TO_POSITION,
                      MOVE_ARC,
                      SET_SPEED,
+                     SET_POSITION,
                      STOP};
 
     MotionCommand(MotionType _type):Command("MotionCommand", "MotionExecutor"),type(_type){}
@@ -166,15 +167,37 @@ public:
     /* Constructor */
     static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-    SetSpeedMotion(int _speed):MotionCommand(SET_SPEED), speed(_speed){}
+    SetSpeedMotion(unsigned char _speed):MotionCommand(SET_SPEED), speed(_speed){}
     SetSpeedMotion(const SetSpeedMotion& rt):MotionCommand(rt),speed(rt.speed){}
-    int getSpeed() const{return speed;}
+    unsigned char getSpeed() const{return speed;}
 
     Message* clone(){
         return new SetSpeedMotion(*this);
     }
 private:
-    int speed;
+    unsigned char speed;
+};
+
+class SetPosition : public MotionCommand{ // done
+public:
+    static string NAME;
+    /* Exports object */
+    static void Init(Handle<Object> exports);
+    /* Constructor */
+    static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+    SetPosition(int x, int y, int _orientation=0):
+        MotionCommand(SET_POSITION),point(x,y),orientation(_orientation){}
+    SetPosition(const SetPosition& ss):MotionCommand(ss),point(ss.point),orientation(ss.orientation){}
+    Point2D getPoint() const{return point;}
+    int getOrientation() const {return orientation;}
+
+    Message* clone(){
+        return new SetPosition(*this);
+    }
+private:
+    Point2D point;
+    int orientation;
 };
 
 class MotionCommandResponse : public CommandResponse{

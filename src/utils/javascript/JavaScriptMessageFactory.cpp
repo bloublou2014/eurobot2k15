@@ -15,6 +15,12 @@ void JavaScriptMessageFactory::init(Handle<Object> exportObject){
     motion::MoveArc::Init(exportObject);
     motion::StopMovement::Init(exportObject);
     motion::SetSpeedMotion::Init(exportObject);
+    motion::SetPosition::Init(exportObject);
+    //Motion notification
+    motion::MotionNotification::Init(exportObject);
+    //Get motion state
+    motion::GetMotionState::Init(exportObject);
+    motion::GetMotionStateResponse::Init(exportObject);
 }
 
 Handle<Function> JavaScriptMessageFactory::getObjectConstructor(const string& name){
@@ -39,8 +45,10 @@ Handle<Object> JavaScriptMessageFactory::wrapObject(const string& name, Isolate*
         ObjectWrap* oldObject=ObjectWrap::Unwrap<ObjectWrap>(result);
         ObjectWrap* tp=static_cast<ObjectWrap*>(ptr);
         tp->Wrap(result, isolate);
-        oldObject->deleteRef();
-        delete oldObject;
+        if (oldObject){
+            oldObject->deleteRef();
+            delete oldObject;
+        }
         return scope.Escape(result);
     }
     Local<Object> empty;
