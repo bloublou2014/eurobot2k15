@@ -63,6 +63,10 @@ void MotionExecutor::stop(){
 void MotionExecutor::main(){
     shouldStop=false;
     debug("Started main thread execution");
+
+    int commandCycle=0;
+    int maxCommandCycle=5;
+
     while (true){
         if (shouldStop){
             driver.stop();
@@ -76,10 +80,12 @@ void MotionExecutor::main(){
             sendResponseFromCommand(currentMotionCommand,ERROR);
         }
 
+        //Process received command
         try{
             /*Sad bi trebalo tu komandu odraditi*/
             if (newCommand!=NULL){
                 (this->*motionHandles[newCommand->getMotionType()])(newCommand);
+                commandCycle=0;
             }
         }catch(...){
             error("***** Error in UART communication! ****");
@@ -87,8 +93,9 @@ void MotionExecutor::main(){
             return;
         }
 
+        //Update data from dirver
         try{
-        driver.refreshData();
+            driver.refreshData();
         }catch(...){
             error("***** Error in UART communication! ****");
             return;
@@ -100,16 +107,37 @@ void MotionExecutor::main(){
         newState.Speed=driver.getSpeed();
         newState.State=driver.getState();
 
+        //If robot finished movement, report it back
         if (newState.State==MotionDriver::State::IDLE && currentMotionCommand!=NULL){
+            debug("Robot finished executing command");
             sendResponseFromCommand(currentMotionCommand);
             currentMotionCommand=NULL;
         }
 
+        //If driver throws an error, report it
         if ((newState.State==MotionDriver::State::ERROR || newState.State==MotionDriver::State::STUCK) && currentMotionCommand!=NULL){
             sendResponseFromCommand(currentMotionCommand, ERROR);
+            error("Robot stuck, canceling movement");
             currentMotionCommand=NULL;
         }
 
+        //Detect stuck state
+        if(commandCycle>maxCommandCycle){
+            if (isStuck(previousState, newState)){
+                driver.stop();
+                error("Robot stuck, stopping movement!");
+                sendResponseFromCommand(currentMotionCommand, ERROR);
+                currentMotionCommand=NULL;
+            }
+            commandCycle=0;
+            //Update variable for stuck detection
+            previousState=newState;
+            maxCommandCycle=6*(100.0f/newState.Speed);  //tako sam probao i radi
+        }else{
+            commandCycle++;
+        }
+
+        //Send progress if there is a command for it
         if (lastState!=newState){
             if(currentMotionCommand!=NULL){
                 GetMotionStateResponse* progress=new GetMotionStateResponse(currentMotionCommand->getSource(),
@@ -190,6 +218,24 @@ void MotionExecutor::stopMovement(MotionCommand* _motionCommand){
     debug("Stopping movemen");
     currentMotionCommand=_motionCommand;
     driver.stop();
+}
+
+double MotionExecutor::distance(double xFirst, double yFirst, double xSecond, double ySecond){
+    double x=xFirst-xSecond;
+    double y=yFirst-ySecond;
+    return sqrt(pow(x,2)+pow(y,2));
+}
+
+bool MotionExecutor::isStuck(MotionState& oldState, MotionState& newState){
+    if (oldState.State==MotionDriver::State::MOVING && newState.State==MotionDriver::State::MOVING){
+        if (distance(oldState.Position.getX(), oldState.Position.getY(),newState.Position.getX(), newState.Position.getY())<2.0)
+            return true;
+    }
+    if (oldState.State==MotionDriver::State::ROTATING && newState.State==MotionDriver::State::ROTATING){
+        if (abs(oldState.Orientation-newState.Orientation)<1)
+            return true;
+    }
+    return false;
 }
 
 }

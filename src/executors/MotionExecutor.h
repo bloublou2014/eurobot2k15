@@ -6,6 +6,7 @@
 #include <boost/thread/thread.hpp>
 #include <queue>
 #include <map>
+#include <cmath>
 
 #include "AbstractExecutor.h"
 #include "executors/msg/MotionCommand.h"
@@ -54,6 +55,11 @@ private:
     void stopMovement(MotionCommand* _motionCommand);
     void setSpeed(MotionCommand* _motionCommand);
     void setPosition(MotionCommand* _motionCommand);
+
+    //Used for stuck detection
+    MotionState previousState;
+    static bool isStuck(MotionState& oldState, MotionState& newState);
+    static double distance(double xFirst, double yFirst, double xSecond, double ySecond);
 };
 
 }

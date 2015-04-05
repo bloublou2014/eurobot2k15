@@ -30,7 +30,7 @@ int main(int argn, char** argc){
 
 //    TestTask t1("task1");
 //    TestTask t2("task2");
-    JavaScriptTask js1("js1","task1.js");
+    JavaScriptTask js1("js1","movement.js");
     ExampleExecutor e1;
 
 #ifdef CROSS_COMPILING
