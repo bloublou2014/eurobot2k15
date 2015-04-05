@@ -16,7 +16,8 @@ enum MessageType{
     NOTIFICATION,
     COMMAND,
     COMMAND_RESPONSE,
-    STOP_MESSAGE
+    STOP_MESSAGE,
+    START_MESSAGE
 };
 
 class Message : public javascript::ObjectWrap{

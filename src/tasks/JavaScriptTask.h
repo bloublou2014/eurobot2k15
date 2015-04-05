@@ -54,6 +54,7 @@ protected:
     static Handle<ObjectTemplate> createLogTemplate(Isolate* isolate);
     static Handle<ObjectTemplate> createCommandTemplate(Isolate* isolate);
     static Handle<ObjectTemplate> createNotificationTemplate(Isolate* isolate);
+    static Handle<ObjectTemplate> createManagerTemplate(Isolate* isolate);
 
     Handle<Object> createObjectFromTemplate(ObjectTemplateBuilder builder, Persistent<ObjectTemplate>& objTemplate, void* internalField);
 
@@ -69,6 +70,8 @@ protected:
     //Notification callback functions
     static void subscripbeCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
     static void unsubscribeCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
+    //Manager callbacks
+    static void setStateCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
 
     void createGlobalObjects();
     Handle<Script> compileScript(Handle<String> scriptSource);
@@ -87,6 +90,7 @@ private:
     Persistent<ObjectTemplate> loggerTemplate;
     Persistent<ObjectTemplate> commandTemplate;
     Persistent<ObjectTemplate> notificationTemplate;
+    Persistent<ObjectTemplate> managerTemplate;
 
     Isolate* isolate;
     Persistent<Context> taskContext;

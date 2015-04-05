@@ -7,6 +7,6 @@
 #    PARENT_SCOPE
 #)
 
-add_library(messages Message.cpp Notification.cpp Command.cpp CommandResponse.cpp StopMessage.cpp)
+add_library(messages Message.cpp Notification.cpp Command.cpp CommandResponse.cpp StopMessage.cpp StartMatchMessage.cpp)
 
 target_link_libraries(messages core)

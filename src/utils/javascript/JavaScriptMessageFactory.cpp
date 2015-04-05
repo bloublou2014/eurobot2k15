@@ -51,6 +51,7 @@ Handle<Object> JavaScriptMessageFactory::wrapObject(const string& name, Isolate*
         }
         return scope.Escape(result);
     }
+    std::cout<<"Unknown message"<<endl;
     Local<Object> empty;
     return scope.Escape(empty);
 }

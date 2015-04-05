@@ -9,6 +9,11 @@
 #include <boost/thread/condition_variable.hpp>
 #include <boost/thread/locks.hpp>
 #include <boost/thread/lock_guard.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "core/Node.h"
 #include "tasks/AbstractTask.h"
@@ -16,6 +21,7 @@
 #include "messages/Message.h"
 #include "core/AbstractMessageHandler.h"
 #include "messages/StopMessage.h"
+#include "core/TaskManagerInterface.h"
 
 using boost::heap::fibonacci_heap;
 using std::map;
@@ -33,6 +39,7 @@ namespace robot{
 struct RankedTask{
     AbstractTask* task;
     int rank;
+    int estimatedRunningTime;
 };
 
 //Used in priority queue for comparing task priority
@@ -51,12 +58,12 @@ struct compareRankedTask{
 
 typedef fibonacci_heap<RankedTask, boost::heap::compare<compareRankedTask>> TaskQueue;
 
-class TaskManager: public Node, public AbstractMessageHandler{
+class TaskManager: public Node, public TaskManagerInterface{
 public:
-    TaskManager():Node("TaskManager"),shouldStop(false){}
+    TaskManager(const string& strategy, const string &directory);
 
     //task calls this to update its state
-    void updateStatus(AbstractTask* taskSender, TaskState newState);
+    bool updateStatus(const string& taskName, TaskState newState);
     //TODO: must implement world class first
     bool getWorldProperty() const;
     bool setWorldProperty();
@@ -66,12 +73,14 @@ public:
     bool receiveMessage(Message* message);
 
     //Loading tasks
-    bool addTask(AbstractTask* newTask);
+    bool addTask(RankedTask &rankedTask);
 
     //caled before thread is created to initialize values, or load configuration
     void init();
     //called to stop
     void stop();
+
+    void runBestTask();
 
     void setExecutorManager(AbstractMessageHandler* _executorManager);
 protected:
@@ -82,6 +91,8 @@ protected:
     //when new message is received in queue it needs to be forwarded to tasks
     void dispatchMessage();
 private:
+    void createTask(const string& name, const string& filename, int rank, int duration, const string &directory);
+
     typedef pair<RankedTask,TaskQueue::handle_type> CachedRankedTask;
     mutex heapModification;
     map<string,CachedRankedTask> taskCache;
@@ -93,6 +104,7 @@ private:
     queue<Message*> messageQueue;
 
     bool shouldStop;
+    bool matchStarted;
     AbstractMessageHandler* executorManager;
 };
 

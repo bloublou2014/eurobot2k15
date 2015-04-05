@@ -11,6 +11,7 @@
 #include "core/NotificationHandler.h"
 #include "core/NotificationSource.h"
 #include "core/AbstractMessageHandler.h"
+#include "core/TaskManagerInterface.h"
 
 using std::queue;
 using boost::mutex;
@@ -19,18 +20,9 @@ using boost::unique_lock;
 
 namespace robot{
 
-//lowest prority states have lowest values
-enum TaskState{
-    IMPOSSIBLE=0,
-    FINISHED=1,
-    SUSPENDED=2,
-    READY=3,
-    RUNNING=4
-};
-
 class AbstractTask: public Node, protected CommandSource, protected NotificationHandler, public NotificationSource{
 public:
-    AbstractTask(const string& name):Node(name), taskKilled(false){}
+    AbstractTask(const string& name):Node(name), taskKilled(false), state(TaskState::SUSPENDED){}
 
     bool passMessage(Message* message);
     bool isSubscribed(Notification *message);
@@ -45,8 +37,9 @@ public:
 
     //ovo bi trebao samo manager da poziva. Potrebno je atomicno promenuti stanje i updateovati heap.
     void setState(TaskState _state);
+    void updateState(TaskState _state);
 
-    void registerManager(AbstractMessageHandler* manager);
+    void registerManager(TaskManagerInterface* manager);
 protected:
     struct Instruction{
         enum Type{
@@ -86,7 +79,7 @@ private:
     TaskState state;
     bool taskKilled;
 
-    AbstractMessageHandler* handler;
+    TaskManagerInterface* handler;
 };
 
 struct TaskExecutionException: public std::exception{

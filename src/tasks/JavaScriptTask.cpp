@@ -80,9 +80,11 @@ void JavaScriptTask::createGlobalObjects(){
     Local<Object> logger=createObjectFromTemplate(static_cast<ObjectTemplateBuilder>(&createLogTemplate), loggerTemplate, this);
     Local<Object> notification=createObjectFromTemplate(static_cast<ObjectTemplateBuilder>(&createNotificationTemplate), notificationTemplate, this);
     Local<Object> command=createObjectFromTemplate(static_cast<ObjectTemplateBuilder>(&createCommandTemplate), commandTemplate, this);
+    Local<Object> manager=createObjectFromTemplate(static_cast<ObjectTemplateBuilder>(&createManagerTemplate), managerTemplate, this);
     global->Set(v8::String::NewFromUtf8(getIsolate(), "Logger"), logger);
     global->Set(v8::String::NewFromUtf8(getIsolate(), "Notification"), notification);
     global->Set(v8::String::NewFromUtf8(getIsolate(), "Command"), command);
+    global->Set(v8::String::NewFromUtf8(getIsolate(), "Manager"), manager);
 
     messageFactory->init(global);
 }
@@ -151,6 +153,18 @@ Handle<ObjectTemplate> JavaScriptTask::createCommandTemplate(Isolate* isolate){
 
     result->Set(String::NewFromUtf8(isolate, "send", String::kInternalizedString),
                 FunctionTemplate::New(isolate, sendCommandCallback));
+
+    return scope.Escape(result);
+}
+
+Handle<ObjectTemplate> JavaScriptTask::createManagerTemplate(Isolate* isolate){
+    EscapableHandleScope scope(isolate);
+
+    Local<ObjectTemplate> result=ObjectTemplate::New(isolate);
+    result->SetInternalFieldCount(1);
+
+    result->Set(String::NewFromUtf8(isolate, "updateState", String::kInternalizedString),
+                FunctionTemplate::New(isolate, setStateCallback));
 
     return scope.Escape(result);
 }
@@ -248,18 +262,11 @@ bool JavaScriptTask::executeGlobalFunction(Handle<Function> function, const int 
 }
 
 void JavaScriptTask::onRun(){
-    debug("onRun");
-
-    Local<Function> start=Local<Function>::New(getIsolate(), runCallback);
-    executeGlobalFunction(start,0,NULL);
+    callJavascriptCommandCallback(runCallback,NULL);
 }
 
 void JavaScriptTask::onPause(){
-    debug("onPause");
-
-    Local<Function> stop=Local<Function>::New(getIsolate(), pauseCallback);
-    executeGlobalFunction(stop,0,NULL);
-}
+    callJavascriptCommandCallback(pauseCallback,NULL);}
 
 void JavaScriptTask::onDestroy(){
     debug("Exiting isolate");
@@ -297,11 +304,16 @@ void JavaScriptTask::callJavascriptCommandCallback(Persistent<Function>& functio
 
     TryCatch tryCatch;
 
-    Handle<Object> obj=messageFactory->wrapObject(resp->getName(),getIsolate(),resp);
-
-    int argc=1;
+    Handle<Object> obj;
+    int argc;
     Handle<Value> argv[argc];
-    argv[0]=obj;
+    if (resp!=NULL){
+        obj=messageFactory->wrapObject(resp->getName(),getIsolate(),resp);
+        argc=1;
+        argv[0]=obj;
+    }else{
+        argc=0;
+    }
 
     Local<Function> func=Local<Function>::New(getIsolate(), function);
     Handle<Value> result= func->Call(context->Global(),argc, argv);
@@ -424,7 +436,41 @@ void JavaScriptTask::sendCommandCallback(const v8::FunctionCallbackInfo<v8::Valu
         id=currentVM->sendCommand(command,(responseCallback)&JavaScriptTask::commandSuccess,
                                   (responseCallback)&JavaScriptTask::commandError);
     }
-    currentVM->commandResponseCallbacks[id]=callback;
+
+    if (id==-1){
+        currentVM->callJavascriptCommandCallback(callback->error, NULL);
+    }else{
+        currentVM->commandResponseCallbacks[id]=callback;
+    }
+}
+
+//Manager functinos
+void JavaScriptTask::setStateCallback(const v8::FunctionCallbackInfo<v8::Value>& args){
+    Isolate* isolate=Isolate::GetCurrent();
+    JavaScriptTask* task=UnwrapJavascriptTask(args.Holder());
+    if (args.Length() < 1){
+        isolate->ThrowException(v8::String::NewFromUtf8(isolate, "State not specified!"));
+    }
+    HandleScope scope(args.GetIsolate());
+    Handle<Value> arg = args[0];
+    if (arg->IsString()){
+        String::Utf8Value value(arg);
+        string state(*value);
+        if (state=="Ready"){
+            task->updateState(TaskState::READY);
+            return;
+        }else if(state=="Finished"){
+            task->updateState(TaskState::FINISHED);
+            return;
+        }else if(state=="Impossible"){
+            task->updateState(TaskState::IMPOSSIBLE);
+            return;
+        }else if(state=="Suspended"){
+            task->updateState(TaskState::SUSPENDED);
+            return;
+        }
+    }
+    isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Unrecognized state"));
 }
 
 }

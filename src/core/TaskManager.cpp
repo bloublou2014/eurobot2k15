@@ -2,26 +2,49 @@
 
 namespace robot{
 
-void TaskManager::updateStatus(AbstractTask* taskSender, TaskState newState){
-    debug("Updating status");
-    {
-        lock_guard<mutex> lock(heapModification);
-        taskCache.at(taskSender->getName()).first.task->setState(newState);
-        orderedTasks.increase(taskCache.at(taskSender->getName()).second);
-    }
+TaskManager::TaskManager(const string& strategy, const string& directory):Node("TaskManager"),shouldStop(false),matchStarted(false){
+    using namespace boost::property_tree;
+    ptree pt;
+
+    read_xml(strategy, pt);
+    BOOST_FOREACH(ptree::value_type &v, pt.get_child("tasks"))
+            createTask(v.second.get<std::string>("name"),v.second.get<std::string>("filename"),v.second.get<int>("rank"),v.second.get<int>("time"), directory);
 }
 
-bool TaskManager::addTask(AbstractTask* newTask){
-    newTask->registerManager(this);
-    RankedTask rankedTask;
-    rankedTask.task=newTask;
-    rankedTask.rank=10;
+void TaskManager::createTask(const string& name, const string& filename, int rank, int duration, const string& directory){
+    debug(directory+boost::filesystem::path::preferred_separator+filename);
+    JavaScriptTask* task=new JavaScriptTask(name,directory+boost::filesystem::path::preferred_separator+filename);
+    task->registerManager(this);
+    RankedTask rt;
+    rt.task=task;
+    rt.rank=rank;
+    rt.estimatedRunningTime=duration;
+    addTask(rt);
+}
+
+bool TaskManager::updateStatus(const string &taskName, TaskState newState){
+    debug("Updating status");
+    //If state is changing from running to something else notify the task to pause
+    AbstractTask* task=taskCache.at(taskName).first.task;
+    if (task->getTaskState()==TaskState::RUNNING && newState!=TaskState::RUNNING){
+        task->pauseTask();
+    }
+    //Rearange tasks
     {
         lock_guard<mutex> lock(heapModification);
-        TaskQueue::handle_type handle=orderedTasks.push(rankedTask);
-        CachedRankedTask cachedTask(rankedTask,handle);
-        taskCache[newTask->getName()]=cachedTask;
+        task->setState(newState);
+        orderedTasks.increase(taskCache.at(taskName).second);
     }
+
+    runBestTask();
+    return true;
+}
+
+bool TaskManager::addTask(RankedTask& rankedTask){
+    lock_guard<mutex> lock(heapModification);
+    TaskQueue::handle_type handle=orderedTasks.push(rankedTask);
+    CachedRankedTask cachedTask(rankedTask,handle);
+    taskCache[rankedTask.task->getName()]=cachedTask;
     return true;
 }
 
@@ -128,12 +151,41 @@ void TaskManager::dispatchMessage(){
                 }
             }
         break;
+        case START_MESSAGE:{
+            matchStarted=true;
+            runBestTask();
+        }
+        break;
         default:
             //Wrong message in queue
             error("Wrong message in queue");
         }
     }
     stopAllTasks();
+}
+
+void TaskManager::runBestTask(){
+    debug("Running best task");
+    if (!matchStarted) return;
+    AbstractTask* task;
+    {
+        //Get best task
+        lock_guard<mutex> lock(heapModification);
+        RankedTask bestTask= orderedTasks.top();
+        task=bestTask.task;
+        string taskName=task->getName();
+        //If best task is ready than start it
+        if (task->getTaskState()==TaskState::READY){
+            task->setState(TaskState::RUNNING);
+            orderedTasks.increase(taskCache.at(task->getName()).second);
+        }else{
+            //If it's not ready or is already running than don't start it
+            task=NULL;
+        }
+    }
+    if (task){
+        task->runTask();
+    }
 }
 
 }

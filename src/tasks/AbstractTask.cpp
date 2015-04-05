@@ -9,12 +9,10 @@ TaskState AbstractTask::getTaskState() const{
 int AbstractTask::sendCommand(Command* command, responseCallback success, responseCallback error, responseCallback progress){
     command->setSource(getName());
 
-    //if (state==RUNNING){
+    if (state==RUNNING){
         return CommandSource::sendCommand(command, success, error, progress);
-   // }else
-        //return false;
-
-    return -1;
+    }else
+        return -1;
 }
 
 bool AbstractTask::isSubscribed(Notification* message){
@@ -65,14 +63,18 @@ AbstractTask::Instruction AbstractTask::fetchInstruction(){
     return instr;
 }
 
+void AbstractTask::updateState(TaskState _state){
+    handler->updateStatus(getName(),_state);
+}
+
 void AbstractTask::setState(TaskState _state){
-    //TODO: ovde treba updateovati heap u manageru
     state=_state;
 }
 
-void AbstractTask::registerManager(AbstractMessageHandler* manager){
+void AbstractTask::registerManager(TaskManagerInterface *manager){
     CommandSource::setHandler(manager);
     NotificationSource::setHandler(manager);
+    handler=manager;
 }
 
 void AbstractTask::main(){
