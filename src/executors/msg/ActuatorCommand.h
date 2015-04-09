@@ -11,10 +11,6 @@ using namespace std;
 
 namespace executor{
 
-
-
-
-
 class ActuatorCommandType{
 public:
     enum Executors{LIFT_LEFT,
@@ -65,6 +61,11 @@ public:
 class ActuatorCommand: public ActuatorCommandType, public Command  {
 public:
     static string NAME;
+    /* Exports object */
+    static void Init(Handle<Object> exports);
+    /* Constructor */
+    static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
+
     ActuatorCommand(): Command(ActuatorCommand::NAME, "tome"){}
     ActuatorCommand(ActuatorType _type, Executors _executor): Command(ActuatorCommand::NAME, (ExecutorName[_executor]) )/* "LiftLeftExecutor")*/ ,type(_type){}
     ActuatorCommand(const ActuatorCommand& obj):ActuatorCommandType(obj),Command(obj),type(obj.type){}

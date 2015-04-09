@@ -2,7 +2,8 @@
 
 namespace robot{
 
-TaskManager::TaskManager(const string& strategy, const string& directory):Node("TaskManager"),shouldStop(false),matchStarted(false){
+TaskManager::TaskManager(const string& strategy, const string& directory):Node("TaskManager"),shouldStop(false),
+    matchStarted(false), currentlyRunningTask(NULL){
     using namespace boost::property_tree;
     ptree pt;
 
@@ -23,28 +24,29 @@ void TaskManager::createTask(const string& name, const string& filename, int ran
 }
 
 bool TaskManager::updateStatus(const string &taskName, TaskState newState){
-    debug("Updating status");
-    //If state is changing from running to something else notify the task to pause
-    AbstractTask* task=taskCache.at(taskName).first.task;
-    if (task->getTaskState()==TaskState::RUNNING && newState!=TaskState::RUNNING){
-        task->pauseTask();
+    std::stringstream ss;
+    ss<<"Updating status "<<taskName<<" State: "<<newState;
+    debug(ss.str());
+    boost::mutex::scoped_lock lock(tasksLock);
+    bool shouldUpdate=false;
+    // If running task is changing it's state from ready than a new task must be found
+    AbstractTask* task=availableTasks.at(taskName).task;
+    if (task->getTaskState()==TaskState::RUNNING && newState!=TaskState::READY){
+        shouldUpdate=true;
     }
-    //Rearange tasks
-    {
-        lock_guard<mutex> lock(heapModification);
-        task->setState(newState);
-        orderedTasks.increase(taskCache.at(taskName).second);
+    if (newState==TaskState::READY){
+        shouldUpdate=true;
     }
+    task->setState(newState);
 
-    runBestTask();
+    if (shouldUpdate){
+        runBestTask();
+    }
     return true;
 }
 
 bool TaskManager::addTask(RankedTask& rankedTask){
-    lock_guard<mutex> lock(heapModification);
-    TaskQueue::handle_type handle=orderedTasks.push(rankedTask);
-    CachedRankedTask cachedTask(rankedTask,handle);
-    taskCache[rankedTask.task->getName()]=cachedTask;
+    availableTasks[rankedTask.task->getName()]=rankedTask;
     return true;
 }
 
@@ -69,13 +71,13 @@ bool TaskManager::sendMessage(Message* message){
 bool TaskManager::receiveMessage(Message* message){
     //TODO: add pipes to quickly process message before sending to other manager
     executorManager->sendMessage(message);
-
     return true;
 }
 
 void TaskManager::init(){
-    for (TaskQueue::ordered_iterator it=orderedTasks.ordered_begin();it!=orderedTasks.ordered_end();++it){
-        it->task->init();
+    map<string, RankedTask>::iterator it=availableTasks.begin();
+    for (;it!=availableTasks.end();++it){
+        it->second.task->init();
     }
 }
 
@@ -87,20 +89,23 @@ void TaskManager::stop(){
 
 void TaskManager::startAllTasks(){
     debug("Starting all tasks");
-    for (TaskQueue::ordered_iterator it=orderedTasks.ordered_begin();it!=orderedTasks.ordered_end();++it){
-        it->task->start();
+    map<string, RankedTask>::iterator it=availableTasks.begin();
+    for (;it!=availableTasks.end();++it){
+        it->second.task->start();
     }
 }
 
 void TaskManager::stopAllTasks(){
     debug("Stopping all tasks");
-    for (TaskQueue::ordered_iterator it=orderedTasks.ordered_begin();it!=orderedTasks.ordered_end();++it){
-        it->task->stop();
+    map<string, RankedTask>::iterator it=availableTasks.begin();
+    for (;it!=availableTasks.end();++it){
+        it->second.task->stop();
     }
 
     debug("Joingn on all tasks");
-    for (TaskQueue::ordered_iterator it=orderedTasks.ordered_begin();it!=orderedTasks.ordered_end();++it){
-        it->task->join();
+    it=availableTasks.begin();
+    for (;it!=availableTasks.end();++it){
+        it->second.task->join();
     }
 }
 
@@ -133,10 +138,10 @@ void TaskManager::dispatchMessage(){
         case NOTIFICATION:
             {
                 Notification* notification=(Notification*)message;
-                lock_guard<mutex> lock(heapModification);
-                for (TaskQueue::ordered_iterator it=orderedTasks.ordered_begin();it!=orderedTasks.ordered_end();++it){
-                    if (it->task->isSubscribed(notification))
-                        it->task->passMessage(notification->clone());
+                map<string, RankedTask>::iterator it=availableTasks.begin();
+                for (;it!=availableTasks.end();++it){
+                    if (it->second.task->isSubscribed(notification))
+                        it->second.task->passMessage(notification->clone());
                 }
                 delete message;
             }
@@ -146,8 +151,7 @@ void TaskManager::dispatchMessage(){
                 CommandResponse* resp=(CommandResponse*)message;
                 string destination=resp->getDestination();
                 {
-                    lock_guard<mutex> lock(heapModification);
-                    taskCache.at(destination).first.task->passMessage(message);
+                    availableTasks.at(destination).task->passMessage(message);
                 }
             }
         break;
@@ -164,27 +168,39 @@ void TaskManager::dispatchMessage(){
     stopAllTasks();
 }
 
+bool TaskManager::larger(const RankedTask& t1, const RankedTask& t2){
+    return t1.rank>t2.rank;
+}
+
+//Finds the best task and runs it, if it is already running than it ignores it
 void TaskManager::runBestTask(){
     debug("Running best task");
     if (!matchStarted) return;
-    AbstractTask* task;
-    {
-        //Get best task
-        lock_guard<mutex> lock(heapModification);
-        RankedTask bestTask= orderedTasks.top();
-        task=bestTask.task;
-        string taskName=task->getName();
-        //If best task is ready than start it
-        if (task->getTaskState()==TaskState::READY){
-            task->setState(TaskState::RUNNING);
-            orderedTasks.increase(taskCache.at(task->getName()).second);
-        }else{
-            //If it's not ready or is already running than don't start it
-            task=NULL;
+    map<string, RankedTask>::iterator it=availableTasks.begin();
+    map<string, RankedTask>::iterator maxElement=availableTasks.end();
+    //Find the best ranked ready or running task
+    for (;it!=availableTasks.end();++it){
+        if (it->second.task->getTaskState()==TaskState::READY
+                || it->second.task->getTaskState()==TaskState::RUNNING){
+            if (maxElement!=availableTasks.end()){
+                if (larger(it->second, maxElement->second)){
+                    maxElement=it;
+                }
+            }else{
+                maxElement=it;
+            }
         }
     }
-    if (task){
-        task->runTask();
+
+    //Stop the running task and start the best task
+    if (maxElement!=availableTasks.end()){
+        if ((maxElement->second.task->getTaskState()!=TaskState::RUNNING)){
+            if (currentlyRunningTask!=NULL){
+                currentlyRunningTask->pauseTask();
+            }
+            currentlyRunningTask=maxElement->second.task;
+            currentlyRunningTask->runTask();
+        }
     }
 }
 

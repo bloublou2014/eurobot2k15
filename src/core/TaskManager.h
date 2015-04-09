@@ -5,6 +5,7 @@
 #include <map>
 #include <string>
 #include <queue>
+#include <algorithm>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
 #include <boost/thread/locks.hpp>
@@ -32,6 +33,7 @@ using boost::condition_variable;
 using boost::unique_lock;
 using boost::lock_guard;
 using std::pair;
+using std::max_element;
 
 namespace robot{
 
@@ -42,24 +44,10 @@ struct RankedTask{
     int estimatedRunningTime;
 };
 
-//Used in priority queue for comparing task priority
-struct compareRankedTask{
-    bool operator()(const RankedTask& t1, const RankedTask& t2)const{
-        TaskState state1=t1.task->getTaskState();
-        TaskState state2=t2.task->getTaskState();
-        if (state1!=state2){
-            return state1>state2;
-        }
-        else{
-            return t1.rank>t2.rank;
-        }
-    }
-};
-
-typedef fibonacci_heap<RankedTask, boost::heap::compare<compareRankedTask>> TaskQueue;
-
 class TaskManager: public Node, public TaskManagerInterface{
 public:
+    static bool larger(const RankedTask& t1, const RankedTask& t2);
+
     TaskManager(const string& strategy, const string &directory);
 
     //task calls this to update its state
@@ -93,11 +81,10 @@ protected:
 private:
     void createTask(const string& name, const string& filename, int rank, int duration, const string &directory);
 
-    typedef pair<RankedTask,TaskQueue::handle_type> CachedRankedTask;
-    mutex heapModification;
-    map<string,CachedRankedTask> taskCache;
-    TaskQueue orderedTasks;
-
+//    typedef pair<RankedTask,TaskQueue::handle_type> CachedRankedTask;
+    mutex tasksLock;
+    map<string, RankedTask> availableTasks;
+    AbstractTask* currentlyRunningTask;
     Message* popNextMessage();
     mutex messageQueueLock;
     condition_variable messageQueueNotEmpty;
