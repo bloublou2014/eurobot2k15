@@ -65,8 +65,8 @@ void ExecutorCommon::main(){
             (this->*actuatorHandles[newCommand->getActuatorType()])(newCommand); // do new command ( map static cast )
 
         }
-        brodcastNotification();
-        boost::this_thread::sleep(boost::posix_time::milliseconds(50));
+        //brodcastNotification();
+        boost::this_thread::sleep(boost::posix_time::milliseconds(10));
     }
 }
 
@@ -90,6 +90,10 @@ void ExecutorCommon::reloadConfig(ActuatorCommand* _command){
     debug("reload config with exec name: ");
     success = reload(&value, executorName);
     if (success){
+        sendResponseFromCommand(currentActuatorCommand, SUCCESS);
+        currentActuatorCommand = NULL;
+    }else{
+        sendResponseFromCommand(currentActuatorCommand, ERROR);
         currentActuatorCommand = NULL;
     }
 
@@ -101,7 +105,11 @@ void ExecutorCommon::getPopcorn(ActuatorCommand* _command){
     currentActuatorCommand = command ;
     success = GetPopcornFunction();
     if (success){
-        currentActuatorCommand  = NULL;
+        sendResponseFromCommand(currentActuatorCommand, SUCCESS);
+        currentActuatorCommand = NULL;
+    }else{
+        sendResponseFromCommand(currentActuatorCommand, ERROR);
+        currentActuatorCommand = NULL;
     }
 }
 
@@ -111,7 +119,11 @@ void ExecutorCommon::unloadPopcorn(ActuatorCommand* _command){
     currentActuatorCommand = command ;
     success = UnloadPopcornFunction();
     if (success){
-        currentActuatorCommand  = NULL;
+        sendResponseFromCommand(currentActuatorCommand, SUCCESS);
+        currentActuatorCommand = NULL;
+    }else{
+        sendResponseFromCommand(currentActuatorCommand, ERROR);
+        currentActuatorCommand = NULL;
     }
 }
 
@@ -121,6 +133,12 @@ void ExecutorCommon::kickRight(ActuatorCommand* _command){
     currentActuatorCommand = command;
     success = KickRightFunction();
     if (success){
+        debug("sendin success");
+        sendResponseFromCommand(currentActuatorCommand, SUCCESS);
+        currentActuatorCommand = NULL;
+    }else{
+        debug("sending error");
+        sendResponseFromCommand(currentActuatorCommand, ERROR);
         currentActuatorCommand = NULL;
     }
 }
@@ -131,6 +149,10 @@ void ExecutorCommon::kickLeft(ActuatorCommand* _command){
     currentActuatorCommand = command;
     success = KickLeftFunction();
     if (success){
+        sendResponseFromCommand(currentActuatorCommand, SUCCESS);
+        currentActuatorCommand = NULL;
+    }else{
+        sendResponseFromCommand(currentActuatorCommand, ERROR);
         currentActuatorCommand = NULL;
     }
 }
@@ -141,6 +163,10 @@ void ExecutorCommon::unKickRight(ActuatorCommand* _command){
     currentActuatorCommand = command;
     success = UnKickRightFunction();
     if (success){
+        sendResponseFromCommand(currentActuatorCommand, SUCCESS);
+        currentActuatorCommand = NULL;
+    }else{
+        sendResponseFromCommand(currentActuatorCommand, ERROR);
         currentActuatorCommand = NULL;
     }
 }
@@ -151,6 +177,10 @@ void ExecutorCommon::unKickLeft(ActuatorCommand* _command){
     currentActuatorCommand = command;
     success = UnKickLeftFunction();
     if (success){
+        sendResponseFromCommand(currentActuatorCommand, SUCCESS);
+        currentActuatorCommand = NULL;
+    }else{
+        sendResponseFromCommand(currentActuatorCommand, ERROR);
         currentActuatorCommand = NULL;
     }
 }
@@ -161,7 +191,11 @@ void ExecutorCommon::getObject(ActuatorCommand * _command){
     GetObject* command = (GetObject*) _command;
     currentActuatorCommand = command;
     success =  GetObjectFunction();
-    if (success) {
+    if (success){
+        sendResponseFromCommand(currentActuatorCommand, SUCCESS);
+        currentActuatorCommand = NULL;
+    }else{
+        sendResponseFromCommand(currentActuatorCommand, ERROR);
         currentActuatorCommand = NULL;
     }
 }
@@ -172,6 +206,10 @@ void ExecutorCommon::unloadObject(ActuatorCommand* _command){
     currentActuatorCommand = command;
     success = UnloadObjectFunction();
     if (success){
+        sendResponseFromCommand(currentActuatorCommand, ERROR);
+        currentActuatorCommand = NULL;
+    }else{
+        sendResponseFromCommand(currentActuatorCommand, ERROR);
         currentActuatorCommand = NULL;
     }
 }

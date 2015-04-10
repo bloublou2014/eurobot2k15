@@ -51,6 +51,18 @@ private:
         int some_time;
     };
 
+    struct TimeConfigLift{
+        int liftUp;
+        int liftDown;
+        int doorOpenClose;
+        int handOpenClose;
+    };
+
+    struct TimeConfigPopcorn{
+        int getPopcorn;
+        int unloadPopcorn;
+    };
+
     ptree pt;
 
 
@@ -59,20 +71,19 @@ protected:
         LieftLevelsConfig lift;
         DoorConfig door;
         HandConfig hand;
-        TimeConfig time;
+        TimeConfigLift time;
     };
 
     struct PopcornExecutorConfigs{
         OpenCloseConfig pipeRight;
         OpenCloseConfig backDoor;
         OpenCloseConfig pipeLeft;
-        TimeConfig time;
+        TimeConfigPopcorn time;
     };
 
     struct FlapExecutorConfigs{
         OpenCloseConfig flapRight;
         OpenCloseConfig flapLeft;
-        TimeConfig time;
     };
 
     struct ConfigValues{   // TODO UNION

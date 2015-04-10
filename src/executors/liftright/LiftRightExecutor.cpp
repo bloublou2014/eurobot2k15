@@ -30,34 +30,26 @@ void LiftRightExecutor::mapping(){
     door.setServoStatusSetAddress(char(14));
     door.setServoStatusReadAddress(char(15));
 
+    sensor.setSlaveAddress(char(4));
+    sensor.setScanAddress(char(1));
+
     reload(&value, executorName);
 
     doorF(OPEN_GET);
     handF(OPEN);
     liftF(LEVEL0);
+
 }
 
 bool LiftRightExecutor::GetObjectFunction(){
-    if (!lastState.Quantity ){
-        lastState.Aveable = false;
+    while(lastState.Quantity < 4){
+        while(!sensor.scanSensorStatus()) delayF(40);
 
-        /*
-        LiftNotification* liftNotification0 = new LiftNotification(lastState);
-        sendNotification(liftNotification0);
-
-        liftF(LEVEL0);     // pripremi se za hvatanje
-        handF(OPEN);
-        doorF(OPEN);
-        delayF();
-
-        while(!sensorF()) delayF(500);  // cekaj na senzor i onda pokreni hvatanje
-        handF(CLOSE);
-        liftF(LEVEL1);   // uhvati i digni
-        delayF();
-
-        doorF(CLOSE);    // zatvori door
-        delayF();
- */
+        if (!lastState.Quantity ){
+            stateLock.lock();
+            lastState.Aveable = false;
+            stateLock.unlock();
+            /*
         liftF(LEVEL0);
         handF(CLOSE);
 
@@ -70,44 +62,25 @@ bool LiftRightExecutor::GetObjectFunction(){
         handF(OPEN);
         delayF(value.LiftConfigs.time.some_time);
         liftF(LEVEL0);
+    */
 
-        lastState.Quantity = 1;
-        lastState.Aveable = true;
+            handF(CLOSE);
+            liftF(LEVEL2);
+            doorF(CLOSE_);
 
-        //LiftNotification* liftNotification1 = new LiftNotification(lastState);
-        //sendNotification(liftNotification1);
+            stateLock.lock();
+            lastState.Quantity++;
+            lastState.Aveable = true;
+            stateLock.unlock();
+            return true;
 
-        return true;
+        }else if(lastState.Quantity < 4){
+            stateLock.lock();
+            lastState.Aveable = false;
+            stateLock.unlock();
 
-    }else if(lastState.Quantity < 4){
-        stateLock.lock();
-        lastState.Aveable = false;
-        stateLock.unlock();
 
-        //LiftNotification* liftNotification0 = new LiftNotification(lastState);
-        //sendNotification(liftNotification0);
-        /*
-        liftF(LEVEL2);  // podesi visinu na mesto za stavljanje na drugi cunjic
-        delayF();
-
-        while(!sensorF()) delayF(500);
-        doorF(OPEN);
-        handF(OPEN);
-        delayF();
-
-        liftF(LEVEL0);
-        delayF();
-
-        handF(CLOSE);
-        delayF();
-
-        liftF(LEVEL2);
-        delayF(2000);
-
-        doorF(CLOSE);
-        delayF();
-*/
-
+            /*
         liftF(LEVEL0);
         handF(CLOSE);
 
@@ -120,22 +93,29 @@ bool LiftRightExecutor::GetObjectFunction(){
         handF(OPEN);
         delayF(value.LiftConfigs.time.some_time);
         liftF(LEVEL0);
+    */
+            doorF(OPEN_GET);
+            handF(OPEN);
+            liftF(LEVEL0);
+            handF(CLOSE);
+            delayF(value.LiftConfigs.time.handOpenClose);
+            liftF(LEVEL2);
+            doorF(CLOSE_);
 
 
-        stateLock.lock();
-        lastState.Quantity++;
-        lastState.Aveable = true;
-        stateLock.unlock();
+            stateLock.lock();
+            lastState.Quantity++;
+            lastState.Aveable = true;
+            stateLock.unlock();
 
 
-//        LiftNotification* liftNotification1 = new LiftNotification(lastState);
-//        sendNotification(liftNotification1);
 
-        return true;
-    }else{
-        error("NO MORE SPACE IN STORAGE");
-        sendResponseFromCommand(currentActuatorCommand, ERROR);
-        return false;
+            return true;
+        }else{
+            error("NO MORE SPACE IN STORAGE");
+            sendResponseFromCommand(currentActuatorCommand, ERROR);
+            return false;
+        }
     }
 }
 
@@ -146,8 +126,9 @@ bool LiftRightExecutor::UnloadObjectFunction(){
     // TODO notification
 
     doorF(OPEN_LEAVE);
-    handF(OPEN);
     liftF(LEVEL0);
+    handF(OPEN);
+
 
     stateLock.lock();
     lastState.Quantity = 0;

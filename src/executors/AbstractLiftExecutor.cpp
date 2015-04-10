@@ -174,19 +174,28 @@ bool AbstractLiftExecutor::liftF(LiftFunctiontype _option){
     switch(_option){
     case LEVEL0:{
         success = lift.rotateToPosition(value.LiftConfigs.lift.level0);
+        if (currentLevel > LEVEL0) delayF(value.LiftConfigs.time.liftDown);
+        else if(currentLevel < LEVEL0) delayF(value.LiftConfigs.time.liftUp);
+        currentLevel = LEVEL0;
         break;
     }
     case LEVEL1:{
         success =  lift.rotateToPosition(value.LiftConfigs.lift.level1);
+        if (currentLevel > LEVEL1) delayF(value.LiftConfigs.time.liftDown);
+        else if(currentLevel < LEVEL1) delayF(value.LiftConfigs.time.liftUp);
+        currentLevel = LEVEL1;
         break;
     }
     case LEVEL2:{
         success = lift.rotateToPosition(value.LiftConfigs.lift.level2);
+        if (currentLevel > LEVEL2) delayF(value.LiftConfigs.time.liftDown);
+        else if(currentLevel < LEVEL2) delayF(value.LiftConfigs.time.liftUp);
+        currentLevel = LEVEL2;
         break;
     }
     }
     //while(liftS()) delayF(10);
-    delayF(value.LiftConfigs.time.adjust_position);
+    //delayF(value.LiftConfigs.time.adjust_position);
     return success;
 }
 

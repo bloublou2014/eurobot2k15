@@ -23,37 +23,45 @@ void FlapExecutor::mapping(){
 
     reload(&value, executorName);
 
+    pipeRight.rotateToPosition(value.FlapConfigs.flapRight.close);
+    pipeLeft.rotateToPosition(value.FlapConfigs.flapLeft.close);
+
 }
 
 bool FlapExecutor::KickRightFunction(){
     debug("KickRight");
+    bool success;
 
-    pipeRight.rotateToPosition(value.FlapConfigs.flapRight.open);
+    success = pipeRight.rotateToPosition(value.FlapConfigs.flapRight.open);
 
-    return true;
+    return success;
 }
 
 bool FlapExecutor::KickLeftFunction(){
     debug("KickLeft");
+    bool success;
 
-    pipeLeft.rotateToPosition(value.FlapConfigs.flapLeft.open);
+    success = pipeLeft.rotateToPosition(value.FlapConfigs.flapLeft.open);
 
-    return true;
+    return success;
 }
 
 bool FlapExecutor::UnKickRightFunction(){
     debug("UnKickRight");
+    bool success;
 
-    pipeRight.rotateToPosition(value.FlapConfigs.flapRight.close);
+    success = pipeRight.rotateToPosition(value.FlapConfigs.flapRight.close);
 
-    return true;
+    return success;
 }
 
 bool FlapExecutor::UnKickLeftFunction(){
     debug("UnKickLeft");
-    pipeLeft.rotateToPosition(value.FlapConfigs.flapLeft.close);
+    bool success;
 
-    return true;
+    success = pipeLeft.rotateToPosition(value.FlapConfigs.flapLeft.close);
+
+    return success;
 }
 
 } // end namespace
