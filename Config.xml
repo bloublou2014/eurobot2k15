@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<LiftLeftExecutor>
+  <LieftLevelsConfig>
+    <level0>750</level0>
+    <level1>300</level1>
+    <level2>300</level2>
+  </LieftLevelsConfig>
+  <DoorConfig>
+    <openGetObject>900</openGetObject>
+    <openLeaveObject>900</openLeaveObject>
+    <close>780</close>
+  </DoorConfig>
+  <HandConfig>
+    <grab>580</grab>
+    <relese>480</relese>
+  </HandConfig>
+  <TimeConfig>
+    <liftUp>500</liftUp>
+    <liftDown>800</liftDown> 
+    <doorOpenClose>300</doorOpenClose>
+    <handOpenClose>300</handOpenClose>
+  </TimeConfig>
+</LiftLeftExecutor>
+
+<LiftCenterExecutor>
+  <DoorConfig>
+    <openGetObject>200</openGetObject>
+    <openLeaveObject>200</openLeaveObject>
+    <close>300</close>
+  </DoorConfig>
+  <HandConfig>
+    <grab>750</grab>
+    <relese>830</relese>
+  </HandConfig>
+</LiftCenterExecutor>
+
+<LiftRightExecutor>
+  <LieftLevelsConfig>
+    <level0>800</level0>
+    <level1>150</level1>
+    <level2>150</level2>
+  </LieftLevelsConfig>
+  <DoorConfig>
+    <openGetObject>200</openGetObject>
+    <openLeaveObject>0</openLeaveObject>
+    <close>270</close>
+  </DoorConfig>
+  <HandConfig>
+    <grab>750</grab>
+    <relese>830</relese>
+  </HandConfig>
+  <TimeConfig>
+    <liftUp>500</liftUp>
+    <liftDown>800</liftDown> 
+    <doorOpenClose>300</doorOpenClose>
+    <handOpenClose>300</handOpenClose>
+  </TimeConfig>
+</LiftRightExecutor>
+
+<PopcornExecutor>
+  <PipeLeftConfig>
+    <open>760</open>
+    <close>990</close>
+  </PipeLeftConfig>
+  <PipeRightConfig>
+    <open>270</open>
+    <close>50</close>
+  </PipeRightConfig>
+  <BackStorageConfig>
+    <open>470</open>
+    <close>760</close>
+  </BackStorageConfig>
+  <TimeConfig>
+    <getPopcorn>2000</getPopcorn>
+    <unloadPopcorn>2000</unloadPopcorn> 
+  </TimeConfig>
+</PopcornExecutor>
+
+<FlapExecutor>
+  <FlapLeftConfig>
+    <open>540</open>
+    <close>990</close>
+  </FlapLeftConfig>
+  <FlapRightConfig>
+    <open>520</open>
+    <close>50</close>
+  </FlapRightConfig>
+</FlapExecutor>
