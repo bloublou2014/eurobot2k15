@@ -58,7 +58,8 @@ public:
         MakeWeak();
     }
 
-protected:
+//protected:
+ public:  // tome test MILANE ISSUE :P nem pojam kako si ovo zamislio ali mi je pravilo problem, sad mislim da gresim sto radim warp na njemu  :/
     inline void Wrap(v8::Handle<v8::Object> handle) {
         assert(persistent().IsEmpty());
         assert(handle->InternalFieldCount() > 0);

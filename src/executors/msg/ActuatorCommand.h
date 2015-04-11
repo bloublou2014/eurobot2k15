@@ -6,8 +6,13 @@
 
 #include "drivers/actuators/Servos.h"
 
+//#include "utils/javascript/ObjectWrap.h"
+
 using namespace robot;
 using namespace std;
+using namespace v8;
+using javascript::JavaScriptMessageProvider;
+using javascript::ObjectWrap;
 
 namespace executor{
 
@@ -18,7 +23,8 @@ public:
                    LIFT_CENTER,
                    POPCORN,
                    FLAP,
-                   MOTION};
+                   MOTION,
+                  NULL_EXECUTOR};
 
     enum ServoType{ LIFT_SRVO,
                     DOOR_SERVO,
@@ -42,6 +48,7 @@ public:
                       SET_SPEED,
                       SET_POSITION,
                       RELOAD_CONFIG,
+                      NULL_ACTION
                      };
 
     typedef map<Executors, string> ExecutorsMap;
@@ -58,17 +65,13 @@ public:
     ActuatorCommandType(const ActuatorCommandType& obj):ExecutorName(obj.ExecutorName){}
 };
 
-class ActuatorCommand: public ActuatorCommandType, public Command  {
+class ActuatorCommand:public Command, public ActuatorCommandType{
 public:
     static string NAME;
-    /* Exports object */
-    static void Init(Handle<Object> exports);
-    /* Constructor */
-    static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
 
     ActuatorCommand(): Command(ActuatorCommand::NAME, "tome"){}
-    ActuatorCommand(ActuatorType _type, Executors _executor): Command(ActuatorCommand::NAME, (ExecutorName[_executor]) )/* "LiftLeftExecutor")*/ ,type(_type){}
-    ActuatorCommand(const ActuatorCommand& obj):ActuatorCommandType(obj),Command(obj),type(obj.type){}
+    ActuatorCommand(ActuatorType _type, Executors _executor): Command(ActuatorCommand::NAME, (ExecutorName[_executor]) ),type(_type),executors(_executor){}
+    ActuatorCommand(const ActuatorCommand& obj):Command(/*obj*/ ActuatorCommand::NAME, (ExecutorName[obj.executors]) ),type(obj.type), executors(obj.executors){}
 
     Message* clone(){
         return new ActuatorCommand(*this);
@@ -77,17 +80,29 @@ public:
     ActuatorType getActuatorType() const {return type;}
 private:
     ActuatorType type;
+    Executors executors;
+
 
 };
 
 class SetStartConfig: public ActuatorCommand{
 public:
+
     SetStartConfig(Executors _executor): ActuatorCommand(SET_START_CONFIG,_executor){}
+
 };
 
 class GetObject: public ActuatorCommand{
 public:
+    static string NAME;
+
+    //static void Init(Handle<Object> exports);
+    /* Constructor */
+    //static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
+
     GetObject(Executors _executor): ActuatorCommand(GET_OBJECT,_executor){}
+    //GetObject(GetObject& go):ActuatorCommand(go){}
+
 };
 
 class UnloadObject: public ActuatorCommand{
@@ -172,7 +187,33 @@ public:
     static Command* Flap(ActuatorType _actuator, ServoType _servo, int _value);
 };
 
-}
+class ActuatorCommandJS : public ActuatorCommandType { // PROGRESS
+public:
+    static string NAME;
+    /* Exports object */
+    static void Init(Handle<Object> exports);
+    /* Constructor */
+    static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+    ActuatorCommandJS(string _executor, string _action): executorString(_executor), actionString(_action){}
+    ActuatorCommandJS(const ActuatorCommandJS &acJS): executorString(acJS.executorString), actionString(acJS.actionString){}
+
+    //Message* clone(){
+    //    return new ActuatorCommandJS(*this);
+    //}
+private:
+
+    //Command* createCommand( Executors _executor, ActuatorType _actuator );
+    //void parse(string _executorString, string _actuatorString, Executors *_executor, ActuatorType _action ); // TODO
+    static Command* parseCreateCommand(string _executorString, string _actionString, bool *_success);
+
+    string executorString;
+    string actionString;
+    Executors executor;
+    ActuatorType action;
+};
+
+}// end namespace
 
 
 #endif // ABSTRACTACTUATORCOMMAND_H

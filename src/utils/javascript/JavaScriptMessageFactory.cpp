@@ -21,6 +21,8 @@ void JavaScriptMessageFactory::init(Handle<Object> exportObject){
     //Get motion state
     motion::GetMotionState::Init(exportObject);
     motion::GetMotionStateResponse::Init(exportObject);
+
+   executor::ActuatorCommandJS::Init(exportObject);
 }
 
 Handle<Function> JavaScriptMessageFactory::getObjectConstructor(const string& name){

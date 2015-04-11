@@ -12,6 +12,7 @@
 #include "executors/msg/MotionNotification.h"
 #include "executors/msg/GetMotionState.h"
 #include "messages/CommandResponse.h"
+#include "executors/msg/ActuatorCommand.h"
 
 using std::string;
 using std::map;
@@ -20,6 +21,8 @@ using namespace v8;
 using robot::CountdownCommand;
 using robot::TimePassedNotification;
 using robot::Notification;
+
+using executor::ActuatorCommandJS;
 
 namespace javascript{
 

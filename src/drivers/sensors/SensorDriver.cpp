@@ -26,15 +26,15 @@ SensorDriver::~SensorDriver(){
 }
 
 void SensorDriver::setSlaveAddress(unsigned char _slave_address){
-    this->slave_address = char(_slave_address);
+    this->slave_address = _slave_address;
 }
 
 void SensorDriver::setScanAddress(unsigned short _scan_address){
-    this->scan_address = char(_scan_address);
+    this->scan_address = _scan_address;
 }
 
 void SensorDriver::setEnemyPositionAddress(unsigned short _enemy_position_address){
-    this->enemy_position_address = char(_enemy_position_address);
+    this->enemy_position_address = _enemy_position_address;
 }
 
 void SensorDriver::setProximitySensore(bool _proxymity){

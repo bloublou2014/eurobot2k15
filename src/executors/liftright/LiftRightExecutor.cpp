@@ -6,8 +6,8 @@ string LiftRightExecutor::NAME = "LiftRightExecutor";
 
 void LiftRightExecutor::suscribe(){
     this->registerCommand(ActuatorCommand::NAME, static_cast<commandCallback>(&LiftRightExecutor::processActuatorCommand));
-    this->registerCommand(GetLiftState::NAME, static_cast<commandCallback>(&LiftRightExecutor::processGetLiftState));
-
+    //this->registerCommand(GetLiftState::NAME, static_cast<commandCallback>(&LiftRightExecutor::processGetLiftState));
+    // TODO zakomentarisano jer nije uradjeno preslikavanje u js
     lastState.Aveable = true;
     lastState.Quantity = 0;
     executorName = this->NAME;

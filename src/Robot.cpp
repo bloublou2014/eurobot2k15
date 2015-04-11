@@ -15,9 +15,12 @@
 #include "executors/popcorn/PopcornExecutor.h"
 #include "executors/flap/FlapExecutor.h"
 
+#include "tasks/PipeTask.h"
+
 using namespace std;
 using namespace robot;
 using namespace motion;
+using namespace executor;
 
 TaskManager* taskMgr;
 ExecutorManager* execMgr;
@@ -47,6 +50,9 @@ int main(int argn, char** argc){
 
     ExampleExecutor e1;
 
+    //PipeTask testTask("pipeTask");
+    //taskMgr->addTask(&testTask);
+
 #ifdef CROSS_COMPILING
     MotionExecutor motionExec;
     LiftCenterExecutor liftCenterExec;
@@ -64,11 +70,11 @@ int main(int argn, char** argc){
 
 #ifdef CROSS_COMPILING
     execMgr->addExecutor(&motionExec);
-    execMgr.addExecutor(&liftCenterExec);
-    execMgr.addExecutor(&liftRightExec);
-    execMgr.addExecutor(&liftLeftExec);
-    execMgr.addExecutor(&popcornExec);
-    execMgr.addExecutor(&flapExec);
+    execMgr->addExecutor(&liftCenterExec);
+    execMgr->addExecutor(&liftRightExec);
+    execMgr->addExecutor(&liftLeftExec);
+    execMgr->addExecutor(&popcornExec);
+    execMgr->addExecutor(&flapExec);
 #endif
 
     taskMgr->init();
