@@ -22,7 +22,7 @@ void JavaScriptMessageFactory::init(Handle<Object> exportObject){
     motion::GetMotionState::Init(exportObject);
     motion::GetMotionStateResponse::Init(exportObject);
 
-   executor::ActuatorCommandJS::Init(exportObject);
+    executor::ActuatorCommandJS::Init(exportObject);
 }
 
 Handle<Function> JavaScriptMessageFactory::getObjectConstructor(const string& name){
@@ -38,9 +38,12 @@ void JavaScriptMessageFactory::setObjectConstructor(const string& name, Handle<F
     registeredConstructors[name].Reset(isolate, newTemplate);
 }
 
+bool JavaScriptMessageFactory::hasObject(const string& objName) const{
+    return registeredObjectTemplates.find(objName)!=registeredObjectTemplates.end();
+}
+
 Handle<Object> JavaScriptMessageFactory::wrapObject(const string& name, Isolate* isolate, robot::Message* ptr){
     EscapableHandleScope scope(isolate);
-
     if (registeredObjectTemplates.find(name)!=registeredObjectTemplates.end()){
         Local<ObjectTemplate> tmpl= Local<ObjectTemplate>::New(isolate, registeredObjectTemplates[name]);
         Local<Object> result=tmpl->NewInstance();
@@ -53,7 +56,6 @@ Handle<Object> JavaScriptMessageFactory::wrapObject(const string& name, Isolate*
         }
         return scope.Escape(result);
     }
-    std::cout<<"Unknown message"<<endl;
     Local<Object> empty;
     return scope.Escape(empty);
 }

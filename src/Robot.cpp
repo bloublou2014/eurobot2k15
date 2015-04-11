@@ -53,6 +53,7 @@ int main(int argn, char** argc){
     //PipeTask testTask("pipeTask");
     //taskMgr->addTask(&testTask);
 
+#define CROSS_COMPILING
 #ifdef CROSS_COMPILING
     MotionExecutor motionExec;
     LiftCenterExecutor liftCenterExec;

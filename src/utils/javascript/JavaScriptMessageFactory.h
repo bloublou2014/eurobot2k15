@@ -36,6 +36,7 @@ public:
     Handle<Function> getObjectConstructor(const string& name);
     void setObjectConstructor(const string &name, Handle<Function> newTemplate);
 
+    bool hasObject(const string& objName) const;
     Handle<Object> wrapObject(const string& name, Isolate* isolate, robot::Message *ptr);
     void setObjectTemplate(const string& name, Handle<ObjectTemplate> tmpl);
 private:

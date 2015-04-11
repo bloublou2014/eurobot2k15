@@ -275,6 +275,7 @@ void JavaScriptTask::onDestroy(){
 }
 
 void JavaScriptTask::commandSuccess(CommandResponse* resp){
+    debug("Success received");
     if (commandResponseCallbacks.find(resp->getId())==commandResponseCallbacks.end()) return;
     callJavascriptCommandCallback(commandResponseCallbacks[resp->getId()]->success,resp);
     commandResponseCallbacks[resp->getId()]->success.Reset();
@@ -284,6 +285,7 @@ void JavaScriptTask::commandSuccess(CommandResponse* resp){
 }
 
 void JavaScriptTask::commandError(CommandResponse* resp){
+    debug("Error received");
     if (commandResponseCallbacks.find(resp->getId())==commandResponseCallbacks.end()) return;
     callJavascriptCommandCallback(commandResponseCallbacks[resp->getId()]->error,resp);
     commandResponseCallbacks[resp->getId()]->success.Reset();
@@ -305,16 +307,21 @@ void JavaScriptTask::callJavascriptCommandCallback(Persistent<Function>& functio
     TryCatch tryCatch;
 
     Handle<Object> obj;
-    int argc;
+    int argc=1;
     Handle<Value> argv[argc];
     if (resp!=NULL){
-        obj=messageFactory->wrapObject(resp->getName(),getIsolate(),resp);
-        argc=1;
-        argv[0]=obj;
+        if (messageFactory->hasObject(resp->getName())){
+            obj=messageFactory->wrapObject(resp->getName(),getIsolate(),resp);
+            argc=1;
+            argv[0]=obj;
+        }else{
+            argc=0;
+        }
     }else{
         argc=0;
     }
 
+    debug("Calling function");
     Local<Function> func=Local<Function>::New(getIsolate(), function);
     Handle<Value> result= func->Call(context->Global(),argc, argv);
     if (result.IsEmpty()){
@@ -442,6 +449,8 @@ void JavaScriptTask::sendCommandCallback(const v8::FunctionCallbackInfo<v8::Valu
     }else{
         currentVM->commandResponseCallbacks[id]=callback;
     }
+
+    currentVM->debug("#####Command sent!");
 }
 
 //Manager functinos
