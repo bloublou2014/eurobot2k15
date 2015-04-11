@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#define DETECT_STUCK
+
 using namespace std;
 
 namespace motion {
@@ -98,6 +100,10 @@ void MotionExecutor::main(){
             driver.refreshData();
         }catch(...){
             error("***** Error in UART communication! ****");
+            if (currentMotionCommand!=NULL){
+                sendResponseFromCommand(currentMotionCommand,ERROR);
+                currentMotionCommand=NULL;
+            }
             return;
         }
         MotionState newState;
@@ -119,8 +125,10 @@ void MotionExecutor::main(){
             sendResponseFromCommand(currentMotionCommand, ERROR);
             error("Robot stuck, canceling movement");
             currentMotionCommand=NULL;
+            driver.stop();
         }
 
+#ifdef DETECT_STUCK
         //Detect stuck state
         if(commandCycle>maxCommandCycle){
             if (isStuck(previousState, newState)){
@@ -136,6 +144,7 @@ void MotionExecutor::main(){
         }else{
             commandCycle++;
         }
+#endif
 
         //Send progress if there is a command for it
         if (lastState!=newState){
