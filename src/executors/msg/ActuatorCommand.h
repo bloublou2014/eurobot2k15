@@ -1,6 +1,8 @@
 #ifndef ABSTRACTACTUATORCOMMAND_H
 #define ABSTRACTACTUATORCOMMAND_H
 
+#include <boost/assign.hpp>
+
 #include "messages/Command.h"
 #include "messages/CommandResponse.h"
 
@@ -8,6 +10,7 @@
 
 //#include "utils/javascript/ObjectWrap.h"
 
+using namespace boost::assign;
 using namespace robot;
 using namespace std;
 using namespace v8;
@@ -16,61 +19,48 @@ using javascript::ObjectWrap;
 
 namespace executor{
 
-class ActuatorCommandType{
-public:
-    enum Executors{LIFT_LEFT,
-                   LIFT_RIGHT,
-                   LIFT_CENTER,
-                   POPCORN,
-                   FLAP,
-                   MOTION,
-                  NULL_EXECUTOR};
+enum Executors{LIFT_LEFT,
+               LIFT_RIGHT,
+               LIFT_CENTER,
+               POPCORN,
+               FLAP,
+               MOTION,
+              NULL_EXECUTOR};
 
-    enum ServoType{ LIFT_SRVO,
-                    DOOR_SERVO,
-                    GRAB_SERVO,
-                    POPCORN_SERVO,
-                    FLAP_SERVO
-                    //TODO
-                  };
+enum ServoType{ LIFT_SRVO,
+                DOOR_SERVO,
+                GRAB_SERVO,
+                POPCORN_SERVO,
+                FLAP_SERVO
+                //TODO
+              };
 
 
-    enum ActuatorType{SET_START_CONFIG,
-                      //ERROR_HANDLE,
-                      GET_OBJECT,
-                      UNLOAD_OBJECT,
-                      KICK_RIGHT,
-                      KICK_LEFT,
-                      UNKICK_RIGHT,
-                      UNKICK_LEFT,
-                      GET_POPCORN,
-                      UNLOAD_POPCORN,
-                      SET_SPEED,
-                      SET_POSITION,
-                      RELOAD_CONFIG,
-                      NULL_ACTION
-                     };
+enum ActuatorType{SET_START_CONFIG,
+                  //ERROR_HANDLE,
+                  GET_OBJECT,
+                  UNLOAD_OBJECT,
+                  KICK_RIGHT,
+                  KICK_LEFT,
+                  UNKICK_RIGHT,
+                  UNKICK_LEFT,
+                  GET_POPCORN,
+                  UNLOAD_POPCORN,
+                  SET_SPEED,
+                  SET_POSITION,
+                  RELOAD_CONFIG,
+                  NULL_ACTION
+                 };
 
-    typedef map<Executors, string> ExecutorsMap;
-    ExecutorsMap ExecutorName;
+typedef map<Executors, string> ExecutorsMap;
+extern ExecutorsMap ExecutorName;
 
-    ActuatorCommandType(){
-        ExecutorName[LIFT_CENTER] = "LiftCenterExecutor";
-        ExecutorName[LIFT_LEFT] = "LiftLeftExecutor";
-        ExecutorName[LIFT_RIGHT] = "LiftRightExecutor";
-        ExecutorName[POPCORN] = "PopcornExecutor";
-        ExecutorName[FLAP] = "FlapExecutor";
-    }
-
-    ActuatorCommandType(const ActuatorCommandType& obj):ExecutorName(obj.ExecutorName){}
-};
-
-class ActuatorCommand:public Command, public ActuatorCommandType{
+class ActuatorCommand:public Command{
 public:
     static string NAME;
 
     ActuatorCommand(): Command(ActuatorCommand::NAME, "tome"){}
-    ActuatorCommand(ActuatorType _type, Executors _executor): Command(ActuatorCommand::NAME, (ExecutorName[_executor]) ),type(_type),executors(_executor){}
+    ActuatorCommand(ActuatorType _type, Executors _executor):Command(ActuatorCommand::NAME, (ExecutorName[_executor]) ),type(_type),executors(_executor){}
     ActuatorCommand(const ActuatorCommand& obj):Command(/*obj*/ ActuatorCommand::NAME, (ExecutorName[obj.executors]) ),type(obj.type), executors(obj.executors){}
 
     Message* clone(){
@@ -81,8 +71,6 @@ public:
 private:
     ActuatorType type;
     Executors executors;
-
-
 };
 
 class SetStartConfig: public ActuatorCommand{
@@ -96,9 +84,9 @@ class GetObject: public ActuatorCommand{
 public:
     static string NAME;
 
-    //static void Init(Handle<Object> exports);
+//    static void Init(Handle<Object> exports);
     /* Constructor */
-    //static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
+//    static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
 
     GetObject(Executors _executor): ActuatorCommand(GET_OBJECT,_executor){}
     //GetObject(GetObject& go):ActuatorCommand(go){}
@@ -187,7 +175,7 @@ public:
     static Command* Flap(ActuatorType _actuator, ServoType _servo, int _value);
 };
 
-class ActuatorCommandJS : public ActuatorCommandType { // PROGRESS
+class ActuatorCommandJS { // PROGRESS
 public:
     static string NAME;
     /* Exports object */

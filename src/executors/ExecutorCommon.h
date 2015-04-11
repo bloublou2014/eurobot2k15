@@ -32,7 +32,7 @@ public:
     void main();
 
     typedef void( ExecutorCommon::*ActuatorCommandHandle)(ActuatorCommand* _actuatorCommand);
-    typedef map<ActuatorCommand::ActuatorType, ActuatorCommandHandle> ActuatorCommandHandleMap;
+    typedef map<ActuatorType, ActuatorCommandHandle> ActuatorCommandHandleMap;
     ActuatorCommandHandleMap actuatorHandles;
 
     void processActuatorCommand(Command* _command);

@@ -64,10 +64,10 @@ void ServoTask::handleMilanNotifications(Notification* testNotification){
 
 
         if (state.Aveable){
-            GetObject* cmd6 = (GetObject*) ActuatorAction::LiftRight(ActuatorCommandType::ActuatorType::GET_OBJECT);
+            GetObject* cmd6 = (GetObject*) ActuatorAction::LiftRight(ActuatorType::GET_OBJECT);
             sendCommand(cmd6 ,(responseCallback)&ServoTask::rotateFor, (responseCallback)&ServoTask::error );
 
-            GetObject* cmd10 = (GetObject*) ActuatorAction::LiftRight(ActuatorCommandType::ActuatorType::RELOAD_CONFIG);
+            GetObject* cmd10 = (GetObject*) ActuatorAction::LiftRight(ActuatorType::RELOAD_CONFIG);
             sendCommand(cmd10, (responseCallback)&ServoTask::rotateFor, (responseCallback)&ServoTask::error);
             state.Aveable = false;
         }
@@ -75,17 +75,17 @@ void ServoTask::handleMilanNotifications(Notification* testNotification){
 
 
         if(state.Aveable){
-            GetObject* cmd7 = (GetObject*) ActuatorAction::LiftRight(ActuatorCommandType::ActuatorType::UNLOAD_OBJECT);
+            GetObject* cmd7 = (GetObject*) ActuatorAction::LiftRight(ActuatorType::UNLOAD_OBJECT);
             sendCommand(cmd7 ,(responseCallback)&ServoTask::rotateFor, (responseCallback)&ServoTask::error );
         }
 
         if(state.Aveable){
-            GetObject* cmd8 = (GetObject*) ActuatorAction::LiftRight(ActuatorCommandType::ActuatorType::GET_OBJECT);
+            GetObject* cmd8 = (GetObject*) ActuatorAction::LiftRight(ActuatorType::GET_OBJECT);
             sendCommand(cmd8 ,(responseCallback)&ServoTask::rotateFor, (responseCallback)&ServoTask::error );
         }
 
         if(state.Aveable){
-            GetObject* cmd9 = (GetObject*) ActuatorAction::LiftRight(ActuatorCommandType::ActuatorType::UNLOAD_OBJECT);
+            GetObject* cmd9 = (GetObject*) ActuatorAction::LiftRight(ActuatorType::UNLOAD_OBJECT);
             sendCommand(cmd9, (responseCallback)&ServoTask::rotateFor, (responseCallback)&ServoTask::error );
         }
     }

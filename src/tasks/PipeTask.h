@@ -24,7 +24,7 @@ using std::queue;
 
 namespace robot{
 
-class PipeTask: public AbstractTask, public ActuatorCommandType{
+class PipeTask: public AbstractTask{
 private:
     enum state_type{
         READ_WORD,

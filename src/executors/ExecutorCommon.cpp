@@ -4,16 +4,16 @@ namespace executor{
 
 void ExecutorCommon::init(){
 
-    actuatorHandles[ActuatorCommand::ActuatorType::RELOAD_CONFIG]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::reloadConfig);
-    actuatorHandles[ActuatorCommand::ActuatorType::GET_POPCORN]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::getPopcorn);
-    actuatorHandles[ActuatorCommand::ActuatorType::UNLOAD_POPCORN]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::unloadPopcorn);
-    actuatorHandles[ActuatorCommand::ActuatorType::KICK_RIGHT]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::kickRight);
-    actuatorHandles[ActuatorCommand::ActuatorType::KICK_LEFT]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::kickLeft);
-    actuatorHandles[ActuatorCommand::ActuatorType::UNKICK_RIGHT]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::unKickRight);
-    actuatorHandles[ActuatorCommand::ActuatorType::UNKICK_LEFT]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::unKickLeft);
-    actuatorHandles[ActuatorCommand::ActuatorType::GET_OBJECT]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::getObject);
-    actuatorHandles[ActuatorCommand::ActuatorType::UNLOAD_OBJECT]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::unloadObject);
-    actuatorHandles[ActuatorCommand::ActuatorType::RELOAD_CONFIG]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::reloadConfig);
+    actuatorHandles[ActuatorType::RELOAD_CONFIG]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::reloadConfig);
+    actuatorHandles[ActuatorType::GET_POPCORN]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::getPopcorn);
+    actuatorHandles[ActuatorType::UNLOAD_POPCORN]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::unloadPopcorn);
+    actuatorHandles[ActuatorType::KICK_RIGHT]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::kickRight);
+    actuatorHandles[ActuatorType::KICK_LEFT]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::kickLeft);
+    actuatorHandles[ActuatorType::UNKICK_RIGHT]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::unKickRight);
+    actuatorHandles[ActuatorType::UNKICK_LEFT]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::unKickLeft);
+    actuatorHandles[ActuatorType::GET_OBJECT]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::getObject);
+    actuatorHandles[ActuatorType::UNLOAD_OBJECT]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::unloadObject);
+    actuatorHandles[ActuatorType::RELOAD_CONFIG]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::reloadConfig);
 
     suscribe();
     mapping();

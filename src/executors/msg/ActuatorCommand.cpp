@@ -2,6 +2,13 @@
 
 namespace executor {
 
+ExecutorsMap ExecutorName={
+    {LIFT_CENTER,"LiftCenterExecutor"},
+    {LIFT_LEFT,"LiftLeftExecutor"},
+    {LIFT_RIGHT,"LiftRightExecutor"},
+    {POPCORN,"PopcornExecutor"},
+    {FLAP,"FlapExecutor"}
+};
 
 string ActuatorCommand::NAME="ActuatorCommand";
 
@@ -144,9 +151,8 @@ void ActuatorCommandJS::New(const v8::FunctionCallbackInfo<v8::Value>& args) {
         obj = parseCreateCommand(_executorString, _actionString, &success);
         std::cout<<"returned from parseCreateCommand" << std::endl;
         if(success){
-            //obj->Wrap(args.This());
-            //args.GetReturnValue().Set(args.This());
-
+            obj->Wrap(args.This());
+            args.GetReturnValue().Set(args.This());
         }else{
             isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Wrong parameters, wrong executor or aciton"));
         }
