@@ -10,8 +10,9 @@ public:
     LiftCenterExecutor():AbstractLiftExecutor(this->NAME){}
     static string NAME;
     void suscribe();
-    //bool GetObjectFunction();
-    //bool UnloadObjectFunction();
+    void mapping();
+    bool GetObjectFunction();
+    bool UnloadObjectFunction();
 private:
 
 

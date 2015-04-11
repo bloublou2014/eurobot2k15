@@ -27,9 +27,10 @@ bool ExecutorConfig::reload(ConfigValues* values, string _executorName){
                 values->LiftConfigs.hand.grab = v.second.get<short>("grab");
                 values->LiftConfigs.hand.relese = v.second.get<short>("relese");
             }else if(v.first == "TimeConfig"){
-                values->LiftConfigs.time.adjust_position = v.second.get<int>("adjust_position");
-                values->LiftConfigs.time.interval = v.second.get<int>("interval");
-                values->LiftConfigs.time.some_time = v.second.get<int>("some_time");
+                values->LiftConfigs.time.liftUp = v.second.get<int>("liftUp");
+                values->LiftConfigs.time.liftDown = v.second.get<int>("liftDown");
+                values->LiftConfigs.time.doorOpenClose = v.second.get<int>("doorOpenClose");
+                values->LiftConfigs.time.handOpenClose = v.second.get<int>("handOpenClose");
             }
         }
         cout <<"******  RELOAD LIFT CONFIG **********" << endl;
@@ -45,9 +46,10 @@ bool ExecutorConfig::reload(ConfigValues* values, string _executorName){
         cout <<"open: "<< values->LiftConfigs.hand.relese << endl;
         cout <<"close: "<< values->LiftConfigs.hand.grab << endl;
         cout <<"Time config" << endl;
-        cout << "adjust Position: " << values->LiftConfigs.time.adjust_position;
-        cout << "interval: " << values->LiftConfigs.time.adjust_position << endl;
-        cout << "some time: " << values->LiftConfigs.time.some_time << endl;
+        cout << "liftUp : " << values->LiftConfigs.time.liftUp << endl;
+        cout << "liftDown: " << values->LiftConfigs.time.liftDown << endl;
+        cout << "doorOpenClose" << values->LiftConfigs.time.doorOpenClose << endl;
+        cout << "handOpenClose" << values->LiftConfigs.time.handOpenClose << endl;
         cout << "********* END RELOAD LIFT CONIG **********" << endl;
 
         // printf("ExeutorConfig is called");
@@ -59,10 +61,6 @@ bool ExecutorConfig::reload(ConfigValues* values, string _executorName){
             }else if(v.first == "HandConfig"){
                 values->LiftConfigs.hand.grab = v.second.get<short>("grab");
                 values->LiftConfigs.hand.relese = v.second.get<short>("relese");
-            }else if(v.first == "TimeConfig"){
-                values->LiftConfigs.time.adjust_position = v.second.get<int>("adjust_position");
-                values->LiftConfigs.time.interval = v.second.get<int>("interval");
-                values->LiftConfigs.time.some_time = v.second.get<int>("some_time");
             }
         }
 
@@ -75,10 +73,6 @@ bool ExecutorConfig::reload(ConfigValues* values, string _executorName){
             }else if(v.first == "FlapLeftConfig"){
                 values->FlapConfigs.flapLeft.open = v.second.get<short>("open");
                 values->FlapConfigs.flapLeft.close = v.second.get<short>("close");
-            }else if(v.first == "TimeConfig"){
-                values->FlapConfigs.time.adjust_position = v.second.get<int>("adjust_position");
-                values->FlapConfigs.time.interval = v.second.get<int>("interval");
-                values->FlapConfigs.time.some_time = v.second.get<int>("some_time");
             }
         }
         cout << "******* RELOAD FLAP CONFIG **************" << endl;
@@ -88,10 +82,6 @@ bool ExecutorConfig::reload(ConfigValues* values, string _executorName){
         cout << "FlapLeft Config:" << endl;
         cout << "open: " << values->FlapConfigs.flapLeft.open << endl;
         cout << "close: " << values->FlapConfigs.flapLeft.close << endl;
-        cout <<"Time config" << endl;
-        cout << "adjust Position: " << values->FlapConfigs.time.adjust_position << endl;
-        cout << "interval: " << values->FlapConfigs.time.adjust_position << endl;
-        cout << "some time: " << values->FlapConfigs.time.some_time << endl;
         cout << "********* END RELOAD FLAP CONIG **********" << endl;
 
     }else if(_executorName == "PopcornExecutor"){
@@ -106,9 +96,8 @@ bool ExecutorConfig::reload(ConfigValues* values, string _executorName){
                 values->PopcornConfigs.backDoor.open = v.second.get<short>("open");
                 values->PopcornConfigs.backDoor.close = v.second.get<short>("close");
             }else if(v.first == "TimeConfig"){
-                values->PopcornConfigs.time.adjust_position = v.second.get<int>("adjust_position");
-                values->PopcornConfigs.time.interval = v.second.get<int>("interval");
-                values->PopcornConfigs.time.some_time = v.second.get<int>("some_time");
+                values->PopcornConfigs.time.getPopcorn = v.second.get<int>("getPopcorn");
+                values->PopcornConfigs.time.unloadPopcorn = v.second.get<int>("unloadPopcorn");
             }
         }
         cout << "***** RELOAD POPCORN CONFIG ***********" << endl;
@@ -121,6 +110,9 @@ bool ExecutorConfig::reload(ConfigValues* values, string _executorName){
         cout << "Back Door Config: " << endl;
         cout << "open: " << values->PopcornConfigs.backDoor.open << endl;
         cout << "close: " << values->PopcornConfigs.backDoor.close << endl;
+        cout << "Time Config" << endl;
+        cout << "unloadPopcorn: " << values->PopcornConfigs.time.unloadPopcorn << endl;
+        cout << "getPopcorn: " << values->PopcornConfigs.time.getPopcorn << endl;
         cout << "********* END POPCORN CONFIG ************" << endl;
      }
     return true;

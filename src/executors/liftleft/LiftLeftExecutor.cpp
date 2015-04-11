@@ -6,8 +6,8 @@ string LiftLeftExecutor::NAME = "LiftLeftExecutor";
 
 void LiftLeftExecutor::suscribe(){
     this->registerCommand(ActuatorCommand::NAME, static_cast<commandCallback>(&LiftLeftExecutor::processActuatorCommand));
-    this->registerCommand(GetLiftState::NAME, static_cast<commandCallback>(&LiftLeftExecutor::processGetLiftState));
-
+    //this->registerCommand(GetLiftState::NAME, static_cast<commandCallback>(&LiftLeftExecutor::processGetLiftState));
+    //TODO zakimentarisano jer nije uradjeno preslikavanje u JS
     lastState.Aveable = true;
     lastState.Quantity = 0;
     executorName = this->NAME;
@@ -43,13 +43,12 @@ void LiftLeftExecutor::mapping(){
 
 bool LiftLeftExecutor::GetObjectFunction(){
     if (!lastState.Quantity ){
+        stateLock.lock();
         lastState.Aveable = false;
+        stateLock.unlock();
 
-
-       // LiftNotification* liftNotification0 = new LiftNotification(lastState);
-        //sendNotification(liftNotification0);
-
-
+        /*
+      * OLD CONFIG
         liftF(LEVEL0);
         handF(CLOSE);
 
@@ -62,15 +61,19 @@ bool LiftLeftExecutor::GetObjectFunction(){
         handF(OPEN);
         delayF(value.LiftConfigs.time.some_time);
         liftF(LEVEL0);
+    */
 
+        // NEW CONFIG
 
+        handF(CLOSE);
+        liftF(LEVEL2);
+        doorF(CLOSE_);
 
-
-        lastState.Aveable = true;
+        stateLock.lock();
         lastState.Quantity++;
+        lastState.Aveable = true;
+        stateLock.unlock();
 
-       // LiftNotification* liftNotification1 = new LiftNotification(lastState);
-        //sendNotification(liftNotification1);
 
         return true;
 
@@ -78,10 +81,8 @@ bool LiftLeftExecutor::GetObjectFunction(){
         stateLock.lock();
         lastState.Aveable = false;
         stateLock.unlock();
-        //LiftNotification* liftNotification0 = new LiftNotification(lastState);
-        //sendNotification(liftNotification0);
 
-
+        /*
         liftF(LEVEL0);
         handF(CLOSE);
 
@@ -94,13 +95,21 @@ bool LiftLeftExecutor::GetObjectFunction(){
         handF(OPEN);
         delayF(value.LiftConfigs.time.some_time);
         liftF(LEVEL0);
+    */
+
+        doorF(OPEN_GET);
+        handF(OPEN);
+        liftF(LEVEL0);
+        handF(CLOSE);
+        delayF(value.LiftConfigs.time.handOpenClose);
+        liftF(LEVEL2);
+        doorF(CLOSE_);
 
         stateLock.lock();
         lastState.Quantity++;
         lastState.Aveable = true;
         stateLock.unlock();
-        //LiftNotification* liftNotification1 = new LiftNotification(lastState);
-        //sendNotification(liftNotification1);
+
 
         return true;
     }else{
@@ -111,27 +120,27 @@ bool LiftLeftExecutor::GetObjectFunction(){
 }
 
 bool LiftLeftExecutor::UnloadObjectFunction(){
-        lastState.Aveable = false;
+    stateLock.lock();
+    lastState.Aveable = false;
+    stateLock.unlock();
+    // TODO notification
 
-        // TODO notification
+    //doorF(OPEN);
+    doorF(OPEN_LEAVE);
+    liftF(LEVEL0);
+    handF(OPEN);
 
-        //doorF(OPEN);
-        doorF(OPEN_LEAVE);
-        handF(OPEN);
-        liftF(LEVEL0);
+    stateLock.lock();
+    lastState.Quantity = 0;
+    lastState.Aveable = true;
+    stateLock.unlock();
 
-        lastState.Quantity = 0;
-        lastState.Aveable = true;
-
-        return true;
+    return true;
 }
 
 
 void LiftLeftExecutor::processGetLiftState(Command* _command){
     debug("processGetLiftState");
-   // LiftNotification* notify = new LiftNotification(lastState);
-    //sendNotification(notify);
-
 
     GetLiftStateResponse* resp = new GetLiftStateResponse(_command->getSource(), _command->getDestination(),lastState);
     resp->setId(_command->getId());

@@ -32,28 +32,39 @@ void PopcornExecutor::mapping(){
 
 bool PopcornExecutor::GetPopcornFunction(){
     debug("GetPopcoron");
-    pipeLeft.rotateToPosition(value.PopcornConfigs.pipeLeft.open);
-    pipeRight.rotateToPosition(value.PopcornConfigs.pipeRight.open);
+    bool success;
+    bool successOne;
 
-    boost::this_thread::sleep(boost::posix_time::milliseconds(value.PopcornConfigs.time.interval));
+    successOne = pipeLeft.rotateToPosition(value.PopcornConfigs.pipeLeft.open);
+    if(!successOne) success = false;
+    successOne = pipeRight.rotateToPosition(value.PopcornConfigs.pipeRight.open);
+    if(!successOne) success = false;
 
-    pipeLeft.rotateToPosition(value.PopcornConfigs.pipeLeft.close);
-    pipeRight.rotateToPosition(value.PopcornConfigs.pipeRight.close);
+    boost::this_thread::sleep(boost::posix_time::milliseconds(value.PopcornConfigs.time.getPopcorn));
 
-    return true;
+    successOne = pipeLeft.rotateToPosition(value.PopcornConfigs.pipeLeft.close);
+    if(!successOne) success = false;
+    successOne = pipeRight.rotateToPosition(value.PopcornConfigs.pipeRight.close);
+    if(!successOne) success = false;
+
+    return success;
 
 }
 
 bool PopcornExecutor::UnloadPopcornFunction(){
     debug("UnloadPopcorn");
+    bool success;
+    bool successOne;
 
-    backDoor.rotateToPosition(value.PopcornConfigs.backDoor.open);
+    successOne = backDoor.rotateToPosition(value.PopcornConfigs.backDoor.open);
+    if(!successOne) success = false;
 
-    boost::this_thread::sleep(boost::posix_time::milliseconds(value.PopcornConfigs.time.interval));
+    boost::this_thread::sleep(boost::posix_time::milliseconds(value.PopcornConfigs.time.unloadPopcorn));
 
-    backDoor.rotateToPosition(value.PopcornConfigs.backDoor.close);
+    successOne = backDoor.rotateToPosition(value.PopcornConfigs.backDoor.close);
+    if(!successOne) success = false;
 
-    return false;
+    return success;
 }
 
 

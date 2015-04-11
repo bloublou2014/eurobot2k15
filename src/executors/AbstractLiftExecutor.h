@@ -99,6 +99,7 @@ private:
     //void setPosition(ActuatorCommand* _command);
     //void reloadConfig(ActuatorCommand* _command);
 
+    LiftFunctiontype currentLevel = LEVEL0;
 
     
 };
