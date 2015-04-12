@@ -42,9 +42,34 @@ void SensorDriver::setProximitySensore(bool _proxymity){
 }
 
 bool SensorDriver::scanSensorStatus(){
+    bool seeingSomething = false;
+    bool readingStatus = false;
+    signed char data;
+
     boost::lock_guard<boost::mutex> lock(*io_mutex);
-    return true;
-    // TODO jos ne znam kako ce izgledati samo citanje statusa nekog senzora :(
+    //std::cout << "reading servo status" << std::endl;
+
+    readingStatus = modbus->ModbusReadCoilStatus(slave_address,scan_address,1,&data);
+
+    if(!readingStatus) {
+        std::cout << "errror in reading servo" << std::endl;
+        return false;
+    }
+
+    //printf("sensor data: %d ", data);
+
+    //std::cout << "sensore data: " << int(data) << std::cout;
+
+    if(data == char(1)){
+        seeingSomething = true;
+    }else if (data == '1'){
+        seeingSomething = true;
+    }else{
+        // radilo kada je bilo seeingSomething == false;
+        seeingSomething = false;
+    }
+
+    return seeingSomething;
 
 }
 

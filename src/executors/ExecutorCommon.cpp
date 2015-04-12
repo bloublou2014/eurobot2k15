@@ -35,6 +35,10 @@ ActuatorCommand* ExecutorCommon::getNextCommand(){  // if there is more then one
     ActuatorCommand* newCommand = NULL;
     commandQueueLock.lock();
 
+    //while (instructionQueue.empty()) {
+    //    queueNotEmpty.wait(lock);
+    //}
+
     if(!commandsToProcess.empty()){
         while(commandsToProcess.size() > 1){
             Command* cmd = commandsToProcess.front();

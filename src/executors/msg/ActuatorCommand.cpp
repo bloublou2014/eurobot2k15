@@ -149,7 +149,7 @@ void ActuatorCommandJS::New(const v8::FunctionCallbackInfo<v8::Value>& args) {
         Command* obj;
 
         obj = parseCreateCommand(_executorString, _actionString, &success);
-        std::cout<<"returned from parseCreateCommand" << std::endl;
+        //std::cout<<"returned from parseCreateCommand" << std::endl;
         if(success){
             obj->Wrap(args.This());
             args.GetReturnValue().Set(args.This());
@@ -168,26 +168,25 @@ Command* ActuatorCommandJS::parseCreateCommand(string _executorString, string _a
     *_success = true;
 
     if (_executorString.compare("LiftLeft") == 0 ) executorTmp = LIFT_LEFT;
-    else if(_executorString.compare("LiftLeft") == 0) executorTmp = LIFT_RIGHT;
+    else if(_executorString.compare("LiftRight") == 0) executorTmp = LIFT_RIGHT;
     else if(_executorString.compare("LiftCenter") == 0) executorTmp = LIFT_CENTER;
     else if(_executorString.compare("Flap") == 0) executorTmp = FLAP;
     else if(_executorString.compare("Popcorn") == 0) executorTmp = POPCORN;
     else {
-        std::cout << "ERROR SREDITI OVO" << std::endl;
         executorTmp = NULL_EXECUTOR;
         *_success = false;
     }
 
     if (executorTmp == LIFT_LEFT || executorTmp == LIFT_RIGHT || executorTmp == LIFT_CENTER) {
-        if(_actionString.compare("GetObject") == 0) actionTmp = GET_OBJECT;
-        else if(_actionString.compare("UnloadObject")) actionTmp = UNLOAD_OBJECT;
+        if(_actionString.compare("Get") == 0) actionTmp = GET_OBJECT;
+        else if(_actionString.compare("Unload")) actionTmp = UNLOAD_OBJECT;
         else {
             actionTmp = NULL_ACTION;
             *_success = false;
         }
     }else if(executorTmp == POPCORN){
-        if(_actionString.compare("GetPopcorn") == 0) actionTmp = GET_POPCORN;
-        else if(_actionString.compare("UnloadPopcorn") == 0) actionTmp = UNLOAD_POPCORN;
+        if(_actionString.compare("Get") == 0) actionTmp = GET_POPCORN;
+        else if(_actionString.compare("Unload") == 0) actionTmp = UNLOAD_POPCORN;
         else {
             actionTmp = NULL_ACTION;
             *_success = false;
@@ -206,16 +205,15 @@ Command* ActuatorCommandJS::parseCreateCommand(string _executorString, string _a
     if(!*_success){
         return NULL;
     }else{
-        std::cout << "enetered creating object " << std::endl;
+        //std::cout << "enetered creating object " << std::endl;
         switch(executorTmp){
         case LIFT_LEFT:{ tmp = ActuatorAction::LiftLeft(actionTmp); break; }
         case LIFT_RIGHT:{ tmp = ActuatorAction::LiftRight(actionTmp); break; }
         case LIFT_CENTER:{ tmp = ActuatorAction::LiftCenter(actionTmp); break; }
         case FLAP: { tmp = ActuatorAction::Flap(actionTmp); break; }
-        case POPCORN: { std::cout << "TOME" << std::endl; tmp = ActuatorAction::Popcorn(actionTmp);   std::cout << "TOME" << std::endl; break; }
+        case POPCORN: {  tmp = ActuatorAction::Popcorn(actionTmp); break; }
         case NULL_EXECUTOR: {break; }
         }
-        std::cout << "TOME" << std::endl;
     }
     return tmp;
 

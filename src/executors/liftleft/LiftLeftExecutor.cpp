@@ -33,6 +33,10 @@ void LiftLeftExecutor::mapping(){
     door.setServoStatusSetAddress(char(12));
     door.setServoStatusReadAddress(char(13));
 
+    sensor.setSlaveAddress(char(4));
+    sensor.setScanAddress(char(4));
+
+
     reload(&value, executorName);
 
     doorF(OPEN_GET);
@@ -42,13 +46,43 @@ void LiftLeftExecutor::mapping(){
 
 
 bool LiftLeftExecutor::GetObjectFunction(){
-    if (!lastState.Quantity ){
-        stateLock.lock();
-        lastState.Aveable = false;
-        stateLock.unlock();
-
+    debug("LiftLeft Get");
+    while (lastState.Quantity < 5 && !shouldStop ) {
         /*
-      * OLD CONFIG
+        while(sensorDetect == false && !shouldStop){
+            delayF(50);
+            sensorDetect = sensor.scanSensorStatus();
+            debug("respin");
+        }
+        */
+         while(!sensor.scanSensorStatus() && !shouldStop) delayF(100);
+
+        if (!lastState.Quantity && !shouldStop){
+            stateLock.lock();
+            lastState.Aveable = false;
+            stateLock.unlock();
+
+            // NEW CONFIG
+
+            handF(CLOSE);
+            liftF(LEVEL2);
+            doorF(CLOSE_);
+            delayF(value.LiftConfigs.time.doorOpenClose);
+
+            stateLock.lock();
+            lastState.Quantity++;
+            lastState.Aveable = true;
+            stateLock.unlock();
+
+
+            //return true;
+
+        }else if(lastState.Quantity < 4 && !shouldStop){
+            stateLock.lock();
+            lastState.Aveable = false;
+            stateLock.unlock();
+
+            /*
         liftF(LEVEL0);
         handF(CLOSE);
 
@@ -63,59 +97,30 @@ bool LiftLeftExecutor::GetObjectFunction(){
         liftF(LEVEL0);
     */
 
-        // NEW CONFIG
+            doorF(OPEN_GET);
+            handF(OPEN);
+            liftF(LEVEL0);
+            handF(CLOSE);
+            delayF(value.LiftConfigs.time.handOpenClose);
+            liftF(LEVEL2);
+            doorF(CLOSE_);
 
-        handF(CLOSE);
-        liftF(LEVEL2);
-        doorF(CLOSE_);
-
-        stateLock.lock();
-        lastState.Quantity++;
-        lastState.Aveable = true;
-        stateLock.unlock();
-
-
-        return true;
-
-    }else if(lastState.Quantity < 4){
-        stateLock.lock();
-        lastState.Aveable = false;
-        stateLock.unlock();
-
-        /*
-        liftF(LEVEL0);
-        handF(CLOSE);
-
-        delayF(value.LiftConfigs.time.interval);
-        doorF(OPEN_GET);
-        liftF(LEVEL1);
-        doorF(CLOSE_);
-        delayF(value.LiftConfigs.time.interval);
-
-        handF(OPEN);
-        delayF(value.LiftConfigs.time.some_time);
-        liftF(LEVEL0);
-    */
-
-        doorF(OPEN_GET);
-        handF(OPEN);
-        liftF(LEVEL0);
-        handF(CLOSE);
-        delayF(value.LiftConfigs.time.handOpenClose);
-        liftF(LEVEL2);
-        doorF(CLOSE_);
-
-        stateLock.lock();
-        lastState.Quantity++;
-        lastState.Aveable = true;
-        stateLock.unlock();
+            delayF(value.LiftConfigs.time.doorOpenClose);
 
 
-        return true;
-    }else{
-        error("NO MORE SPACE IN STORAGE");
-        sendResponseFromCommand(currentActuatorCommand, ERROR);
-        return false;
+            stateLock.lock();
+            lastState.Quantity++;
+            lastState.Aveable = true;
+            stateLock.unlock();
+
+
+            //return true;
+        }else{
+            error("NO MORE SPACE IN STORAGE");
+            sendResponseFromCommand(currentActuatorCommand, ERROR);
+            return true;
+        }
+
     }
 }
 

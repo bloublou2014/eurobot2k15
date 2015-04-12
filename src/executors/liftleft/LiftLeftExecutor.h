@@ -21,6 +21,7 @@ public:
 private:
    LiftState lastState;
    boost::mutex stateLock;
+   bool sensorDetect = false;
 
 };
 

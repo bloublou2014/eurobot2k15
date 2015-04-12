@@ -31,7 +31,7 @@ void LiftRightExecutor::mapping(){
     door.setServoStatusReadAddress(char(15));
 
     sensor.setSlaveAddress(char(4));
-    sensor.setScanAddress(char(1));
+    sensor.setScanAddress(char(3));
 
     reload(&value, executorName);
 
@@ -42,10 +42,11 @@ void LiftRightExecutor::mapping(){
 }
 
 bool LiftRightExecutor::GetObjectFunction(){
-    while(lastState.Quantity < 4){
-        while(!sensor.scanSensorStatus()) delayF(40);
+    while(lastState.Quantity < 4 && !shouldStop){
 
-        if (!lastState.Quantity ){
+        while(!sensor.scanSensorStatus() && !shouldStop) delayF(100);
+
+        if (!lastState.Quantity && !shouldStop ){
             stateLock.lock();
             lastState.Aveable = false;
             stateLock.unlock();
@@ -72,9 +73,11 @@ bool LiftRightExecutor::GetObjectFunction(){
             lastState.Quantity++;
             lastState.Aveable = true;
             stateLock.unlock();
-            return true;
 
-        }else if(lastState.Quantity < 4){
+            delayF(value.LiftConfigs.time.doorOpenClose);
+            //return true;
+
+        }else if(lastState.Quantity < 4 && !shouldStop){
             stateLock.lock();
             lastState.Aveable = false;
             stateLock.unlock();
@@ -102,6 +105,8 @@ bool LiftRightExecutor::GetObjectFunction(){
             liftF(LEVEL2);
             doorF(CLOSE_);
 
+            delayF(value.LiftConfigs.time.doorOpenClose);
+
 
             stateLock.lock();
             lastState.Quantity++;
@@ -110,11 +115,11 @@ bool LiftRightExecutor::GetObjectFunction(){
 
 
 
-            return true;
+            //return true;
         }else{
             error("NO MORE SPACE IN STORAGE");
             sendResponseFromCommand(currentActuatorCommand, ERROR);
-            return false;
+            return true;
         }
     }
 }

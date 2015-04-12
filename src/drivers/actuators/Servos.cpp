@@ -112,9 +112,10 @@ void ServoDriver::setServoStatusReadAddress(unsigned short _address){
 
 
 bool ServoDriver::getServoStatus(){
-    bool status;
-    signed char result_char;
     boost::lock_guard<boost::mutex> lock(*s_mutex);
+
+    bool status =false;
+    signed char result_char;
     modbus->ModbusForceSingleCoil(slave_address,statusSet_address, char(1));
     modbus->ModbusReadCoilStatus(slave_address,statusRead_address, 1, &result_char);
     printf("return value of coil is %d /n", result_char);
