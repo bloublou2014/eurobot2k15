@@ -112,6 +112,12 @@ void MotionDriver::stop()
 	uart.writeUart('S');
 }
 
+void MotionDriver::softStop(){
+    boost::lock_guard<boost::mutex> lock(*io_mutex);
+
+    uart.writeUart('s');
+}
+
 char MotionDriver::getSpeed()
 {
 	return speed;

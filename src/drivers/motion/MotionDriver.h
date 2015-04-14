@@ -47,6 +47,7 @@ public:
 	void moveToPosition(geometry::Point2D position, MovingDirection direction);
 	void moveArc(geometry::Point2D center, int angle, MovingDirection direction);
 	void stop();
+    void softStop();
 
 	char getSpeed();
 	geometry::Point2D getPosition();

@@ -134,7 +134,7 @@ void TaskManager::dispatchMessage(){
     while(!shouldStop){
         Message* message=popNextMessage();
         if (shouldStop) break;
-        switch (message->getMessageType()) {
+        switch (message->getMessageType()){
         case NOTIFICATION:
             {
                 Notification* notification=(Notification*)message;
@@ -200,6 +200,13 @@ void TaskManager::runBestTask(){
             }
             currentlyRunningTask=maxElement->second.task;
             currentlyRunningTask->runTask();
+        }
+    }
+
+    if (currentlyRunningTask!=NULL){
+        if (currentlyRunningTask->getTaskState()!=TaskState::RUNNING){
+            currentlyRunningTask->pauseTask();
+            currentlyRunningTask=NULL;
         }
     }
 }

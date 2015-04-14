@@ -53,7 +53,6 @@ int main(int argn, char** argc){
     //PipeTask testTask("pipeTask");
     //taskMgr->addTask(&testTask);
 
-#define CROSS_COMPILING
 #ifdef CROSS_COMPILING
     MotionExecutor motionExec;
     LiftCenterExecutor liftCenterExec;
@@ -85,6 +84,7 @@ int main(int argn, char** argc){
     execMgr->start();
 
     getchar();
+//    boost::this_thread::sleep(boost::posix_time::milliseconds(500));
     taskMgr->sendMessage(new StartMessage("Milan"));
 
     taskMgr->join();
