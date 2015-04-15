@@ -25,6 +25,7 @@ using namespace executor;
 TaskManager* taskMgr;
 ExecutorManager* execMgr;
 
+
 void signalHandler(int sigNum){
     cout<<"Stopping robot execution!"<<endl;
 

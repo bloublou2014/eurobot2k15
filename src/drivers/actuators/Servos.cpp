@@ -2,8 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-using namespace modbus;
-using modbus::ModbusMaster;
+//using namespace modbus;
+//using modbus::ModbusMaster;
+//using modbus::ModbusClient;
 
 namespace servo {
 
@@ -12,8 +13,8 @@ ServoDriver::ServoDriver():s_mutex(new boost::mutex()){
     //this->robot = VELIKI;
     this->speed_address = 'b';
     this->position = 0; 
-    modbus = ModbusMaster::getModbusInstance();
-
+    //modbus = ModbusMaster::getModbusInstance();
+    modbus = ModbusClient::getMobusClientInstance();
 
 }
 
@@ -22,7 +23,9 @@ ServoDriver::ServoDriver(unsigned char slave_address = 'a' , unsigned short posi
     this->slave_address = slave_address;
     this->position_address = position_address;
     this->speed_address = speed_address;
-    modbus = ModbusMaster::getModbusInstance();
+    //modbus = ModbusMaster::getModbusInstance();
+     modbus = ModbusClient::getMobusClientInstance();
+
 
 }
 
@@ -33,14 +36,16 @@ ServoDriver::~ServoDriver(){
 bool ServoDriver::rotateFor(short steps){
 
     boost::lock_guard<boost::mutex> lock(*s_mutex);
-    printf("ServoDriver: rotateFor\n,");
+    //printf("ServoDriver: rotateFor\n,");
     short position_calc;
     bool success = true;
     position_calc = this->position + steps;
 
     if ((position_calc >= 0 ) && (position_calc <= 1023)){
 
-        success = modbus->ModbusPresetSingleRegister(this->slave_address, this->position_address,position_calc);
+        //success = modbus->ModbusPresetSingleRegister(this->slave_address, this->position_address,position_calc);
+         success = modbus->setRegister(this->slave_address, this->position_address,position_calc);
+
 
     }else{
         printf("ERROR: POSITION OUT OF VALUE");
@@ -58,7 +63,8 @@ bool ServoDriver::rotateToPosition(short position){
     bool success = true;
 
     if ((position >= 0 ) && (position <= 1023)){
-        success = modbus->ModbusPresetSingleRegister(this->slave_address, this->position_address, position);
+        //success = modbus->ModbusPresetSingleRegister(this->slave_address, this->position_address, position);
+        success = modbus->setRegister(this->slave_address, this->position_address,position);
     }else{
         printf("ERROR: POSITION OUT OF VALUE");
         return false;
@@ -74,7 +80,7 @@ void ServoDriver::setServoSpeed(int speed){
     if (this->speed != speed ){
         this->speed = speed;
 
-        modbus->ModbusPresetSingleRegister(slave_address, speed_address, speed);
+        //modbus->ModbusPresetSingleRegister(slave_address, speed_address, speed);
     }
 }
 
@@ -116,8 +122,8 @@ bool ServoDriver::getServoStatus(){
 
     bool status =false;
     signed char result_char;
-    modbus->ModbusForceSingleCoil(slave_address,statusSet_address, char(1));
-    modbus->ModbusReadCoilStatus(slave_address,statusRead_address, 1, &result_char);
+    //modbus->ModbusForceSingleCoil(slave_address,statusSet_address, char(1));
+    //modbus->ModbusReadCoilStatus(slave_address,statusRead_address, 1, &result_char);
     printf("return value of coil is %d /n", result_char);
 
     if ( result_char == char(1)){

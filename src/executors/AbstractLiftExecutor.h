@@ -67,9 +67,11 @@ protected:
     virtual bool UnloadObjectFunction();
     virtual bool SetSpeedFunction();
     virtual bool SetPositionFunction();
+    bool GetObjectStopFunction();
+    //bool callbackRecived = false;
 
-    //LiftExecutorConfig value;
-    //ConfigValues value;
+    bool shoulGetObject = false;
+    bool sensoreCallbackRecived = false;
     string executorName;
     ServoDriver door;
     ServoDriver hand;

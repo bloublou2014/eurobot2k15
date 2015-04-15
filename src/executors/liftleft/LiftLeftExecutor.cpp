@@ -11,8 +11,9 @@ void LiftLeftExecutor::suscribe(){
     lastState.Aveable = true;
     lastState.Quantity = 0;
     executorName = this->NAME;
-
-
+    modbus = ModbusClient::getMobusClientInstance();
+    modbusClient = ModbusSensorClient::getModbusSensorInstance();
+    modbusClient->registerToSensoreCallback(char(4),char(4),true ,this);
 
 }
 
@@ -36,66 +37,32 @@ void LiftLeftExecutor::mapping(){
     sensor.setSlaveAddress(char(4));
     sensor.setScanAddress(char(4));
 
-
     reload(&value, executorName);
 
     doorF(OPEN_GET);
-    handF(OPEN);
-    liftF(LEVEL0);
+    handF(CLOSE);
+    liftF(LEVEL2);
 }
 
 
 bool LiftLeftExecutor::GetObjectFunction(){
     debug("LiftLeft Get");
-    while (lastState.Quantity < 5 && !shouldStop ) {
-        /*
-        while(sensorDetect == false && !shouldStop){
-            delayF(50);
-            sensorDetect = sensor.scanSensorStatus();
-            debug("respin");
-        }
-        */
-         while(!sensor.scanSensorStatus() && !shouldStop) delayF(100);
+    shoulGetObject = true;
+    readingSensore = true;
+    return true;
 
-        if (!lastState.Quantity && !shouldStop){
+}
+
+bool LiftLeftExecutor::liftProcess(){
+    debug("DOING SOMETHING");
+
+        if(lastState.Quantity < 3){
+            debug("FIRST ONE ");
             stateLock.lock();
-            lastState.Aveable = false;
+            readingSensore = false;
             stateLock.unlock();
 
             // NEW CONFIG
-
-            handF(CLOSE);
-            liftF(LEVEL2);
-            doorF(CLOSE_);
-            delayF(value.LiftConfigs.time.doorOpenClose);
-
-            stateLock.lock();
-            lastState.Quantity++;
-            lastState.Aveable = true;
-            stateLock.unlock();
-
-
-            //return true;
-
-        }else if(lastState.Quantity < 4 && !shouldStop){
-            stateLock.lock();
-            lastState.Aveable = false;
-            stateLock.unlock();
-
-            /*
-        liftF(LEVEL0);
-        handF(CLOSE);
-
-        delayF(value.LiftConfigs.time.interval);
-        doorF(OPEN_GET);
-        liftF(LEVEL1);
-        doorF(CLOSE_);
-        delayF(value.LiftConfigs.time.interval);
-
-        handF(OPEN);
-        delayF(value.LiftConfigs.time.some_time);
-        liftF(LEVEL0);
-    */
 
             doorF(OPEN_GET);
             handF(OPEN);
@@ -105,24 +72,51 @@ bool LiftLeftExecutor::GetObjectFunction(){
             liftF(LEVEL2);
             doorF(CLOSE_);
 
+
+            stateLock.lock();
+            lastState.Quantity++;
+            lastState.Aveable = true;
+            readingSensore = true;
+            stateLock.unlock();
+
+        }else if(lastState.Quantity == 3){
+
+            debug(" SECOND .... ");
+
+            stateLock.lock();
+            lastState.Aveable = false;
+            stateLock.unlock();
+
+            doorF(OPEN_GET);
+            handF(OPEN);
+            liftF(LEVEL0);
+            handF(CLOSE);
+            delayF(value.LiftConfigs.time.handOpenClose);
+            liftF(LEVEL1);
+            doorF(CLOSE_);
+
             delayF(value.LiftConfigs.time.doorOpenClose);
 
 
             stateLock.lock();
             lastState.Quantity++;
             lastState.Aveable = true;
+            //readingSensore = true;
+            readingSensore = false;
             stateLock.unlock();
 
 
-            //return true;
-        }else{
+        }else if(lastState.Quantity < 5 ){
+            readingSensore = false;
             error("NO MORE SPACE IN STORAGE");
-            sendResponseFromCommand(currentActuatorCommand, ERROR);
+            //sendResponseFromCommand(currentActuatorCommand, ERROR);
             return true;
         }
 
-    }
+    debug("CANT DOIT");
 }
+
+
 
 bool LiftLeftExecutor::UnloadObjectFunction(){
     stateLock.lock();
@@ -131,6 +125,7 @@ bool LiftLeftExecutor::UnloadObjectFunction(){
     // TODO notification
 
     //doorF(OPEN);
+    debug("UNLOADING");
     doorF(OPEN_LEAVE);
     liftF(LEVEL0);
     handF(OPEN);
@@ -150,6 +145,24 @@ void LiftLeftExecutor::processGetLiftState(Command* _command){
     GetLiftStateResponse* resp = new GetLiftStateResponse(_command->getSource(), _command->getDestination(),lastState);
     resp->setId(_command->getId());
     sendResponse(resp);
+
+}
+
+void LiftLeftExecutor::ProcessSensorCallback(){
+
+    if ( lastState.Aveable ) {
+        sensoreCallbackRecived = true;
+        debug("DETECTEC OBJECT");
+    }
+    return;
+}
+
+bool LiftLeftExecutor::liftLoop(){
+
+    if(shoulGetObject && !shouldStop && sensoreCallbackRecived){
+        sensoreCallbackRecived = false;
+        liftProcess();
+    }
 
 }
 

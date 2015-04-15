@@ -37,7 +37,6 @@ enum ServoType{ LIFT_SRVO,
 
 
 enum ActuatorType{SET_START_CONFIG,
-                  //ERROR_HANDLE,
                   GET_OBJECT,
                   UNLOAD_OBJECT,
                   KICK_RIGHT,
@@ -49,6 +48,7 @@ enum ActuatorType{SET_START_CONFIG,
                   SET_SPEED,
                   SET_POSITION,
                   RELOAD_CONFIG,
+                  GET_OBJECT_STOP,
                   NULL_ACTION
                  };
 
@@ -82,15 +82,12 @@ public:
 
 class GetObject: public ActuatorCommand{
 public:
-    static string NAME;
-
-//    static void Init(Handle<Object> exports);
-    /* Constructor */
-//    static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
-
     GetObject(Executors _executor): ActuatorCommand(GET_OBJECT,_executor){}
-    //GetObject(GetObject& go):ActuatorCommand(go){}
+};
 
+class GetObjectStop: public ActuatorCommand{
+public:
+    GetObjectStop(Executors _executor): ActuatorCommand(GET_OBJECT_STOP, _executor){}
 };
 
 class UnloadObject: public ActuatorCommand{

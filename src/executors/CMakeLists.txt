@@ -15,6 +15,7 @@ add_subdirectory(liftright)
 add_subdirectory(liftcenter)
 add_subdirectory(popcorn)
 add_subdirectory(flap)
+add_subdirectory(enemyDetector)
 
 
 add_library(executors ${EXECUTORS_SRC})

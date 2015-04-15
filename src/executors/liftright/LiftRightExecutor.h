@@ -6,12 +6,13 @@
 #include "utils/helper/LiftState.h"
 #include "executors/msg/GetLiftState.h"
 #include "executors/msg/LiftNotification.h"
+#include "utils/modbus/ModbusSensoreClient.h"
 
 namespace executor {
 
-class LiftRightExecutor: public AbstractLiftExecutor {
+class LiftRightExecutor: public AbstractLiftExecutor, public ModbusSensorClientInterface {
 public:
-    LiftRightExecutor():AbstractLiftExecutor(this->NAME){}
+    LiftRightExecutor():AbstractLiftExecutor(this->NAME), ModbusSensorClientInterface(){}
     static string NAME;
     void suscribe();
     bool GetObjectFunction();
@@ -22,6 +23,11 @@ private:
     void processGetLiftState(Command* _command);
     LiftState lastState;
     boost::mutex stateLock;
+    bool shouldCollect = false;
+    void ProcessSensorCallback();
+    bool liftLoop();
+    bool liftProcess();
+    ModbusSensorClient* modbusClient;
 
 };
 

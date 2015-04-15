@@ -4,15 +4,17 @@
 namespace sensor{
 
 SensorDriver::SensorDriver():io_mutex(new boost::mutex){
-    modbus = ModbusMaster::getModbusInstance();
+    //modbus = ModbusMaster::getModbusInstance();
+    modbus = ModbusClient::getMobusClientInstance();
     this->slave_address = char(1);
     this->scan_address = char(1);
     this->enemy_position_address = char(1);
     this->proximity = false;
 }
 
-SensorDriver::SensorDriver(unsigned char _slave_address, unsigned short _scan_address, unsigned short _enemy_position_address){
-    modbus = ModbusMaster::getModbusInstance();
+SensorDriver::SensorDriver(unsigned char _slave_address, unsigned short _scan_address, unsigned short _enemy_position_address):io_mutex(new boost::mutex){
+    //modbus = ModbusMaster::getModbusInstance();
+    modbus = ModbusClient::getMobusClientInstance();
     this->slave_address = _slave_address;
     this->scan_address = _scan_address;
     this->enemy_position_address = _enemy_position_address;
@@ -49,7 +51,8 @@ bool SensorDriver::scanSensorStatus(){
     boost::lock_guard<boost::mutex> lock(*io_mutex);
     //std::cout << "reading servo status" << std::endl;
 
-    readingStatus = modbus->ModbusReadCoilStatus(slave_address,scan_address,1,&data);
+    //readingStatus = modbus->ModbusReadCoilStatus(slave_address,scan_address,1,&data);
+    //readingStatus = modbus->ModbusReadCoilStatus(slave_address,scan_address,1,&data);
 
     if(!readingStatus) {
         std::cout << "errror in reading servo" << std::endl;

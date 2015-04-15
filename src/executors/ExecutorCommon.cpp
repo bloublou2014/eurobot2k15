@@ -14,6 +14,7 @@ void ExecutorCommon::init(){
     actuatorHandles[ActuatorType::GET_OBJECT]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::getObject);
     actuatorHandles[ActuatorType::UNLOAD_OBJECT]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::unloadObject);
     actuatorHandles[ActuatorType::RELOAD_CONFIG]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::reloadConfig);
+    actuatorHandles[ActuatorType::GET_OBJECT_STOP]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::getObjectStop);
 
     suscribe();
     mapping();
@@ -70,7 +71,8 @@ void ExecutorCommon::main(){
 
         }
         //brodcastNotification();
-        boost::this_thread::sleep(boost::posix_time::milliseconds(10));
+        liftLoop();
+        boost::this_thread::sleep(boost::posix_time::milliseconds(2));
     }
 }
 
@@ -218,6 +220,20 @@ void ExecutorCommon::unloadObject(ActuatorCommand* _command){
     }
 }
 
+void ExecutorCommon::getObjectStop(ActuatorCommand * _command){
+    bool success;
+    GetObjectStop* command = (GetObjectStop*) _command;
+    currentActuatorCommand = command;
+    success =  GetObjectStopFunction();
+    if (success){
+        sendResponseFromCommand(currentActuatorCommand, SUCCESS);
+        currentActuatorCommand = NULL;
+    }else{
+        sendResponseFromCommand(currentActuatorCommand, ERROR);
+        currentActuatorCommand = NULL;
+    }
+}
+
 bool ExecutorCommon::KickRightFunction(){
     debug("KICK RIGHT: REDEFINE PLEASE");
     return false;
@@ -265,7 +281,16 @@ bool ExecutorCommon::SetSpeedFunction(){
 bool ExecutorCommon::SetPositionFunction(){
     debug("REDEFINE PLEASE");
     return false;
-
 }
+
+bool ExecutorCommon::GetObjectStopFunction(){
+    debug("REDEFINE PLEASE");
+    return false;
+}
+
+bool ExecutorCommon::liftLoop(){
+    return;
+}
+
 
 }

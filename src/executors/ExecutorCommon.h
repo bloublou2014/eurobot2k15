@@ -66,13 +66,15 @@ protected:
     virtual bool UnloadObjectFunction();
     virtual bool SetSpeedFunction();
     virtual bool SetPositionFunction();
-
+    virtual bool GetObjectStopFunction();
+    virtual bool liftLoop();
 
 private:
 
     void reloadConfig(ActuatorCommand *_command);
     void getObject(ActuatorCommand* _command);
     void unloadObject(ActuatorCommand* _command);
+    void getObjectStop(ActuatorCommand* _command);
     void kickRight(ActuatorCommand* _command);
     void unKickRight(ActuatorCommand* _command);
     void kickLeft(ActuatorCommand* _commmand);

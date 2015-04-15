@@ -4,74 +4,14 @@ namespace executor {
 
 void AbstractLiftExecutor::maping(){
     debug("default maping");
-    //actuatorHandles[ActuatorCommand::ActuatorType::GET_OBJECT]=static_cast<ActuatorCommandHandle>(&AbstractLiftExecutor::getObject);
-    //actuatorHandles[ActuatorCommand::ActuatorType::UNLOAD_OBJECT]=static_cast<ActuatorCommandHandle>(&AbstractLiftExecutor::unloadObject);
-    //actuatorHandles[ActuatorCommand::ActuatorType::KICK]=static_cast<ActuatorCommandHandle>(&AbstractLiftExecutor::kick);
-    //actuatorHandles[ActuatorCommand::ActuatorType::GET_POPCORN]=static_cast<ActuatorCommandHandle>(&AbstractLiftExecutor::getPopcorn);
-    //actuatorHandles[ActuatorCommand::ActuatorType::SET_POSITION]=static_cast<ActuatorCommandHandle>(&AbstractLiftExecutor::setPosition);
-    //actuatorHandles[ActuatorCommand::ActuatorType::SET_SPEED]=static_cast<ActuatorCommandHandle>(&AbstractLiftExecutor::setSpeed);
-    //actuatorHandles[ActuatorCommand::ActuatorType::RELOAD_CONFIG]=static_cast<ActuatorCommandHandle>(&AbstractLiftExecutor::reloadConfig);
+
 
 }
 
 void AbstractLiftExecutor::suscribe(){
     this->registerCommand(ActuatorCommand::NAME, static_cast<commandCallback>(&AbstractLiftExecutor::processActuatorCommand));
 }
-/*
-void AbstractLiftExecutor::getObject(ActuatorCommand * _command){
-    bool success;
-    GetObject* command = (GetObject*) _command;
-    currentActuatorCommand = command;
-    success =  GetObjectFunction();
-    if (success) {
-        currentActuatorCommand = NULL;
-    }
-}
 
-void AbstractLiftExecutor::unloadObject(ActuatorCommand* _command){
-    bool success;
-    UnloadObject *command  = (UnloadObject*) _command;
-    currentActuatorCommand = command;
-    success = UnloadObjectFunction();
-    if (success){
-        currentActuatorCommand = NULL;
-    }
-}
-*/
-/*
-void AbstractLiftExecutor::setSpeed(ActuatorCommand *_command){
-    bool success = false ;
-    SetSpeed* command = (SetSpeed*) _command;
-    currentActuatorCommand = command;
-    success = SetSpeedFunction();
-    if (success){
-        currentActuatorCommand = NULL;
-    }
-}
-
-void AbstractLiftExecutor::setPosition(ActuatorCommand *_command){
-    bool success = false;
-    SetPosition* command  = (SetPosition*) _command;
-    currentActuatorCommand = command;
-    if (success){
-        currentActuatorCommand = NULL;
-    }
-}
-
-
-void AbstractLiftExecutor::reloadConfig(ActuatorCommand* _command){
-    bool success = false ;
-    ReloadConfig* command = (ReloadConfig*) _command;
-    currentActuatorCommand = command;
-    debug("reload config with exec name: ");
-    success = reload(&value, executorName);
-    if (success){
-        currentActuatorCommand = NULL;
-    }
-
-}
-
-*/
 
 bool AbstractLiftExecutor::GetObjectFunction(){
     debug("GetObject Default function");
@@ -99,6 +39,11 @@ bool AbstractLiftExecutor::SetPositionFunction(){
     debug("TODO");
 
     return false;
+}
+
+bool AbstractLiftExecutor::GetObjectStopFunction(){
+    shoulGetObject = false;
+    return true;
 }
 
 void AbstractLiftExecutor::brodcastNotification(){

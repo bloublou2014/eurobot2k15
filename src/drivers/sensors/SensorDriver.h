@@ -8,11 +8,13 @@
 #include <stdlib.h>
 
 #include "utils/modbus/ModbusMaster.h"
+#include "utils/modbus/ModbusClient.h"
 
 
 
 using namespace modbus;
 using modbus::ModbusMaster;
+using modbus::ModbusClient;
 
 namespace sensor {
 
@@ -24,7 +26,8 @@ private:
     bool proximity;
 
     boost::mutex *io_mutex;
-    ModbusMaster *modbus;
+    //ModbusMaster *modbus;
+    ModbusClient *modbus;
 
 public:
     SensorDriver();
