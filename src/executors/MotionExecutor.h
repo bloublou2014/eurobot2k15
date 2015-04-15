@@ -40,6 +40,7 @@ private:
     bool shouldStop;
     mutex stateLock;
     MotionState lastState;
+    MotionState lastNotificationState;
 
     MotionCommand* currentMotionCommand;
     MotionDriver driver;

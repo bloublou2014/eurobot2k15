@@ -3,6 +3,7 @@
 #include <iostream>
 
 #define DETECT_STUCK
+#define MOTION_TRESHOLD 100
 
 using namespace std;
 
@@ -88,6 +89,7 @@ void MotionExecutor::main(){
             if (newCommand!=NULL){
                 (this->*motionHandles[newCommand->getMotionType()])(newCommand);
                 commandCycle=0;
+//                boost::this_thread::sleep(boost::posix_time::milliseconds(15));
             }
         }catch(...){
             error("***** Error in UART communication! ****");
@@ -132,7 +134,7 @@ void MotionExecutor::main(){
         //Detect stuck state
         if(commandCycle>maxCommandCycle){
             if (isStuck(previousState, newState)){
-                driver.stop();
+                driver.softStop();
                 error("Robot stuck, stopping movement!");
                 sendResponseFromCommand(currentMotionCommand, ERROR);
                 currentMotionCommand=NULL;
@@ -148,18 +150,24 @@ void MotionExecutor::main(){
 
         //Send progress if there is a command for it
         if (lastState!=newState){
-            if(currentMotionCommand!=NULL){
+            if((currentMotionCommand!=NULL) ){
                 GetMotionStateResponse* progress=new GetMotionStateResponse(currentMotionCommand->getSource(),
                          currentMotionCommand->getDestination(),newState,ResponseStatus::PROGRESS_UPDATE);
                 progress->setId(currentMotionCommand->getId());
                 sendResponse(progress);
             }
 
+            int delta=newState.Position.euclidDist(lastNotificationState.Position);
+
             stateLock.lock();
             lastState=newState;
             stateLock.unlock();
-            MotionNotification* motionNotification=new MotionNotification(newState);
-            sendNotification(motionNotification);
+
+            if (delta>MOTION_TRESHOLD){
+                MotionNotification* motionNotification=new MotionNotification(newState);
+                sendNotification(motionNotification);
+                lastNotificationState=newState;
+            }
         }
 
         boost::this_thread::sleep(boost::posix_time::milliseconds(5));

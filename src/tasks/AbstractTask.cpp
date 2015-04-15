@@ -103,7 +103,9 @@ void AbstractTask::main(){
                     onRun();
                     break;
                 case Instruction::Type::STOP:
-                    setState(READY);
+                    if (getTaskState()==RUNNING){
+                        setState(READY);
+                    }
                     onPause();
                     break;
                 case Instruction::Type::KILL:
