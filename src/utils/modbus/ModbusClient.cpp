@@ -27,8 +27,15 @@ void ModbusClient::main(){
 
     while(!shouldStop){
 
-        if(!registersToSet.empty()){
+        while(!registersToSet.empty()){
+            m_mutex->lock();
+            ModbusSensorClientNotifier = true;
+            m_mutex->unlock();
             writeToRegister();
+        }
+
+        if(!coilToSet.empty()){
+            writeToCoil();
         }
 
     }
@@ -49,6 +56,21 @@ bool ModbusClient::setRegister(unsigned char _slave_address, short _function_add
 
     return true;
 }
+
+bool ModbusClient::setCoil(unsigned char _slave_address, short _function_address, short _data ){
+
+    setSingleRegisterData data;
+
+    data.ID.slaveAddress = _slave_address;
+    data.ID.functionAddress = _function_address;
+    data.data = _data;
+
+    queueLock.lock();
+    coilToSet.push(data);
+    queueLock.unlock();
+
+}
+
 
 
 bool ModbusClient::writeToRegister(){
@@ -79,6 +101,36 @@ bool ModbusClient::writeToRegister(){
     }
     return success;
 }
+
+bool ModbusClient::writeToCoil(){
+    bool success;
+    setSingleRegisterData data;
+
+    queueLock.lock();
+    if(!registersToSet.empty()){
+        data =(setSingleRegisterData) registersToSet.front();
+        registersToSet.pop();
+        queueLock.unlock();
+    }else{
+        queueLock.unlock();
+        return true;
+    }
+
+    std::cout << "writeing to coil: "
+              << int(data.ID.slaveAddress) << ":"
+              << data.ID.functionAddress << ":"
+              << data.data << std::endl;
+
+    boost::lock_guard<boost::mutex> lock(*m_mutex);
+
+    success = modbus->ModbusForceSingleCoil(data.ID.slaveAddress, data.ID.functionAddress, data.data);
+    if (!success){
+        boost::this_thread::sleep(boost::posix_time::milliseconds(delayTime));
+        success = modbus->ModbusForceSingleCoil(data.ID.slaveAddress, data.ID.functionAddress, data.data);
+    }
+    return success;
+}
+
 
 bool ModbusClient::readCoil(bool* _callFunction, idData _id ){
     signed char data;
@@ -126,6 +178,26 @@ void ModbusClient::stopModbusClient(){
     shouldStop = true;
 }
 
+bool* ModbusClient::getModbusSensorNotifier(){
+    boost::lock_guard<boost::mutex> lock(*m_mutex);
+    return &ModbusSensorClientNotifier;
 
+}
+
+bool ModbusClient::readRegister(short* _data, unsigned char _slaveAddress, short _functionAddress){
+     short data;
+     bool success;
+
+     boost::lock_guard<boost::mutex> lock(*m_mutex);
+
+     success = modbus->ModbusReadHoldingRegisters(_slaveAddress,_functionAddress,1,&data);
+     if(!success){
+         boost::this_thread::sleep(boost::posix_time::milliseconds(delayTime));
+         success = modbus->ModbusReadHoldingRegisters(_slaveAddress,_functionAddress,1,&data);
+     }
+     *_data = data;
+     return success;
+
+}
 
 } // end namespace

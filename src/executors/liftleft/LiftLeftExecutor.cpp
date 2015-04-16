@@ -113,7 +113,7 @@ bool LiftLeftExecutor::liftProcess(){
             return true;
         }
 
-    debug("CANT DOIT");
+    debug("LL CANT DOIT");
 }
 
 
@@ -152,7 +152,7 @@ void LiftLeftExecutor::ProcessSensorCallback(){
 
     if ( lastState.Aveable ) {
         sensoreCallbackRecived = true;
-        debug("DETECTEC OBJECT");
+        debug(" LL DETECTEC OBJECT");
     }
     return;
 }

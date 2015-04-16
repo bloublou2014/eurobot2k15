@@ -16,8 +16,13 @@ private:
     void suscribe();
     ModbusSensorClient* modbusClient;
     void ProcessSensorCallback();
+    void ProcessEnemySensorCallback1();
+    void ProcessEnemySensorCallback2();
+    void ProcessEnemySensorCallback3();
+    void ProcessEnemySensorCallback4();
+    void ProcessBeaconCallback();
 
-    bool testBool;
+    bool testBool = false;
     void testProcess();
     bool liftLoop();
 };

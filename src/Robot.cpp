@@ -14,8 +14,11 @@
 #include "executors/liftright/LiftRightExecutor.h"
 #include "executors/popcorn/PopcornExecutor.h"
 #include "executors/flap/FlapExecutor.h"
+#include "executors/enemyDetector/EnemyDetector.h"
 
 #include "tasks/PipeTask.h"
+
+#define CROSS_COMPILING
 
 using namespace std;
 using namespace robot;
@@ -54,7 +57,9 @@ int main(int argn, char** argc){
     //PipeTask testTask("pipeTask");
     //taskMgr->addTask(&testTask);
 
+
 #ifdef CROSS_COMPILING
+    EnemyDetector enemyDetExec;
     MotionExecutor motionExec;
     LiftCenterExecutor liftCenterExec;
     LiftRightExecutor liftRightExec;
@@ -70,6 +75,7 @@ int main(int argn, char** argc){
     execMgr->addExecutor(&e1);
 
 #ifdef CROSS_COMPILING
+    execMgr->addExecutor(&enemyDetExec);
     execMgr->addExecutor(&motionExec);
     execMgr->addExecutor(&liftCenterExec);
     execMgr->addExecutor(&liftRightExec);

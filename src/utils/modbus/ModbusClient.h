@@ -67,14 +67,10 @@ private:
     ModbusClient();
     ModbusMaster* modbus;
 
-    //typedef map <idData, ModbusClientCallbackInterface*> callbackRegisterMapType;
-   //typedef map <idData, ModbusClientCallbackInterface*>::iterator it_type;
-    //callbackRegisterMapType callbackRegisterMap;
-    //it_type it_check ;
-
     mutex* m_mutex;
     mutex queueLock;
     std::queue<setSingleRegisterData> registersToSet;
+    std::queue<setSingleRegisterData> coilToSet;
 
     priorityType priority;
     bool shouldStop = false;
@@ -84,10 +80,11 @@ private:
     bool sensoreDelay = false;
     std::queue<stateEnum> stateQueue;
 
-    //void calculatePriority(priorityType* _priority);
     void main();
 
     bool readCoilCallback();
+
+    bool ModbusSensorClientNotifier;
 
 
     friend bool operator< (const idData &id1, const idData &id2);
@@ -96,10 +93,16 @@ public:
     static ModbusClient* instance;
 
     bool readCoil(bool* _callFunction, idData _id);
-    //void registerToModbusCoilCallback(unsigned char _slave_address,unsigned short _coil_address, bool on_bool_callback, ModbusClientCallbackInterface* obj);
+    bool readRegister(short* _data, unsigned char _slaveAddress, short _functionAddress);
+
     bool writeToRegister();
+    bool writeToCoil();
+
+    bool setCoil(unsigned char _slave_address, short _function_address, short _data );
     bool setRegister(unsigned char _slave_address, short _function_address, short _data );
+
     void stopModbusClient();
+    bool* getModbusSensorNotifier();
 
 };
 
