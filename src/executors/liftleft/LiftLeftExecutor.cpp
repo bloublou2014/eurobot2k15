@@ -73,11 +73,16 @@ bool LiftLeftExecutor::liftProcess(){
             doorF(CLOSE_);
 
 
+            int count=0;
             stateLock.lock();
             lastState.Quantity++;
             lastState.Aveable = true;
             readingSensore = true;
+            count=lastState.Quantity;
             stateLock.unlock();
+
+            LIftNotification* liftNotification=new LIftNotification(LIftNotification::Side::LEFT, count);
+            sendNotification(liftNotification);
 
         }else if(lastState.Quantity == 3){
 
@@ -104,6 +109,9 @@ bool LiftLeftExecutor::liftProcess(){
             //readingSensore = true;
             readingSensore = false;
             stateLock.unlock();
+
+            LIftNotification* liftNotification=new LIftNotification(LIftNotification::Side::LEFT, 4);
+            sendNotification(liftNotification);
 
 
         }else if(lastState.Quantity < 5 ){
@@ -134,6 +142,9 @@ bool LiftLeftExecutor::UnloadObjectFunction(){
     lastState.Quantity = 0;
     lastState.Aveable = true;
     stateLock.unlock();
+
+    LIftNotification* liftNotification=new LIftNotification(LIftNotification::Side::LEFT, 0);
+    sendNotification(liftNotification);
 
     return true;
 }

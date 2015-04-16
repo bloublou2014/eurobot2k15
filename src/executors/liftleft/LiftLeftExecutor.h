@@ -5,7 +5,7 @@
 
 #include "utils/helper/LiftState.h"
 #include "executors/msg/GetLiftState.h"
-#include "executors/msg/LiftNotification.h"
+#include "executors/msg/LIftNotification.h"
 #include "utils/modbus/ModbusClient.h"
 #include "utils/modbus/ModbusSensoreClient.h"
 

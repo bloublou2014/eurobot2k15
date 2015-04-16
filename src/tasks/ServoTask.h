@@ -12,7 +12,7 @@
 
 #include "executors/msg/ActuatorCommand.h"
 #include "executors/msg/GetLiftState.h"
-#include "executors/msg/LiftNotification.h"
+#include "executors/msg/LIftNotification.h"
 
 #include "utils/helper/LiftState.h"
 

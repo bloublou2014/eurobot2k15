@@ -70,11 +70,17 @@ bool LiftRightExecutor::liftProcess(){
             doorF(CLOSE_);
 
 
+            int count=0;
             stateLock.lock();
             lastState.Quantity++;
             lastState.Aveable = true;
             readingSensore = true;
+            count=lastState.Quantity;
             stateLock.unlock();
+
+            //Send Notification
+            LIftNotification* liftNotification=new LIftNotification(LIftNotification::Side::RIGHT, count);
+            sendNotification(liftNotification);
 
         }else if(lastState.Quantity == 3){
 
@@ -101,6 +107,11 @@ bool LiftRightExecutor::liftProcess(){
             readingSensore = false;
             //readingSensore = true;
             stateLock.unlock();
+
+            //Send notification
+            LIftNotification* liftNotification=new LIftNotification(LIftNotification::Side::RIGHT, 4);
+            sendNotification(liftNotification);
+
 
 
         }else if(lastState.Quantity < 5 ){
@@ -129,6 +140,11 @@ bool LiftRightExecutor::UnloadObjectFunction(){
     lastState.Quantity = 0;
     lastState.Aveable = true;
     stateLock.unlock();
+
+    //Send notification
+    LIftNotification* liftNotification=new LIftNotification(LIftNotification::Side::RIGHT, 0);
+    sendNotification(liftNotification);
+
     return true;
 }
 
@@ -138,7 +154,6 @@ void LiftRightExecutor::processGetLiftState(Command* _command){
     GetLiftStateResponse* resp = new GetLiftStateResponse(_command->getSource(), _command->getDestination(),lastState);
     resp->setId(_command->getId());
     sendResponse(resp);
-
 }
 
 void LiftRightExecutor::brodcastNotification(){

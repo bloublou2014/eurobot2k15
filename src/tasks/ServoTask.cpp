@@ -8,7 +8,7 @@ void ServoTask::init(){
 }
 
 void ServoTask::initScript(){
-    this->subscribe(LiftNotification::notificationNAME,(notificationCallback)&ServoTask::setState);
+//    this->subscribe(LiftNotification::notificationNAME,(notificationCallback)&ServoTask::setState);
     this->subscribe("milan",(notificationCallback)&ServoTask::handleMilanNotifications);
 
     state.Aveable = true;
@@ -109,9 +109,9 @@ void ServoTask::roteteToPosition(CommandResponse* resp){
 }
 
 void ServoTask::setState(Notification *resp){
-    debug("LiftNotication recived");
-    LiftNotification * stateResponse=(LiftNotification*) resp;
-    state = stateResponse->getState();
+//    debug("LiftNotication recived");
+//    LiftNotification * stateResponse=(LiftNotification*) resp;
+//    state = stateResponse->getState();
 
 }
 void ServoTask::liftStateRecive(CommandResponse* resp){

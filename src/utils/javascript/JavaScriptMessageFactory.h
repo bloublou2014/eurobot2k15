@@ -13,6 +13,8 @@
 #include "executors/msg/GetMotionState.h"
 #include "messages/CommandResponse.h"
 #include "executors/msg/ActuatorCommand.h"
+#include "executors/msg/LIftNotification.h"
+#include "executors/msg/EnemyDetectedNotification.h"
 
 using std::string;
 using std::map;

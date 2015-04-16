@@ -23,6 +23,10 @@ void JavaScriptMessageFactory::init(Handle<Object> exportObject){
     motion::GetMotionStateResponse::Init(exportObject);
 
     executor::ActuatorCommandJS::Init(exportObject);
+    executor::LIftNotification::Init(exportObject);
+
+    //Enemy detection
+    executor::EnemyDetectedNotification::Init(exportObject);
 }
 
 Handle<Function> JavaScriptMessageFactory::getObjectConstructor(const string& name){

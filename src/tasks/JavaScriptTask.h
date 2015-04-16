@@ -3,6 +3,9 @@
 
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/locks.hpp>
+#include <boost/asio.hpp>
+#include <boost/asio/write.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <include/v8.h>
 #include <include/libplatform/libplatform.h>
@@ -72,6 +75,7 @@ protected:
     static void unsubscribeCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
     //Manager callbacks
     static void setStateCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void sleepCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
 
     void createGlobalObjects();
     Handle<Script> compileScript(Handle<String> scriptSource);

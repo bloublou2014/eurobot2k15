@@ -200,22 +200,30 @@ private:
     int orientation;
 };
 
-class MotionCommandResponse : public CommandResponse{
-public:
-    static string NAME;
-    /* Exports object */
-    static void Init(Handle<Object> exports);
-    /* Constructor */
-    static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
+//class MotionCommandError : public CommandResponse{
+//public:
+//    enum ErrorType{
+//        ENEMY=1,
+//        STUCK=2,
+//        UART=3
+//    };
 
-    MotionCommandResponse(const string& to, const string& from, ResponseStatus _status=SUCCESS):CommandResponse("MotionCommandResponse", to,from,_status) {}
-    MotionCommandResponse(const MotionCommandResponse& mcr):CommandResponse(mcr){}
+//    static string NAME;
+//    /* Exports object */
+//    static void Init(Handle<Object> exports);
+//    /* Constructor */
+//    static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-    Message* clone(){
-        return new MotionCommandResponse(*this);
-    }
-private:
-};
+//    MotionCommandError(ErrorType _type, const string& to, ResponseStatus _status=ERROR):
+//        CommandResponse(NAME, to, "MotionExecutor", _status),errorType(_type) {}
+//    MotionCommandError(const MotionCommandError& mcr):CommandResponse(mcr){}
+
+//    Message* clone(){
+//        return new MotionCommandError(*this);
+//    }
+//private:
+//    ErrorType errorType;
+//};
 
 }
 

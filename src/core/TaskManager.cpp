@@ -201,14 +201,14 @@ void TaskManager::runBestTask(){
             currentlyRunningTask=maxElement->second.task;
             currentlyRunningTask->runTask();
         }
-    }
-
-    if (currentlyRunningTask!=NULL){
+    }else if (maxElement!=availableTasks.end() && currentlyRunningTask!=NULL){
         if (currentlyRunningTask->getTaskState()!=TaskState::RUNNING){
             currentlyRunningTask->pauseTask();
             currentlyRunningTask=NULL;
         }
     }
+
+
 }
 
 }

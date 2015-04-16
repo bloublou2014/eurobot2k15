@@ -2,8 +2,8 @@
 
 #include <iostream>
 
-#define DETECT_STUCK
-#define MOTION_TRESHOLD 100
+//#define DETECT_STUCK
+#define MOTION_TRESHOLD 10
 
 using namespace std;
 
