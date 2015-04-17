@@ -2,9 +2,15 @@
 
 namespace executor{
 
-std::string EnemyDetector::NAME = "EnemyDetector";
+std::string EnemyDetector::NAME = "EnemyDetectorExecutor";
+
+
+
+
 
 void EnemyDetector::suscribe(){
+
+    this->registerCommand(ActuatorCommand::NAME, static_cast<commandCallback>(&EnemyDetector::processActuatorCommand));
     modbusClient = ModbusSensorClient::getModbusSensorInstance();
     modbusClient->registerToSensoreCallback(char(4), char(1),true,this);
     modbusClient->registerToSensoreCallback(char(4), char(2),true,this);
@@ -12,8 +18,37 @@ void EnemyDetector::suscribe(){
     modbusClient->registerToSensoreCallback(char(4), char(7),true,this);
     modbusClient->registerToBeaconInterface(this);
     this->readingSensore = true;
-    modbusClient->startBeacon();
+    //modbusClient->startBeacon();
+    //modbusClient->startBrxon();
 
+}
+
+bool EnemyDetector::StartBeaconFunction(){
+    debug("Start Beacon");
+    bool success;
+    success = modbusClient->startBeacon();
+    return success;
+}
+
+bool EnemyDetector::StopBeaconFunction(){
+    debug("Stop Beacon");
+    bool success;
+    success = modbusClient->stopBecaon();
+    return success;
+}
+
+bool EnemyDetector::StartBrxonFunction(){
+    debug("Start Brxon");
+    bool success;
+    success = modbusClient->startBrxon();
+    return success;
+}
+
+bool EnemyDetector::StopBrxonFunction(){
+    debug("Stop Brxon");
+    bool success;
+    success = modbusClient->stopBecaon();
+    return success;
 }
 
 void EnemyDetector::ProcessSensorCallback(){
@@ -47,6 +82,7 @@ void EnemyDetector::ProcessEnemySensorCallback4(){
 
 void EnemyDetector::ProcessBeaconCallback(){
     testBool = true;
+    std::cout << "BECON" << std::endl;
     std::cout << this->beaconData.X_beacon1 << std::endl
               << this->beaconData.Y_beacon1 << std::endl
               << this->beaconData.X_beacon2 << std::endl
@@ -59,8 +95,8 @@ bool EnemyDetector::liftLoop(){
     //std::cout << "redone" << std::endl;
     if(testBool){
         testBool = false;
-        std::cout << "ENEMY DETECTED" << std::endl;
-        boost::this_thread::sleep(boost::posix_time::milliseconds(2000));
+        //std::cout << "ENEMY DETECTED" << std::endl;
+        boost::this_thread::sleep(boost::posix_time::milliseconds(20));
         this->readingSensore = true;
     }
     return true;

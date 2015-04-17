@@ -18,9 +18,12 @@
 
 #include "tasks/PipeTask.h"
 
+<<<<<<< HEAD
+=======
 #define CROSS_COMPILING
 #define VELIKI
 
+>>>>>>> 9adaee7bc25672041c19f538402846adb2327bcf
 using namespace std;
 using namespace robot;
 using namespace motion;

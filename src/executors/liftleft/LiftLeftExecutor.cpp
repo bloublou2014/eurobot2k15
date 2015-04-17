@@ -54,7 +54,7 @@ bool LiftLeftExecutor::GetObjectFunction(){
 }
 
 bool LiftLeftExecutor::liftProcess(){
-    debug("DOING SOMETHING");
+    //debug("DOING SOMETHING");
 
         if(lastState.Quantity < 3){
             debug("FIRST ONE ");
@@ -121,7 +121,7 @@ bool LiftLeftExecutor::liftProcess(){
             return true;
         }
 
-    debug("LL CANT DOIT");
+    //debug("LL CANT DOIT");
 }
 
 

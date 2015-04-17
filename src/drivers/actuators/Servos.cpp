@@ -59,7 +59,7 @@ bool ServoDriver::rotateFor(short steps){
 bool ServoDriver::rotateToPosition(short position){
 
     boost::lock_guard<boost::mutex> lock(*s_mutex);
-    printf("ServoDriver: rotateTo %d, %d \n", position, this->position_address);
+    //printf("ServoDriver: rotateTo %d, %d \n", position, this->position_address);
     bool success = true;
 
     if ((position >= 0 ) && (position <= 1023)){
@@ -69,7 +69,7 @@ bool ServoDriver::rotateToPosition(short position){
         printf("ERROR: POSITION OUT OF VALUE");
         return false;
     }
-     printf("sucess %d \n ", success);
+     //printf("sucess %d \n ", success);
     return success;
 }
 
@@ -124,7 +124,7 @@ bool ServoDriver::getServoStatus(){
     signed char result_char;
     //modbus->ModbusForceSingleCoil(slave_address,statusSet_address, char(1));
     //modbus->ModbusReadCoilStatus(slave_address,statusRead_address, 1, &result_char);
-    printf("return value of coil is %d /n", result_char);
+    //printf("return value of coil is %d /n", result_char);
 
     if ( result_char == char(1)){
         status = true;

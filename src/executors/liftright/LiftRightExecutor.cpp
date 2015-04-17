@@ -6,8 +6,6 @@ string LiftRightExecutor::NAME = "LiftRightExecutor";
 
 void LiftRightExecutor::suscribe(){
     this->registerCommand(ActuatorCommand::NAME, static_cast<commandCallback>(&LiftRightExecutor::processActuatorCommand));
-    //this->registerCommand(GetLiftState::NAME, static_cast<commandCallback>(&LiftRightExecutor::processGetLiftState));
-    // TODO zakomentarisano jer nije uradjeno preslikavanje u js
     lastState.Aveable = true;
     lastState.Quantity = 0;
     executorName = this->NAME;
@@ -51,7 +49,7 @@ bool LiftRightExecutor::GetObjectFunction(){
 }
 
 bool LiftRightExecutor::liftProcess(){
-    debug("DOING SOMETHING");
+    //debug("DOING SOMETHING");
 
         if(lastState.Quantity < 3){
             debug("FIRST ONE ");
@@ -117,11 +115,10 @@ bool LiftRightExecutor::liftProcess(){
         }else if(lastState.Quantity < 5 ){
             readingSensore = false;
             error("NO MORE SPACE IN STORAGE");
-            //sendResponseFromCommand(currentActuatorCommand, ERROR);
             return true;
         }
 
-    debug("LR CANT DOIT");
+    //debug("LR CANT DOIT");
 
 }
 
@@ -172,7 +169,7 @@ bool LiftRightExecutor::liftLoop(){
 void LiftRightExecutor::ProcessSensorCallback(){
     if ( lastState.Aveable ) {
         sensoreCallbackRecived = true;
-        debug("LR DETECTEC OBJECT");
+        //debug("LR DETECTEC OBJECT");
     }
     return;
 }

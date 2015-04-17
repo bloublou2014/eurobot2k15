@@ -44,7 +44,7 @@ ModbusSensorClient::ModbusSensorClient(): Node("ModbusServoClient"),m_mutex(new 
     brxonStartID.slaveAddress = char(4);
     brxonStartID.functionAddress = char(8);
 
-    beaconID.slaveAddress = char(3);
+    beaconID.slaveAddress = char(2);
     beaconID.functionAddress_Start = char(1);
     beaconID.functionAddress_NumberOfBeacons = char(2);
     beaconID.functionAddress_XdataBecaon1 = char(1);
@@ -113,8 +113,9 @@ void ModbusSensorClient::main(){
 
             }
 
-            if(beaconReading > 4 && beaconID.beaconON){
+            if(beaconReading > 10 && beaconID.beaconON){
                 beaconReading = 0;
+                std::cout << " reading beacon" << std::endl;
                 readBeacon();
                 boost::this_thread::sleep(boost::posix_time::milliseconds(delayTime));
             }else if(beaconID.beaconON){
@@ -131,10 +132,10 @@ void ModbusSensorClient::main(){
                     //case (char(1)): it->second->ProcessEnemySensorCallback1(); std::cout << "enemy 1" << std::cout; break;
                     //case (char(2)): it->second->ProcessEnemySensorCallback2(); std::cout << "enemy 1" << std::cout; break;
                     //case (char(5)): it->second->ProcessEnemySensorCallback3(); std::cout << "enemy 1" << std::cout; break;
-                    case 1: it->second->ProcessEnemySensorCallback1(); std::cout << "enemy 1" << std::cout; break;
-                    case 2: it->second->ProcessEnemySensorCallback2(); std::cout << "enemy 2" << std::cout; break;
-                    case 5: it->second->ProcessEnemySensorCallback3(); std::cout << "enemy 3" << std::cout; break;
-                    case 7: it->second->ProcessEnemySensorCallback4(); std::cout << "enemy beakon" << std::cout; break;
+                    case 1: it->second->ProcessEnemySensorCallback1(); break;
+                    case 2: it->second->ProcessEnemySensorCallback2(); break;
+                    case 5: it->second->ProcessEnemySensorCallback3(); break;
+                    case 7: it->second->ProcessEnemySensorCallback4(); break;
                     default: it->second->ProcessSensorCallback();
                     }
                 }
@@ -172,8 +173,16 @@ bool ModbusSensorClient::stopBrxon(){
 bool ModbusSensorClient::startBeacon(){
     bool success = false;
     if(!beaconID.beaconON){
+
+        success =  modbus->setCoil(beaconID.slaveAddress, beaconID.functionAddress_NumberOfBeacons, 0 );
         success =  modbus->setCoil(beaconID.slaveAddress, beaconID.functionAddress_Start, 1 );
-        if(success) beaconID.beaconON = true;
+
+        if(success){
+            beaconID.beaconON = true;
+            std::cout << " Beacon is spping " << std::endl;
+        }else{
+            std::cout << " Beacon ERROR" << std::endl;
+        }
     }
     return success;
 }
@@ -199,7 +208,7 @@ bool ModbusSensorClient::readBeacon(){
             beaconID.beaconData.X_beacon1 = data;
             beaconID.beaconDataCounter++;
         }
-        break;
+        //break;
     }
     case 1:{
         success = modbus->readRegister(&data ,beaconID.slaveAddress, beaconID.functionAddress_YdataBeacon1);
@@ -207,7 +216,7 @@ bool ModbusSensorClient::readBeacon(){
             beaconID.beaconData.Y_beacon1 = data;
             beaconID.beaconDataCounter++;
         }
-        break;
+        //break;
     }
     case 2:{
         success = modbus->readRegister(&data ,beaconID.slaveAddress, beaconID.functionAddress_XdataBecaon2);
@@ -227,15 +236,17 @@ bool ModbusSensorClient::readBeacon(){
             beaconID.interface->beaconData.X_beacon2 = beaconID.beaconData.X_beacon2;
             beaconID.interface->beaconData.Y_beacon1 = beaconID.beaconData.Y_beacon2;
             beaconID.interface->ProcessBeaconCallback();
+            std::cout << "BEACON WRITE DATA" << std::endl;
         }
-        break;
+        //break;
     }
     } // end switch
+
     return success;
 }
 
 void ModbusSensorClient::registerToBeaconInterface(ModbusSensorClientInterface* _interface){
-    std::cout << "registred to Beacon Interface";
+    std::cout << "registred to Beacon Interface" << std::endl;
     beaconID.interface = _interface;
 }
 

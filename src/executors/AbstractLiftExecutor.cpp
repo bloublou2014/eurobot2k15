@@ -75,7 +75,7 @@ void AbstractLiftExecutor::SetSensorAddresses(unsigned char _slave_address, unsi
 
 bool AbstractLiftExecutor::doorF(DoorFunctionType _option){
     bool success;
-    debug("default doorF");
+    //debug("default doorF");
     switch (_option ){
     case CLOSE_:{
         success = door.rotateToPosition(value.LiftConfigs.door.close);
@@ -96,7 +96,7 @@ bool AbstractLiftExecutor::doorF(DoorFunctionType _option){
 }
 
 bool AbstractLiftExecutor::handF(HandFunctioType _option){
-    debug("default handF");
+    //debug("default handF");
     bool success;
     switch( _option){
     case OPEN:{
@@ -114,7 +114,7 @@ bool AbstractLiftExecutor::handF(HandFunctioType _option){
 }
 
 bool AbstractLiftExecutor::liftF(LiftFunctiontype _option){
-    debug("default liftF");
+    //debug("default liftF");
     bool success;
     switch(_option){
     case LEVEL0:{

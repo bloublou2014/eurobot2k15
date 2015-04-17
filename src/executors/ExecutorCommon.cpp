@@ -15,6 +15,11 @@ void ExecutorCommon::init(){
     actuatorHandles[ActuatorType::UNLOAD_OBJECT]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::unloadObject);
     actuatorHandles[ActuatorType::RELOAD_CONFIG]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::reloadConfig);
     actuatorHandles[ActuatorType::GET_OBJECT_STOP]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::getObjectStop);
+    actuatorHandles[ActuatorType::START_BRXON]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::startBrxon);
+    actuatorHandles[ActuatorType::STOP_BRXON]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::stopBrxon);
+    actuatorHandles[ActuatorType::START_BEACON]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::startBeacon);
+    actuatorHandles[ActuatorType::STOP_BEACON]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::stopBeacon);
+
 
     suscribe();
     mapping();
@@ -234,6 +239,64 @@ void ExecutorCommon::getObjectStop(ActuatorCommand * _command){
     }
 }
 
+void ExecutorCommon::startBrxon(ActuatorCommand * _command){
+    bool success;
+    StartBrxon* command = (StartBrxon*) _command;
+    currentActuatorCommand = command;
+    success =  StartBrxonFunction();
+    if (success){
+        sendResponseFromCommand(currentActuatorCommand, SUCCESS);
+        currentActuatorCommand = NULL;
+    }else{
+        sendResponseFromCommand(currentActuatorCommand, ERROR);
+        currentActuatorCommand = NULL;
+    }
+}
+
+void ExecutorCommon::startBeacon(ActuatorCommand * _command){
+    bool success;
+    StartBeacon* command = (StartBeacon*) _command;
+    currentActuatorCommand = command;
+    success =  StartBeaconFunction();
+    if (success){
+        sendResponseFromCommand(currentActuatorCommand, SUCCESS);
+        currentActuatorCommand = NULL;
+    }else{
+        sendResponseFromCommand(currentActuatorCommand, ERROR);
+        currentActuatorCommand = NULL;
+    }
+}
+
+
+void ExecutorCommon::stopBrxon(ActuatorCommand * _command){
+    bool success;
+    StopBrxon* command = (StopBrxon*) _command;
+    currentActuatorCommand = command;
+    success =  StopBrxonFunction();
+    if (success){
+        sendResponseFromCommand(currentActuatorCommand, SUCCESS);
+        currentActuatorCommand = NULL;
+    }else{
+        sendResponseFromCommand(currentActuatorCommand, ERROR);
+        currentActuatorCommand = NULL;
+    }
+}
+
+
+void ExecutorCommon::stopBeacon(ActuatorCommand * _command){
+    bool success;
+    StopBeacon* command = (StopBeacon*) _command;
+    currentActuatorCommand = command;
+    success =  StopBeaconFunction();
+    if (success){
+        sendResponseFromCommand(currentActuatorCommand, SUCCESS);
+        currentActuatorCommand = NULL;
+    }else{
+        sendResponseFromCommand(currentActuatorCommand, ERROR);
+        currentActuatorCommand = NULL;
+    }
+}
+
 bool ExecutorCommon::KickRightFunction(){
     debug("KICK RIGHT: REDEFINE PLEASE");
     return false;
@@ -292,5 +355,24 @@ bool ExecutorCommon::liftLoop(){
     return;
 }
 
+bool ExecutorCommon::StopBrxonFunction(){
+    debug("REDEFINE PLEASE");
+    return false;
+}
+
+bool ExecutorCommon::StartBrxonFunction(){
+    debug("REDEFINE PLEASE");
+    return false;
+}
+
+bool ExecutorCommon::StartBeaconFunction(){
+    debug("REDEFINE PLEASE");
+    return false;
+}
+
+bool ExecutorCommon::StopBeaconFunction(){
+    debug("REDEFINE PLEASE");
+    return false;
+}
 
 }

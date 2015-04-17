@@ -13,7 +13,7 @@ void LiftCenterExecutor::suscribe(){
 void LiftCenterExecutor::mapping(){
 
     hand.setServoSlaveAddress(char(1));
-    hand.setServoPositionAddress(char(50));
+    hand.setServoPositionAddress(char(10));
 
     reload(&value, LiftCenterExecutor::NAME);
 
