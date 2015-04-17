@@ -18,8 +18,6 @@
 
 #include "tasks/PipeTask.h"
 
-#define CROSS_COMPILING
-
 using namespace std;
 using namespace robot;
 using namespace motion;
