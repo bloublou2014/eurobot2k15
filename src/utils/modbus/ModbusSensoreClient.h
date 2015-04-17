@@ -17,7 +17,7 @@ namespace modbus {
 class ModbusSensorClientInterface{
 public:
     ModbusSensorClientInterface(){
-        std::cout<<"Created interface" << std::endl;
+        //std::cout<<"Created interface" << std::endl;
     }
 
     virtual void ProcessSensorCallback();

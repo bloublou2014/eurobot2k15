@@ -25,7 +25,9 @@ enum Executors{LIFT_LEFT,
                POPCORN,
                FLAP,
                MOTION,
-              NULL_EXECUTOR};
+               ENEMY_DETECT,
+               NULL_EXECUTOR
+              };
 
 enum ServoType{ LIFT_SRVO,
                 DOOR_SERVO,
@@ -49,6 +51,10 @@ enum ActuatorType{SET_START_CONFIG,
                   SET_POSITION,
                   RELOAD_CONFIG,
                   GET_OBJECT_STOP,
+                  START_BRXON,
+                  STOP_BRXON,
+                  START_BEACON,
+                  STOP_BEACON,
                   NULL_ACTION
                  };
 
@@ -130,6 +136,28 @@ public:
     ReloadConfig(Executors _executor): ActuatorCommand(RELOAD_CONFIG, _executor){}
 };
 
+class StartBrxon: public ActuatorCommand{
+public:
+    StartBrxon(Executors _executor):ActuatorCommand(START_BRXON, _executor){}
+};
+
+class StopBrxon: public ActuatorCommand{
+public:
+    StopBrxon(Executors _executor):ActuatorCommand(STOP_BRXON, _executor){}
+};
+
+class StartBeacon: public ActuatorCommand{
+public:
+    StartBeacon(Executors _executor):ActuatorCommand(START_BEACON, _executor){}
+};
+
+class StopBeacon: public ActuatorCommand{
+public:
+    //    StartBeacon():ActuatorCommand(STOP_BEACON, ENEMY_DETECTOR){}
+    StopBeacon(Executors _executor):ActuatorCommand(STOP_BEACON, _executor){}
+};
+
+
 class SetSpeed: public ActuatorCommand {
 public:
     SetSpeed(Executors _executor, ServoType _servo,  int _value): ActuatorCommand(SET_SPEED, _executor), value(_value){}
@@ -159,6 +187,7 @@ public:
     static Command* LiftCenter(ActuatorType _type);
     static Command* Popcorn(ActuatorType _type);
     static Command* Flap(ActuatorType _type);
+    static Command* EnemyDetector(ActuatorType _type);
 private:
 
 };

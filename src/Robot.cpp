@@ -19,6 +19,7 @@
 #include "tasks/PipeTask.h"
 
 #define CROSS_COMPILING
+#define VELIKI
 
 using namespace std;
 using namespace robot;
@@ -59,6 +60,8 @@ int main(int argn, char** argc){
 
 
 #ifdef CROSS_COMPILING
+
+#ifdef VELIKI
     EnemyDetector enemyDetExec;
     MotionExecutor motionExec;
     LiftCenterExecutor liftCenterExec;
@@ -66,6 +69,11 @@ int main(int argn, char** argc){
     LiftLeftExecutor liftLeftExec;
     PopcornExecutor popcornExec;
     FlapExecutor flapExec;
+#endif
+
+#ifdef MALI
+    // executori za malog
+#endif
 
 #endif
 
@@ -75,6 +83,8 @@ int main(int argn, char** argc){
     execMgr->addExecutor(&e1);
 
 #ifdef CROSS_COMPILING
+
+#ifdef VELIKI
     execMgr->addExecutor(&enemyDetExec);
     execMgr->addExecutor(&motionExec);
     execMgr->addExecutor(&liftCenterExec);
@@ -82,6 +92,12 @@ int main(int argn, char** argc){
     execMgr->addExecutor(&liftLeftExec);
     execMgr->addExecutor(&popcornExec);
     execMgr->addExecutor(&flapExec);
+#endif
+
+#ifdef MALI
+
+#endif
+
 #endif
 
     taskMgr->init();

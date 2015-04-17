@@ -67,6 +67,10 @@ protected:
     virtual bool SetSpeedFunction();
     virtual bool SetPositionFunction();
     virtual bool GetObjectStopFunction();
+    virtual bool StartBrxonFunction();
+    virtual bool StopBrxonFunction();
+    virtual bool StartBeaconFunction();
+    virtual bool StopBeaconFunction();
     virtual bool liftLoop();
 
 private:
@@ -81,6 +85,11 @@ private:
     void unKickLeft(ActuatorCommand* _command);
     void unloadPopcorn(ActuatorCommand* _command);
     void getPopcorn(ActuatorCommand* _command);
+
+    void stopBrxon(ActuatorCommand* _command);
+    void startBrxon(ActuatorCommand* _command);
+    void stopBeacon(ActuatorCommand* _command);
+    void startBeacon(ActuatorCommand* _command);
 
 
 

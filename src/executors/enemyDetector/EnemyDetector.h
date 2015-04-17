@@ -7,6 +7,7 @@
 using namespace modbus;
 
 namespace executor {
+
 class EnemyDetector: public ExecutorCommon, public ModbusSensorClientInterface{
 public:
     EnemyDetector():ExecutorCommon(this->NAME),ModbusSensorClientInterface(){}
@@ -21,6 +22,11 @@ private:
     void ProcessEnemySensorCallback3();
     void ProcessEnemySensorCallback4();
     void ProcessBeaconCallback();
+
+    bool StartBeaconFunction();
+    bool StopBeaconFunction();
+    bool StartBrxonFunction();
+    bool StopBrxonFunction();
 
     bool testBool = false;
     void testProcess();

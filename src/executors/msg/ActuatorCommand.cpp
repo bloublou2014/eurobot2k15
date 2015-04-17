@@ -7,7 +7,8 @@ ExecutorsMap ExecutorName={
     {LIFT_LEFT,"LiftLeftExecutor"},
     {LIFT_RIGHT,"LiftRightExecutor"},
     {POPCORN,"PopcornExecutor"},
-    {FLAP,"FlapExecutor"}
+    {FLAP,"FlapExecutor"},
+    {ENEMY_DETECT,"EnemyDetectorExecutor"}
 };
 
 string ActuatorCommand::NAME="ActuatorCommand";
@@ -61,6 +62,16 @@ Command* ActuatorAction::Popcorn(ActuatorType _type){
     case SET_START_CONFIG : return (Command*) new SetStartConfig(POPCORN);
     case RELOAD_CONFIG : return (Command*) new ReloadConfig(POPCORN);
     default : return NULL;
+    }
+}
+
+Command* ActuatorAction::EnemyDetector(ActuatorType _type){
+    switch(_type){
+    case START_BEACON: return (Command*) new StartBeacon(ENEMY_DETECT);
+    case STOP_BEACON: return (Command*) new StopBeacon(ENEMY_DETECT);
+    case START_BRXON: return ( Command*) new StartBrxon(ENEMY_DETECT);
+    case STOP_BRXON: return (Command*) new StopBrxon(ENEMY_DETECT);
+    default: return NULL;
     }
 }
 
@@ -119,6 +130,7 @@ Command* ActuatorConfig::Flap(ActuatorType _actuator, ServoType _servo, int _val
     }
 }
 
+
 string ActuatorCommandJS::NAME = "ActuatorCommand";
 
 void ActuatorCommandJS::Init(Handle<Object> exports){
@@ -174,15 +186,23 @@ Command* ActuatorCommandJS::parseCreateCommand(string _executorString, string _a
     else if(_executorString.compare("LiftCenter") == 0) executorTmp = LIFT_CENTER;
     else if(_executorString.compare("Flap") == 0) executorTmp = FLAP;
     else if(_executorString.compare("Popcorn") == 0) executorTmp = POPCORN;
+    else if(_executorString.compare("EnemyDetector") == 0) executorTmp = ENEMY_DETECT;
     else {
         executorTmp = NULL_EXECUTOR;
         *_success = false;
     }
 
-    if (executorTmp == LIFT_LEFT || executorTmp == LIFT_RIGHT || executorTmp == LIFT_CENTER) {
+    if (executorTmp == LIFT_LEFT || executorTmp == LIFT_RIGHT ) {
         if(_actionString.compare("StartGetting") == 0) actionTmp = GET_OBJECT;
         else if(_actionString.compare("Unload") == 0) actionTmp = UNLOAD_OBJECT;
         else if(_actionString.compare("StopGetting") == 0) actionTmp = GET_OBJECT_STOP;
+        else {
+            actionTmp = NULL_ACTION;
+            *_success = false;
+        }
+    }else if(executorTmp == LIFT_CENTER){
+        if(_actionString.compare("Get") == 0) actionTmp = GET_OBJECT;
+        else if(_actionString.compare("Unload") == 0) actionTmp = UNLOAD_OBJECT;
         else {
             actionTmp = NULL_ACTION;
             *_success = false;
@@ -203,6 +223,16 @@ Command* ActuatorCommandJS::parseCreateCommand(string _executorString, string _a
             actionTmp = NULL_ACTION;
             *_success = false;
         }
+    }else if(executorTmp == ENEMY_DETECT){
+        //std::cout << "**************** ENEMY DETECTOR *******************" << std::endl;
+        if(_actionString.compare("StartBrkon") == 0) actionTmp = START_BRXON;
+        else if(_actionString.compare("StopBrxon") == 0) actionTmp = STOP_BRXON;
+        else if(_actionString.compare("StartBeacon") == 0) actionTmp = START_BEACON;
+        else if(_actionString.compare("StopBeacon") == 0) actionTmp = STOP_BEACON;
+        else{
+            actionTmp = NULL_ACTION;
+            *_success = false;
+        }
     }
 
     if(!*_success){
@@ -215,6 +245,7 @@ Command* ActuatorCommandJS::parseCreateCommand(string _executorString, string _a
         case LIFT_CENTER:{ tmp = ActuatorAction::LiftCenter(actionTmp); break; }
         case FLAP: { tmp = ActuatorAction::Flap(actionTmp); break; }
         case POPCORN: {  tmp = ActuatorAction::Popcorn(actionTmp); break; }
+        case ENEMY_DETECT: { tmp  = ActuatorAction::EnemyDetector(actionTmp); break; }
         case NULL_EXECUTOR: {break; }
         }
     }

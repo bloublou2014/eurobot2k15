@@ -27,7 +27,7 @@ void ModbusClient::main(){
 
     while(!shouldStop){
 
-        while(!registersToSet.empty()){
+        if(!registersToSet.empty()){
             m_mutex->lock();
             ModbusSensorClientNotifier = true;
             m_mutex->unlock();
@@ -86,12 +86,12 @@ bool ModbusClient::writeToRegister(){
         queueLock.unlock();
         return true;
     }
-
+    /*
     std::cout << "writeing to register: "
               << int(data.ID.slaveAddress) << ":"
               << data.ID.functionAddress << ":"
               << data.data << std::endl;
-
+    */
     boost::lock_guard<boost::mutex> lock(*m_mutex);
 
     success = modbus->ModbusPresetSingleRegister(data.ID.slaveAddress, data.ID.functionAddress, data.data);
@@ -107,9 +107,9 @@ bool ModbusClient::writeToCoil(){
     setSingleRegisterData data;
 
     queueLock.lock();
-    if(!registersToSet.empty()){
-        data =(setSingleRegisterData) registersToSet.front();
-        registersToSet.pop();
+    if(!coilToSet.empty()){
+        data =(setSingleRegisterData) coilToSet.front();
+        coilToSet.pop();
         queueLock.unlock();
     }else{
         queueLock.unlock();

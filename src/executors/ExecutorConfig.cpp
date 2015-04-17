@@ -33,6 +33,7 @@ bool ExecutorConfig::reload(ConfigValues* values, string _executorName){
                 values->LiftConfigs.time.handOpenClose = v.second.get<int>("handOpenClose");
             }
         }
+        /*
         cout <<"******  RELOAD LIFT CONFIG **********" << endl;
         cout <<"Lift Level Config: " << endl;
         cout <<"level0: " << values->LiftConfigs.lift.level0 << endl;
@@ -51,7 +52,7 @@ bool ExecutorConfig::reload(ConfigValues* values, string _executorName){
         cout << "doorOpenClose" << values->LiftConfigs.time.doorOpenClose << endl;
         cout << "handOpenClose" << values->LiftConfigs.time.handOpenClose << endl;
         cout << "********* END RELOAD LIFT CONIG **********" << endl;
-
+        */
         // printf("ExeutorConfig is called");
     }else if(_executorName == "LiftCenterExecutor"){
         BOOST_FOREACH( ptree::value_type const& v, pt.get_child(_executorName)){
@@ -75,6 +76,7 @@ bool ExecutorConfig::reload(ConfigValues* values, string _executorName){
                 values->FlapConfigs.flapLeft.close = v.second.get<short>("close");
             }
         }
+        /*
         cout << "******* RELOAD FLAP CONFIG **************" << endl;
         cout << "FlapRight Config:" << endl;
         cout << "open:" << values->FlapConfigs.flapRight.open << endl;
@@ -83,7 +85,7 @@ bool ExecutorConfig::reload(ConfigValues* values, string _executorName){
         cout << "open: " << values->FlapConfigs.flapLeft.open << endl;
         cout << "close: " << values->FlapConfigs.flapLeft.close << endl;
         cout << "********* END RELOAD FLAP CONIG **********" << endl;
-
+        */
     }else if(_executorName == "PopcornExecutor"){
         BOOST_FOREACH( ptree::value_type const& v, pt.get_child(_executorName)){
             if(v.first == "PipeRightConfig"){
@@ -100,6 +102,7 @@ bool ExecutorConfig::reload(ConfigValues* values, string _executorName){
                 values->PopcornConfigs.time.unloadPopcorn = v.second.get<int>("unloadPopcorn");
             }
         }
+        /*
         cout << "***** RELOAD POPCORN CONFIG ***********" << endl;
         cout << "Pipe Right Config " << endl;
         cout << "open: " << values->PopcornConfigs.pipeRight.open << endl;
@@ -114,6 +117,7 @@ bool ExecutorConfig::reload(ConfigValues* values, string _executorName){
         cout << "unloadPopcorn: " << values->PopcornConfigs.time.unloadPopcorn << endl;
         cout << "getPopcorn: " << values->PopcornConfigs.time.getPopcorn << endl;
         cout << "********* END POPCORN CONFIG ************" << endl;
+        */
      }
     return true;
 }
