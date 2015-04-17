@@ -166,6 +166,9 @@ Handle<ObjectTemplate> JavaScriptTask::createManagerTemplate(Isolate* isolate){
     result->Set(String::NewFromUtf8(isolate, "updateState", String::kInternalizedString),
                 FunctionTemplate::New(isolate, setStateCallback));
 
+    result->Set(String::NewFromUtf8(isolate, "sleep", String::kInternalizedString),
+                FunctionTemplate::New(isolate, sleepCallback));
+
     return scope.Escape(result);
 }
 
@@ -471,6 +474,28 @@ void JavaScriptTask::setStateCallback(const v8::FunctionCallbackInfo<v8::Value>&
         }
     }
     isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Unrecognized state"));
+}
+
+void print(const boost::system::error_code& /*e*/)
+{
+  std::cout << "Hello, world!\n";
+}
+
+void JavaScriptTask::sleepCallback(const v8::FunctionCallbackInfo<v8::Value>& args){
+//    Isolate* isolate=Isolate::GetCurrent();
+
+//    if (args.Length()<2){
+//        isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Not enaugh parameters."));
+//    }
+
+//    int value = args[0]->NumberValue();
+
+//    boost::asio::io_service io;
+//    boost::asio::deadline_timer t(io, boost::posix_time::seconds(value));
+//    t.async_wait(print);
+
+//    //io.run();
+//    boost::asio::thread t(boost::bind(&boost::asio::io_service::run, &io));
 }
 
 }
