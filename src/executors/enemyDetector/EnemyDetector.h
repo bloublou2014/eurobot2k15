@@ -3,6 +3,7 @@
 
 #include "executors/ExecutorCommon.h"
 #include "utils/modbus/ModbusSensoreClient.h"
+#include "executors/msg/EnemyDetectedNotification.h"
 
 using namespace modbus;
 
@@ -10,9 +11,13 @@ namespace executor {
 
 class EnemyDetector: public ExecutorCommon, public ModbusSensorClientInterface{
 public:
-    EnemyDetector():ExecutorCommon(this->NAME),ModbusSensorClientInterface(){}
+    EnemyDetector():ExecutorCommon(this->NAME),ModbusSensorClientInterface(),
+        detectedAngle(1800),enemyDetected(false){}
 
 private:
+    int detectedAngle;
+    bool enemyDetected;
+
     static std::string NAME;
     void suscribe();
     ModbusSensorClient* modbusClient;

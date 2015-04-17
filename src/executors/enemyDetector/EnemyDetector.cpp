@@ -4,10 +4,6 @@ namespace executor{
 
 std::string EnemyDetector::NAME = "EnemyDetectorExecutor";
 
-
-
-
-
 void EnemyDetector::suscribe(){
 
     this->registerCommand(ActuatorCommand::NAME, static_cast<commandCallback>(&EnemyDetector::processActuatorCommand));
@@ -58,17 +54,30 @@ void EnemyDetector::ProcessSensorCallback(){
 
 void EnemyDetector::ProcessEnemySensorCallback1(){
     testBool = true;
-    std::cout << "ENEMY 1" << std::endl;
+    //TODO: dodati proveru da li se stanje promenilo
+    int angle=0;   //Po dogovoru
+    if (detectedAngle!=angle){
+        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::SENSOR,angle);
+        sendNotification(notification);
+    }
 }
 
 void EnemyDetector::ProcessEnemySensorCallback2(){
     testBool = true;
-    std::cout << "ENEMY 2" << std::endl;
+    int angle=0;   //Po dogovoru
+    if (detectedAngle!=angle){
+        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::SENSOR,angle);
+        sendNotification(notification);
+    }
 }
 
 void EnemyDetector::ProcessEnemySensorCallback3(){
     testBool = true;
-    std::cout << "ENEMY 3" << std::endl;
+    int angle=180;   //Po dogovoru
+    if (detectedAngle!=angle){
+        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::SENSOR,angle);
+        sendNotification(notification);
+    }
 }
 
 void EnemyDetector::ProcessEnemySensorCallback4(){

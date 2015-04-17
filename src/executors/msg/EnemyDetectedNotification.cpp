@@ -12,6 +12,8 @@ void EnemyDetectedNotification::Init(Handle<Object> exports){
                             TypeGetter);
     tpl->InstanceTemplate()->SetAccessor(String::NewFromUtf8(isolate, "angle"),
                             AngleGetter);
+    tpl->InstanceTemplate()->SetAccessor(String::NewFromUtf8(isolate, "detected"),
+                            DetectedGetter);
     tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
     JavaScriptMessageProvider* provider=static_cast<JavaScriptMessageProvider*>(isolate->GetData(0));
@@ -30,6 +32,12 @@ void EnemyDetectedNotification::AngleGetter(Local<String> property, const Proper
     Local<Object> self = info.Holder();
     EnemyDetectedNotification* notification=Unwrap<EnemyDetectedNotification>(self);
     info.GetReturnValue().Set(notification->getAngle());
+}
+
+void EnemyDetectedNotification::DetectedGetter(Local<String> property, const PropertyCallbackInfo<Value>& info){
+    Local<Object> self = info.Holder();
+    EnemyDetectedNotification* notification=Unwrap<EnemyDetectedNotification>(self);
+    info.GetReturnValue().Set(notification->isDetected());
 }
 
 }
