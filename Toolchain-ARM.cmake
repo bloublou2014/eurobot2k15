@@ -1,11 +1,11 @@
 SET(CMAKE_SYSTEM_NAME Linux)
 SET(CMAKE_SYSTEM_VERSION 1)
 
-#SET(CMAKE_C_COMPILER ${RPI_TOOLS}/bin/arm-linux-gnueabihf-gcc)
-#SET(CMAKE_CXX_COMPILER ${RPI_TOOLS}/bin/arm-linux-gnueabihf-g++)
+SET(CMAKE_C_COMPILER ${RPI_TOOLS}/bin/arm-linux-gnueabihf-gcc)
+SET(CMAKE_CXX_COMPILER ${RPI_TOOLS}/bin/arm-linux-gnueabihf-g++)
 
-SET(CMAKE_C_COMPILER /home/project/RPI/tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian/bin/arm-linux-gnueabihf-gcc)
-SET(CMAKE_CXX_COMPILER /home/project/RPI/tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian/bin/arm-linux-gnueabihf-g++)
+#SET(CMAKE_C_COMPILER /home/project/RPI/tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian/bin/arm-linux-gnueabihf-gcc)
+#SET(CMAKE_CXX_COMPILER /home/project/RPI/tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian/bin/arm-linux-gnueabihf-g++)
 
 #SET(CMAKE_FIND_ROOT_PATH ${RPI_ROOTFS})
 
