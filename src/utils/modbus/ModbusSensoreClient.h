@@ -28,6 +28,8 @@ public:
     virtual void ProcessBeaconCallback();
     bool readingSensore = false ;
     bool readingBeckon = false;
+    bool enemyDetected = false;
+
     int brxonValue;
     beaconDataStruct beaconData;
 

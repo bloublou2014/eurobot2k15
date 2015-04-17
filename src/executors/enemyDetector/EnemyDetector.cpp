@@ -83,7 +83,7 @@ void EnemyDetector::ProcessEnemySensorCallback3(){
 void EnemyDetector::ProcessEnemySensorCallback4(){
     short data;
     testBool = true;
-    std::cout << "ENEMY BRXON" << std::endl;
+    std::cout << "ENEMY BRKON" << std::endl;
     data = modbusClient->readBrxon();
     std::cout << data << std::endl;
 }
@@ -107,6 +107,9 @@ bool EnemyDetector::liftLoop(){
         //std::cout << "ENEMY DETECTED" << std::endl;
         boost::this_thread::sleep(boost::posix_time::milliseconds(20));
         this->readingSensore = true;
+        if (!this->enemyDetected ) {
+            // TODO
+        }
     }
     return true;
 }
