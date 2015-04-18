@@ -19,6 +19,7 @@ void ExecutorCommon::init(){
     actuatorHandles[ActuatorType::STOP_BRXON]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::stopBrxon);
     actuatorHandles[ActuatorType::START_BEACON]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::startBeacon);
     actuatorHandles[ActuatorType::STOP_BEACON]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::stopBeacon);
+    actuatorHandles[ActuatorType::LEAVE_CARPET]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::leaveCarpet);
 
 
     suscribe();
@@ -217,7 +218,7 @@ void ExecutorCommon::unloadObject(ActuatorCommand* _command){
     currentActuatorCommand = command;
     success = UnloadObjectFunction();
     if (success){
-        sendResponseFromCommand(currentActuatorCommand, ERROR);
+        sendResponseFromCommand(currentActuatorCommand, SUCCESS);
         currentActuatorCommand = NULL;
     }else{
         sendResponseFromCommand(currentActuatorCommand, ERROR);
@@ -297,6 +298,20 @@ void ExecutorCommon::stopBeacon(ActuatorCommand * _command){
     }
 }
 
+void ExecutorCommon::leaveCarpet(ActuatorCommand * _command){
+    bool success;
+    LeaveCarpet* command = (LeaveCarpet*) _command;
+    currentActuatorCommand = command;
+    success =  LeaveCarpetFunction();
+    if (success){
+        sendResponseFromCommand(currentActuatorCommand, SUCCESS);
+        currentActuatorCommand = NULL;
+    }else{
+        sendResponseFromCommand(currentActuatorCommand, ERROR);
+        currentActuatorCommand = NULL;
+    }
+}
+
 bool ExecutorCommon::KickRightFunction(){
     debug("KICK RIGHT: REDEFINE PLEASE");
     return false;
@@ -352,7 +367,7 @@ bool ExecutorCommon::GetObjectStopFunction(){
 }
 
 bool ExecutorCommon::liftLoop(){
-    return;
+    return true;
 }
 
 bool ExecutorCommon::StopBrxonFunction(){
@@ -374,5 +389,11 @@ bool ExecutorCommon::StopBeaconFunction(){
     debug("REDEFINE PLEASE");
     return false;
 }
+
+bool ExecutorCommon::LeaveCarpetFunction(){
+    debug("REDEFINE PLEASE");
+    return false;
+}
+
 
 }

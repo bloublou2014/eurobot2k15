@@ -27,6 +27,13 @@ void ModbusClient::main(){
 
     while(!shouldStop){
 
+        if(panic){
+            //std::cout << "PANIC !! ELECTRONIC IS NOT WORKING" << std::endl;
+            while(!registersToSet.empty()) registersToSet.pop();
+            while(!coilToSet.empty()) coilToSet.pop();
+        }
+
+
         if(!registersToSet.empty()){
             m_mutex->lock();
             ModbusSensorClientNotifier = true;
@@ -69,66 +76,105 @@ bool ModbusClient::setCoil(unsigned char _slave_address, short _function_address
     coilToSet.push(data);
     queueLock.unlock();
 
+    return true;
+
 }
 
 
 
 bool ModbusClient::writeToRegister(){
     bool success;
+    int counter = 0;
     setSingleRegisterData data;
 
-    queueLock.lock();
-    if(!registersToSet.empty()){
-        data =(setSingleRegisterData) registersToSet.front();
-        registersToSet.pop();
-        queueLock.unlock();
-    }else{
-        queueLock.unlock();
-        return true;
-    }
-    /*
+    if(!panic){
+
+        queueLock.lock();
+        if(!registersToSet.empty()){
+            data =(setSingleRegisterData) registersToSet.front();
+            registersToSet.pop();
+            queueLock.unlock();
+        }else{
+            queueLock.unlock();
+            return true;
+        }
+        /*
     std::cout << "writeing to register: "
               << int(data.ID.slaveAddress) << ":"
               << data.ID.functionAddress << ":"
               << data.data << std::endl;
     */
-    boost::lock_guard<boost::mutex> lock(*m_mutex);
-
+        boost::lock_guard<boost::mutex> lock(*m_mutex);
+        /*
     success = modbus->ModbusPresetSingleRegister(data.ID.slaveAddress, data.ID.functionAddress, data.data);
     if (!success){
         boost::this_thread::sleep(boost::posix_time::milliseconds(delayTime));
         success = modbus->ModbusPresetSingleRegister(data.ID.slaveAddress, data.ID.functionAddress, data.data);
     }
-    return success;
+    */
+        success = modbus->ModbusPresetSingleRegister(data.ID.slaveAddress, data.ID.functionAddress, data.data);
+
+        while(!success && !shouldStop && counter < 10 ) {
+            boost::this_thread::sleep(boost::posix_time::milliseconds(delayTime));
+            success = modbus->ModbusPresetSingleRegister(data.ID.slaveAddress, data.ID.functionAddress, data.data);
+            counter ++;
+        }
+
+        if(counter > 9){
+            std::cout << "PANIC ELECTRONIC IS NOT WORKING" << std::endl;
+            panic = true;
+        }
+
+        return success;
+    }
+    return false;
 }
 
 bool ModbusClient::writeToCoil(){
     bool success;
+    int counter = 0;
     setSingleRegisterData data;
 
-    queueLock.lock();
-    if(!coilToSet.empty()){
-        data =(setSingleRegisterData) coilToSet.front();
-        coilToSet.pop();
-        queueLock.unlock();
-    }else{
-        queueLock.unlock();
-        return true;
-    }
+    if(!panic){
 
-    std::cout << "writeing to coil: "
-              << int(data.ID.slaveAddress) << ":"
-              << data.ID.functionAddress << ":"
-              << data.data << std::endl;
+        queueLock.lock();
+        if(!coilToSet.empty()){
+            data =(setSingleRegisterData) coilToSet.front();
+            coilToSet.pop();
+            queueLock.unlock();
+        }else{
+            queueLock.unlock();
+            return true;
+        }
 
-    boost::lock_guard<boost::mutex> lock(*m_mutex);
+        std::cout << "writeing to coil: "
+                  << int(data.ID.slaveAddress) << ":"
+                  << data.ID.functionAddress << ":"
+                  << data.data << std::endl;
 
-    success = modbus->ModbusForceSingleCoil(data.ID.slaveAddress, data.ID.functionAddress, data.data);
+        boost::lock_guard<boost::mutex> lock(*m_mutex);
+
+        success = modbus->ModbusForceSingleCoil(data.ID.slaveAddress, data.ID.functionAddress, data.data);
+        /*
     if (!success){
         boost::this_thread::sleep(boost::posix_time::milliseconds(delayTime));
         success = modbus->ModbusForceSingleCoil(data.ID.slaveAddress, data.ID.functionAddress, data.data);
     }
-    return success;
+    */
+
+        while(!success && !shouldStop && counter < 10){
+            boost::this_thread::sleep(boost::posix_time::milliseconds(delayTime));
+            success = modbus->ModbusForceSingleCoil(data.ID.slaveAddress, data.ID.functionAddress, data.data);
+            counter ++;
+        }
+
+        if(counter > 9 ){
+            std::cout << "PANIC ELECTRONIC IS NOT WORKING" << std::endl;
+            panic = true;
+        }
+        return success;
+    }
+    return false;
 }
 
 
@@ -136,14 +182,22 @@ bool ModbusClient::readCoil(bool* _callFunction, idData _id ){
     signed char data;
     boost::lock_guard<boost::mutex> lock(*m_mutex);
 
-    bool success = modbus->ModbusReadCoilStatus(_id.slaveAddress,_id.functionAddress,1, &data);
+    if(!panic){
 
-    if (!success){  // try 2  if false return false
-        boost::this_thread::sleep(boost::posix_time::milliseconds(delayTime));
+        bool success = modbus->ModbusReadCoilStatus(_id.slaveAddress,_id.functionAddress,1, &data);
 
-        success = modbus->ModbusReadCoilStatus(_id.slaveAddress,_id.functionAddress,1, &data);
-    }
-/*
+        while(!success && !shouldStop && counter < 10 ) {
+            boost::this_thread::sleep(boost::posix_time::milliseconds(delayTime));
+            success = modbus->ModbusReadCoilStatus(_id.slaveAddress,_id.functionAddress,1, &data);
+            counter++;
+        }
+
+        if(counter > 9){
+            std::cout << "PANIC ELECTRONIC IS NOT WORKING" << std::endl;
+            panic = true;
+        }
+
+        /*
     std::cout << "reading from register: "
               << int(_id.slaveAddress) << " : "
               << _id.functionAddress << " = "
@@ -151,27 +205,29 @@ bool ModbusClient::readCoil(bool* _callFunction, idData _id ){
               << data
               << std::endl;
 */
-    if (!success){
-        *_callFunction = false;
-        return false;
-    }
+        if (!success){
+            *_callFunction = false;
+            return false;
+        }
 
-    if(data == char(1)){
-        *_callFunction = true;
-        //std::cout << "OBJECT" << std::endl;
-    }else if (data == '1'){
-        *_callFunction = true;
-        //std::cout << "OBJECT" << std::endl;
-    }else if(data == char(0)){
-        *_callFunction = false;
-    }else if(data == '0'){
-        *_callFunction = false;
-    }else{
-        std::cout << "ERRORO IN CHECKING STATE" << std::endl;
-        *_callFunction = false;
-    }
+        if(data == char(1)){
+            *_callFunction = true;
+            //std::cout << "OBJECT" << std::endl;
+        }else if (data == '1'){
+            *_callFunction = true;
+            //std::cout << "OBJECT" << std::endl;
+        }else if(data == char(0)){
+            *_callFunction = false;
+        }else if(data == '0'){
+            *_callFunction = false;
+        }else{
+            std::cout << "ERRORO IN CHECKING STATE" << std::endl;
+            *_callFunction = false;
+        }
 
-    return true;
+        return true;
+    }
+    return false;
 }
 
 void ModbusClient::stopModbusClient(){
@@ -184,20 +240,38 @@ bool* ModbusClient::getModbusSensorNotifier(){
 
 }
 
+bool* ModbusClient::getModbusSensorPanic(){
+    boost::lock_guard<boost::mutex> lock(*m_mutex);
+    return &ModbusSensorClientNotifier;
+}
+
+
 bool ModbusClient::readRegister(short* _data, unsigned char _slaveAddress, short _functionAddress){
-     short data;
-     bool success;
+    short data;
+    bool success;
+    int counter = 0;
 
-     boost::lock_guard<boost::mutex> lock(*m_mutex);
+    if (!panic){
 
-     success = modbus->ModbusReadHoldingRegisters(_slaveAddress,_functionAddress,1,&data);
-     if(!success){
-         boost::this_thread::sleep(boost::posix_time::milliseconds(delayTime));
-         success = modbus->ModbusReadHoldingRegisters(_slaveAddress,_functionAddress,1,&data);
-     }
-     *_data = data;
-     return success;
+        boost::lock_guard<boost::mutex> lock(*m_mutex);
 
+        success = modbus->ModbusReadHoldingRegisters(_slaveAddress,_functionAddress,1,&data);
+
+        while(!success && !shouldStop && counter < 10 ) {
+            boost::this_thread::sleep(boost::posix_time::milliseconds(delayTime));
+            success = modbus->ModbusReadHoldingRegisters(_slaveAddress,_functionAddress,1,&data);
+            counter++;
+        }
+
+        if(counter > 9){
+            std::cout << "PANIC ELECTRONIC IS NOT WORKING" << std::endl;
+            panic = true;
+        }
+
+        *_data = data;
+        return success;
+    }
+    return false;
 }
 
 } // end namespace

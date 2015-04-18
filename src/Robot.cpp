@@ -16,10 +16,13 @@
 #include "executors/flap/FlapExecutor.h"
 #include "executors/enemyDetector/EnemyDetector.h"
 
+#include "executors/carpet/CarpetExecutor.h"
+
 #include "tasks/PipeTask.h"
 
 //#define CROSS_COMPILING
 #define VELIKI
+//#define MALI
 
 using namespace std;
 using namespace robot;
@@ -72,7 +75,7 @@ int main(int argn, char** argc){
 #endif
 
 #ifdef MALI
-    // executori za malog
+    CarpetExecutor carpetExec;
 #endif
 
 #endif
@@ -95,7 +98,7 @@ int main(int argn, char** argc){
 #endif
 
 #ifdef MALI
-
+    execMgr->addExecutor(&carpetExec);
 #endif
 
 #endif

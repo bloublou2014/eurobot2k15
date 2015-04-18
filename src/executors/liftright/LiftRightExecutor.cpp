@@ -36,8 +36,8 @@ void LiftRightExecutor::mapping(){
     reload(&value, executorName);
 
     doorF(OPEN_GET);
-    handF(OPEN);
-    liftF(LEVEL0);
+    handF(CLOSE);
+    liftF(LEVEL2);
 
 }
 

@@ -1,5 +1,7 @@
 set(DRIVERS_SRC
     ${DRIVERS_SRC}
     ${CMAKE_CURRENT_SOURCE_DIR}/Servos.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ElectroSwitch.cpp
+
     PARENT_SCOPE
 )

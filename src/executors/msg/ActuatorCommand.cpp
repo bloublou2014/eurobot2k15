@@ -8,7 +8,8 @@ ExecutorsMap ExecutorName={
     {LIFT_RIGHT,"LiftRightExecutor"},
     {POPCORN,"PopcornExecutor"},
     {FLAP,"FlapExecutor"},
-    {ENEMY_DETECT,"EnemyDetectorExecutor"}
+    {ENEMY_DETECT,"EnemyDetectorExecutor"},
+    {CARPET, "CarpetExecutor"}
 };
 
 string ActuatorCommand::NAME="ActuatorCommand";
@@ -71,6 +72,13 @@ Command* ActuatorAction::EnemyDetector(ActuatorType _type){
     case STOP_BEACON: return (Command*) new StopBeacon(ENEMY_DETECT);
     case START_BRXON: return ( Command*) new StartBrxon(ENEMY_DETECT);
     case STOP_BRXON: return (Command*) new StopBrxon(ENEMY_DETECT);
+    default: return NULL;
+    }
+}
+
+Command* ActuatorAction::Carpet(ActuatorType _type){
+    switch(_type){
+    case LEAVE_CARPET: return (Command*) new LeaveCarpet(CARPET);
     default: return NULL;
     }
 }
@@ -187,6 +195,7 @@ Command* ActuatorCommandJS::parseCreateCommand(string _executorString, string _a
     else if(_executorString.compare("Flap") == 0) executorTmp = FLAP;
     else if(_executorString.compare("Popcorn") == 0) executorTmp = POPCORN;
     else if(_executorString.compare("EnemyDetector") == 0) executorTmp = ENEMY_DETECT;
+    else if(_executorString.compare("Carpet") == 0) executorTmp = CARPET;
     else {
         executorTmp = NULL_EXECUTOR;
         *_success = false;
@@ -229,6 +238,12 @@ Command* ActuatorCommandJS::parseCreateCommand(string _executorString, string _a
         else if(_actionString.compare("StopBrxon") == 0) actionTmp = STOP_BRXON;
         else if(_actionString.compare("StartBeacon") == 0) actionTmp = START_BEACON;
         else if(_actionString.compare("StopBeacon") == 0) actionTmp = STOP_BEACON;
+        else{
+            actionTmp = NULL_ACTION;
+            *_success = false;
+        }
+    }else if(executorTmp == CARPET){
+        if(_actionString.compare("Leave") == 0 ) actionTmp = LEAVE_CARPET;
         else{
             actionTmp = NULL_ACTION;
             *_success = false;

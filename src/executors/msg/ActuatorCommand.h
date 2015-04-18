@@ -26,6 +26,7 @@ enum Executors{LIFT_LEFT,
                FLAP,
                MOTION,
                ENEMY_DETECT,
+               CARPET,
                NULL_EXECUTOR
               };
 
@@ -55,6 +56,7 @@ enum ActuatorType{SET_START_CONFIG,
                   STOP_BRXON,
                   START_BEACON,
                   STOP_BEACON,
+                  LEAVE_CARPET,
                   NULL_ACTION
                  };
 
@@ -153,10 +155,13 @@ public:
 
 class StopBeacon: public ActuatorCommand{
 public:
-    //    StartBeacon():ActuatorCommand(STOP_BEACON, ENEMY_DETECTOR){}
     StopBeacon(Executors _executor):ActuatorCommand(STOP_BEACON, _executor){}
 };
 
+class LeaveCarpet: public ActuatorCommand{
+public:
+    LeaveCarpet(Executors _executor):ActuatorCommand(LEAVE_CARPET, _executor){}
+};
 
 class SetSpeed: public ActuatorCommand {
 public:
@@ -188,6 +193,7 @@ public:
     static Command* Popcorn(ActuatorType _type);
     static Command* Flap(ActuatorType _type);
     static Command* EnemyDetector(ActuatorType _type);
+    static Command* Carpet(ActuatorType _type);
 private:
 
 };

@@ -78,6 +78,7 @@ private:
     int delayTime = 5;
     int counter = 0;
     bool sensoreDelay = false;
+    bool panic = false;
     std::queue<stateEnum> stateQueue;
 
     void main();
@@ -85,6 +86,7 @@ private:
     bool readCoilCallback();
 
     bool ModbusSensorClientNotifier;
+    bool ModbusSensorClientPanic;
 
 
     friend bool operator< (const idData &id1, const idData &id2);
@@ -103,6 +105,7 @@ public:
 
     void stopModbusClient();
     bool* getModbusSensorNotifier();
+    bool* getModbusSensorPanic();
 
 };
 

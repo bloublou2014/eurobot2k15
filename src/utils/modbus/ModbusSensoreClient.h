@@ -66,9 +66,10 @@ private:
     callbackRegisterMapType callbackRegisterMap;
 
 
-    mutex* m_mutex;
+    mutex* m_mutex; // TODO u destruktor ubaciti hoce struha kill kill
     bool shouldStop;
     bool* ModbusSensoreClientNotifier;
+    bool* ModbusSensorClientPanic;
     bool delayAlreadyCalculated = false;
     bool didReading = false;
     int delayTime = 20;
