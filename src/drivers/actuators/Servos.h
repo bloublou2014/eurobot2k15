@@ -63,12 +63,9 @@ public:
 
     void setServoPosition(int position);
     void setServoSlaveAddress(unsigned char);
-
-
-
-
-
 };
+
+
 
 
 }

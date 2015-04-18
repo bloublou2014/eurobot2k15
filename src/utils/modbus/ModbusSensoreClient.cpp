@@ -38,6 +38,7 @@ ModbusSensorClient::ModbusSensorClient(): Node("ModbusServoClient"),m_mutex(new 
     start();
     std::cout << "ModbusSensoreClient is runnging" << std::endl;
     ModbusSensoreClientNotifier = modbus->getModbusSensorNotifier();
+    ModbusSensorClientPanic = modbus->getModbusSensorPanic();
     respinNumber = int(2000/ delayTime);
     brxonID.slaveAddress = char(4);
     brxonID.functionAddress = (char(1));
@@ -80,7 +81,7 @@ void ModbusSensorClient::main(){
     bool recalculate = false;
     timerForDelayTime = 0;
 
-    while(!shouldStop){
+    while(!shouldStop && !ModbusSensorClientPanic){
 
         for(it_type it = callbackRegisterMap.begin(); it != callbackRegisterMap.end(); ++it){
 
@@ -137,10 +138,10 @@ void ModbusSensorClient::main(){
                     }
                 }else{
                     switch(it->first.functionAddress){
-                    case 1: it->second->enemyDetected = true; break;
-                    case 2: it->second->enemyDetected = true; break;
-                    case 5: it->second->enemyDetected = true; break;
-                    case 7: it->second->enemyDetected = true; break;
+                    case 1: it->second->enemyDetected = false; break;
+                    case 2: it->second->enemyDetected = false; break;
+                    case 5: it->second->enemyDetected = false; break;
+                    case 7: it->second->enemyDetected = false; break;
                     }
                 }
                 didReading = true;

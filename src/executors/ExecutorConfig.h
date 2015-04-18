@@ -86,10 +86,18 @@ protected:
         OpenCloseConfig flapLeft;
     };
 
+    struct CarpetExecutorConfigs{
+        OpenCloseConfig armLeft;
+        OpenCloseConfig armRight;
+        int armOpenCloseTime;
+        int leaveCarpetTime;
+    };
+
     struct ConfigValues{   // TODO UNION
         LiftExecutorConfig LiftConfigs;
         PopcornExecutorConfigs PopcornConfigs;
         FlapExecutorConfigs FlapConfigs;
+        CarpetExecutorConfigs CarpetConfig;
 
     };
 

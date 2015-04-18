@@ -72,6 +72,7 @@ protected:
     virtual bool StartBeaconFunction();
     virtual bool StopBeaconFunction();
     virtual bool liftLoop();
+    virtual bool LeaveCarpetFunction();
 
 private:
 
@@ -90,6 +91,8 @@ private:
     void startBrxon(ActuatorCommand* _command);
     void stopBeacon(ActuatorCommand* _command);
     void startBeacon(ActuatorCommand* _command);
+
+    void leaveCarpet(ActuatorCommand* _command);
 
 
 

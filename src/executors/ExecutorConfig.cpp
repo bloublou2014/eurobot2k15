@@ -11,6 +11,7 @@ ExecutorConfig::ExecutorConfig(){
 bool ExecutorConfig::reload(ConfigValues* values, string _executorName){
 
     boost::property_tree::xml_parser::read_xml("Config.xml",pt);
+
     if(_executorName == "LiftLeftExecutor" || _executorName =="LiftRightExecutor"){
         //printf("reloadConfig: executorName is %s", _executorName);
         BOOST_FOREACH( ptree::value_type const& v, pt.get_child(_executorName)){
@@ -118,7 +119,21 @@ bool ExecutorConfig::reload(ConfigValues* values, string _executorName){
         cout << "getPopcorn: " << values->PopcornConfigs.time.getPopcorn << endl;
         cout << "********* END POPCORN CONFIG ************" << endl;
         */
-     }
+     }else if(_executorName == "CarpetExecutor"){
+        BOOST_FOREACH( ptree::value_type const& v, pt.get_child(_executorName)){
+            if(v.first == "armRightConfig"){
+                values->CarpetConfig.armRight.open = v.second.get<short>("open");
+                values->CarpetConfig.armRight.close = v.second.get<short>("close");
+            }else if(v.first == "armLeftConfig"){
+                values->CarpetConfig.armLeft.open = v.second.get<short>("open");
+                values->CarpetConfig.armLeft.close = v.second.get<short>("close");
+            }else if(v.first == "TimeConfig"){
+                values->CarpetConfig.armOpenCloseTime  = v.second.get<int>("OpenArmTime");
+                values->CarpetConfig.leaveCarpetTime = v.second.get<int>("LeaveCarpetTime");
+            }
+        }
+
+    } //end if == executorName
     return true;
 }
 
