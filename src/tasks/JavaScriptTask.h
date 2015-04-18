@@ -12,16 +12,12 @@
 #include "AbstractTask.h"
 #include "utils/javascript/JavaScriptMessageFactory.h"
 #include "executors/msg/CountdownCommand.h"
-#include "utils/helper/SleepTimer.h"
 
 using namespace v8;
 using javascript::JavaScriptMessageFactory;
-using namespace boost::asio;
 
 using boost::mutex;
 using boost::unique_lock;
-using helper::SleepTimer;
-using helper::TimerCallback;
 
 namespace robot{
 
@@ -31,7 +27,7 @@ struct CommandResponseCallback{
     Persistent<Function> progress;
 };
 
-class JavaScriptTask : public AbstractTask, public TimerCallback{
+class JavaScriptTask : public AbstractTask{
 public:
     JavaScriptTask(const string& _name, string _scriptName):AbstractTask(_name), scriptName(_scriptName){}
 
@@ -43,9 +39,6 @@ public:
     void commandSuccess(CommandResponse* resp);
     void commandError(CommandResponse* resp);
     void commandProgress(CommandResponse* resp);
-
-    //For timeout
-    void onTimeout(const boost::system::error_code &e);
 protected:
 
     //Task callbacks
@@ -108,9 +101,6 @@ private:
     map<int, CommandResponseCallback*> commandResponseCallbacks;
 
     JavaScriptMessageFactory* messageFactory;
-
-    //For timeout
-    list<SleepTimer*> timers;
 };
 
 }
