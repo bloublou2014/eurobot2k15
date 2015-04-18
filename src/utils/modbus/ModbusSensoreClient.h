@@ -67,7 +67,7 @@ private:
 
 
     mutex* m_mutex; // TODO u destruktor ubaciti hoce struha kill kill
-    bool shouldStop;
+    bool shouldStop = false;
     bool* ModbusSensoreClientNotifier;
     bool* ModbusSensorClientPanic;
     bool delayAlreadyCalculated = false;

@@ -235,7 +235,7 @@ Command* ActuatorCommandJS::parseCreateCommand(string _executorString, string _a
     }else if(executorTmp == ENEMY_DETECT){
         //std::cout << "**************** ENEMY DETECTOR *******************" << std::endl;
         if(_actionString.compare("StartBrkon") == 0) actionTmp = START_BRXON;
-        else if(_actionString.compare("StopBrxon") == 0) actionTmp = STOP_BRXON;
+        else if(_actionString.compare("StopBrkon") == 0) actionTmp = STOP_BRXON;
         else if(_actionString.compare("StartBeacon") == 0) actionTmp = START_BEACON;
         else if(_actionString.compare("StopBeacon") == 0) actionTmp = STOP_BEACON;
         else{

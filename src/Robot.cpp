@@ -20,7 +20,7 @@
 
 #include "tasks/PipeTask.h"
 
-//#define CROSS_COMPILING
+#define CROSS_COMPILING
 #define VELIKI
 //#define MALI
 
