@@ -14,7 +14,7 @@ string CountdownCommand::getName() const{
     return NAME;
 }
 
-string CountdownCommand::NAME="CountdownCommand";
+string CountdownCommand::NAME="SleepCommand";
 void CountdownCommand::Init(Handle<Object> exports){
     Isolate* isolate = Isolate::GetCurrent();
     // Prepare constructor template

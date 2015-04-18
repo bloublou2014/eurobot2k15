@@ -21,7 +21,7 @@
 #include "tasks/PipeTask.h"
 
 //#define CROSS_COMPILING
-#define VELIKI
+//#define VELIKI
 //#define MALI
 
 using namespace std;
@@ -60,7 +60,6 @@ int main(int argn, char** argc){
 
     //PipeTask testTask("pipeTask");
     //taskMgr->addTask(&testTask);
-
 
 #ifdef CROSS_COMPILING
 
