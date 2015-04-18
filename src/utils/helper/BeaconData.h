@@ -11,6 +11,14 @@ struct beaconDataStruct{
     short Y_beacon2;
 };
 
+struct enemyDetectedStruct{
+    bool brkon;
+    bool left;
+    bool right;
+    bool back;
+
+};
+
 
 
 }

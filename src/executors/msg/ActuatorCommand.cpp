@@ -261,6 +261,7 @@ Command* ActuatorCommandJS::parseCreateCommand(string _executorString, string _a
         case FLAP: { tmp = ActuatorAction::Flap(actionTmp); break; }
         case POPCORN: {  tmp = ActuatorAction::Popcorn(actionTmp); break; }
         case ENEMY_DETECT: { tmp  = ActuatorAction::EnemyDetector(actionTmp); break; }
+        case CARPET: { tmp = ActuatorAction::Carpet(actionTmp); break; }
         case NULL_EXECUTOR: {break; }
         }
     }

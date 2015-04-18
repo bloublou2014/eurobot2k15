@@ -136,18 +136,18 @@ void ModbusSensorClient::main(){
                 if (doCallbak){
                     it->second->readingSensore = false;
                     switch(it->first.functionAddress){
-                    case 1: it->second->ProcessEnemySensorCallback1(); it->second->enemyDetected = true; break;
-                    case 2: it->second->ProcessEnemySensorCallback2(); it->second->enemyDetected = true; break;
-                    case 5: it->second->ProcessEnemySensorCallback3(); it->second->enemyDetected = true; break;
-                    case 7: it->second->ProcessEnemySensorCallback4(); it->second->enemyDetected = true; break;
+                    case 1: it->second->ProcessEnemySensorCallback1(); it->second->enemyDetected.left = true; break;
+                    case 2: it->second->ProcessEnemySensorCallback2(); it->second->enemyDetected.right = true; break;
+                    case 5: it->second->ProcessEnemySensorCallback3(); it->second->enemyDetected.back = true; break;
+                    case 7: it->second->ProcessEnemySensorCallback4(); it->second->enemyDetected.brkon = true; break;
                     default: it->second->ProcessSensorCallback();
                     }
                 }else{
                     switch(it->first.functionAddress){
-                    case 1: it->second->enemyDetected = false; break;
-                    case 2: it->second->enemyDetected = false; break;
-                    case 5: it->second->enemyDetected = false; break;
-                    case 7: it->second->enemyDetected = false; break;
+                    case 1: it->second->enemyDetected.left = false; break;
+                    case 2: it->second->enemyDetected.right = false; break;
+                    case 5: it->second->enemyDetected.back = false; break;
+                    case 7: it->second->enemyDetected.brkon = false; break;
                     }
                 }
                 didReading = true;
