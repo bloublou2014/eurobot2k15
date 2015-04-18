@@ -11,22 +11,23 @@ int CountdownCommand::getCountdownValue() const {
 }
 
 string CountdownCommand::getName() const{
-    return "CountdownCommand";
+    return NAME;
 }
 
+string CountdownCommand::NAME="CountdownCommand";
 void CountdownCommand::Init(Handle<Object> exports){
     Isolate* isolate = Isolate::GetCurrent();
     // Prepare constructor template
     Local<FunctionTemplate> tpl = FunctionTemplate::New(isolate, New);
-    tpl->SetClassName(String::NewFromUtf8(isolate, "CountdownCommand"));
+    tpl->SetClassName(String::NewFromUtf8(isolate, CountdownCommand::NAME.c_str()));
     tpl->InstanceTemplate()->SetAccessor(String::NewFromUtf8(isolate, "value"),
                             ValueGetter, ValueSetter);
     tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
     JavaScriptMessageProvider* provider=static_cast<JavaScriptMessageProvider*>(isolate->GetData(0));
-    provider->setObjectConstructor("CountdownCommand",tpl->GetFunction());
-    provider->setObjectTemplate("CountdownCommand", tpl->InstanceTemplate());
-    exports->Set(String::NewFromUtf8(isolate, "CountdownCommand"), tpl->GetFunction());
+    provider->setObjectConstructor(CountdownCommand::NAME,tpl->GetFunction());
+    provider->setObjectTemplate(CountdownCommand::NAME, tpl->InstanceTemplate());
+    exports->Set(String::NewFromUtf8(isolate, CountdownCommand::NAME.c_str()), tpl->GetFunction());
 }
 
 void CountdownCommand::ValueGetter(Local<String> property, const PropertyCallbackInfo<Value>& info) {
@@ -46,13 +47,13 @@ void CountdownCommand::New(const v8::FunctionCallbackInfo<v8::Value>& args) {
     Isolate* isolate = Isolate::GetCurrent();
     HandleScope scope(isolate);
 
-    if (args.IsConstructCall()) {
+    if (args.IsConstructCall()){
         // Invoked as constructor: `new MyObject(...)`
         int value = args[0]->IsUndefined() ? 0 : args[0]->NumberValue();
         CountdownCommand* obj = new CountdownCommand(value);
         obj->Wrap(args.This());
         args.GetReturnValue().Set(args.This());
-    } else {
+    }else{
         isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Cannot call constructor as function."));
     }
 }

@@ -16,6 +16,8 @@ namespace robot {
 
 class CountdownCommand:public Command{
 public:
+    static string NAME;
+
     /* Exports object */
     static void Init(Handle<Object> exports);
     /* Constructor */
@@ -24,7 +26,7 @@ public:
     static void ValueGetter(Local<String> property, const PropertyCallbackInfo<Value>& info);
     static void ValueSetter(Local<String> property, Local<Value> value, const PropertyCallbackInfo<Value>& info);
 
-    CountdownCommand(int _value):Command("countToN","ExampleExecutor"),value(_value){}
+    CountdownCommand(int _value):Command(NAME, "ExampleExecutor"),value(_value){}
     CountdownCommand(const CountdownCommand& command):Command(command), value(command.value){}
     void setCountdownValue(int _value);
     int getCountdownValue() const;

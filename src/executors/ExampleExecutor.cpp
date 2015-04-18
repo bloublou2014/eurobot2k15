@@ -9,66 +9,63 @@ namespace robot {
 string ExampleExecutor::NAME="ExampleExecutor";
 
 void ExampleExecutor::init(){
-    this->subscribe("probeEvent",(notificationCallback)&ExampleExecutor::processProbeEvent);
-    this->registerCommand("countToN",(commandCallback)&ExampleExecutor::countToN);
+    this->registerCommand(CountdownCommand::NAME,(commandCallback)&ExampleExecutor::countdown);
 }
 
-void  ExampleExecutor::processProbeEvent(Notification* notification){
-     cout<<"Received notification! Yea! from: "<<notification->getSource()<<endl;
-}
-
-void ExampleExecutor::countToN(Command* command){
-    debug("Received command to countdown");
+void ExampleExecutor::countdown(Command* command){
     commandQueueLock.lock();
-    commandsToProcess.push(command);
+    commandsToProcess.push(Instruction(command));
     commandQueueLock.unlock();
+    queueNotEmpty.notify_one();
 }
 
 void ExampleExecutor::stop(){
-    shouldStop=true;
+    commandQueueLock.lock();
+    commandsToProcess.push(Instruction::STOP);
+    commandQueueLock.unlock();
+    queueNotEmpty.notify_one();
 }
 
 void ExampleExecutor::main(){
     shouldStop=false;
-    cout<<"Started thread"<<endl;
     while (true){
         if (shouldStop) break;
-       boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
-       counter++;
-       if ((counter%5)==0){
-           TimePassedNotification* timePassed=new TimePassedNotification(getName(),counter);
-           sendNotification(timePassed);
+
+        Instruction instr=getNextInstruction();
+        if (instr.type==Instruction::STOP){
+            return;
         }
-       Command* newCommand=ExecuteNextCommand();
-       if (newCommand!=NULL && currentCommand!=NULL){
-           debug("Newer command received, sending error to old");
-           sendResponseFromCommand(currentCommand,ERROR);
-       }
-       if (newCommand!=NULL)
-            currentCommand=newCommand;
-       if (currentCommand!=NULL){
-           debug("Sending progress update");
-           sendResponseFromCommand(currentCommand,PROGRESS_UPDATE);
-       }
+
+        CountdownCommand* cmd=(CountdownCommand*)instr.command;
+        bool foundFinished=false;
+        list<SleepTimer*>::iterator it=timers.begin();
+        for(;it!=timers.end();++it){
+            if ((*it)->isFinished()){
+                (*it)->start(cmd->getCountdownValue(), cmd);
+                foundFinished=true;
+            }
+        }
+        if (!foundFinished){
+            timers.push_back(new SleepTimer(this,cmd->getCountdownValue(), cmd));
+        }
     }
     debug("Stopping execution");
 }
 
-Command* ExampleExecutor::ExecuteNextCommand(){
-    Command* newCommand=NULL;
-    commandQueueLock.lock();
-    if (!commandsToProcess.empty()){
-        while(commandsToProcess.size()>1){
-            Command* cmd=commandsToProcess.front();
-            commandsToProcess.pop();
-            debug("Cant process command, have newer, sending error");
-            sendResponseFromCommand(cmd,ERROR);
-        }
-        newCommand=commandsToProcess.front();
-        commandsToProcess.pop();
+void ExampleExecutor::onTimeout(const boost::system::error_code &e, void *obj){
+    std::stringstream ss;
+    CountdownCommand* cc=static_cast<CountdownCommand*>(obj);
+    sendResponseFromCommand(cc);
+}
+
+ExampleExecutor::Instruction ExampleExecutor::getNextInstruction(){
+    unique_lock<boost::mutex> lock(commandQueueLock);
+    while (commandsToProcess.empty()) {
+        queueNotEmpty.wait(lock);
     }
-    commandQueueLock.unlock();
-    return newCommand;
+    Instruction instr=commandsToProcess.front();
+    commandsToProcess.pop();
+    return instr;
 }
 
 }
