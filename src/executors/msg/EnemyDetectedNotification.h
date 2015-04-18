@@ -14,7 +14,7 @@ class EnemyDetectedNotification : public Notification
 {
 public:
     enum Type{
-        BRKSON,
+        BRKON,
         BEACON,
         SENSOR
     };
@@ -24,11 +24,15 @@ public:
     //Getters
     static void TypeGetter(Local<String> property, const PropertyCallbackInfo<Value>& info);
     static void AngleGetter(Local<String> property, const PropertyCallbackInfo<Value>& info);
+    static void DetectedGetter(Local<String> property, const PropertyCallbackInfo<Value>& info);
 
-    EnemyDetectedNotification(Type _type, int _angle):Notification(NAME,"EnemyDetector"),type(_type), angle(_angle){}
-    EnemyDetectedNotification(const EnemyDetectedNotification& ed):Notification(ed),type(ed.type), angle(ed.angle){}
+    EnemyDetectedNotification(Type _type, int _angle, bool _detected=true):Notification(NAME,"EnemyDetector"),
+        type(_type), angle(_angle), detected(_detected){}
+    EnemyDetectedNotification(const EnemyDetectedNotification& ed):Notification(ed),
+        type(ed.type), angle(ed.angle), detected(ed.detected){}
     Type getType() const{ return type; }
     int getAngle() const{ return angle; }
+    bool isDetected() const{ return detected; }
 
     Message* clone(){
         return new EnemyDetectedNotification(*this);
@@ -36,6 +40,7 @@ public:
 private:
     Type type;
     int angle;
+    bool detected;
 };
 
 }
