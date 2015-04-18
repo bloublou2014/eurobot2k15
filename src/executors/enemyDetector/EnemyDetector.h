@@ -13,7 +13,9 @@ class EnemyDetector: public ExecutorCommon, public ModbusSensorClientInterface{
 public:
     EnemyDetector():ExecutorCommon(this->NAME),ModbusSensorClientInterface(),
         detectedAngle(1800),enemyDetected(false){}
-
+    ~EnemyDetector(){ modbusClient->stopBecaon();
+                      modbusClient->stopBecaon();
+                    }
 private:
     int detectedAngle;
     bool myEnemyDetected;

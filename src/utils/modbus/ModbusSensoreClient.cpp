@@ -54,6 +54,12 @@ ModbusSensorClient::ModbusSensorClient(): Node("ModbusServoClient"),m_mutex(new 
     beaconID.functionAddress_YdataBeacon2 = char(4);
     beaconID.beaconON = false;
 
+    m_mutex->lock();
+    *ModbusSensorClientPanic = false;
+    m_mutex->unlock();
+
+
+
 }
 
 ModbusSensorClient* ModbusSensorClient::getModbusSensorInstance(){
@@ -81,7 +87,7 @@ void ModbusSensorClient::main(){
     bool recalculate = false;
     timerForDelayTime = 0;
 
-    while(!shouldStop && !ModbusSensorClientPanic){
+    while(!shouldStop){
 
         for(it_type it = callbackRegisterMap.begin(); it != callbackRegisterMap.end(); ++it){
 
@@ -152,6 +158,7 @@ void ModbusSensorClient::main(){
             //boost::this_thread::sleep(boost::posix_time::milliseconds(delayTime));
         }
     }
+    std::cout  << "STOPPING MODBUS SENSORE CLIENT" << std::endl;
 }
 
 void ModbusSensorClient::stopModbusSensorClient(){
@@ -179,7 +186,7 @@ bool ModbusSensorClient::startBeacon(){
     bool success = false;
     if(!beaconID.beaconON){
 
-        success =  modbus->setCoil(beaconID.slaveAddress, beaconID.functionAddress_NumberOfBeacons, 0 );
+        success =  modbus->setCoil(beaconID.slaveAddress, beaconID.functionAddress_NumberOfBeacons, 1 );
         success =  modbus->setCoil(beaconID.slaveAddress, beaconID.functionAddress_Start, 1 );
 
         if(success){
@@ -195,6 +202,7 @@ bool ModbusSensorClient::startBeacon(){
 bool ModbusSensorClient::stopBecaon(){
     bool success = false;
     if(beaconID.interface != NULL){
+        success =  modbus->setCoil(beaconID.slaveAddress, beaconID.functionAddress_NumberOfBeacons, 0 );
         modbus->setCoil(beaconID.slaveAddress, beaconID.functionAddress_Start, 0);
         if(success) beaconID.beaconON = false;
     }else{
@@ -229,7 +237,7 @@ bool ModbusSensorClient::readBeacon(){
             beaconID.beaconData.X_beacon1 = data;
             beaconID.beaconDataCounter++;
         }
-        break;
+        //break;
     }
     case 3:{
         success = modbus->readRegister(&data ,beaconID.slaveAddress, beaconID.functionAddress_YdataBeacon2);

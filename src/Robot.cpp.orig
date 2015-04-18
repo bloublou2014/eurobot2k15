@@ -16,14 +16,19 @@
 #include "executors/flap/FlapExecutor.h"
 #include "executors/enemyDetector/EnemyDetector.h"
 
+#include "executors/carpet/CarpetExecutor.h"
+
 #include "tasks/PipeTask.h"
 
 <<<<<<< HEAD
+//#define CROSS_COMPILING
+//#define VELIKI
 =======
 #define CROSS_COMPILING
 #define VELIKI
+>>>>>>> 0b699f60e8b8fcee482661ae79ceca6153e683f0
+//#define MALI
 
->>>>>>> 9adaee7bc25672041c19f538402846adb2327bcf
 using namespace std;
 using namespace robot;
 using namespace motion;
@@ -61,7 +66,6 @@ int main(int argn, char** argc){
     //PipeTask testTask("pipeTask");
     //taskMgr->addTask(&testTask);
 
-
 #ifdef CROSS_COMPILING
 
 #ifdef VELIKI
@@ -75,7 +79,7 @@ int main(int argn, char** argc){
 #endif
 
 #ifdef MALI
-    // executori za malog
+    CarpetExecutor carpetExec;
 #endif
 
 #endif
@@ -98,7 +102,7 @@ int main(int argn, char** argc){
 #endif
 
 #ifdef MALI
-
+    execMgr->addExecutor(&carpetExec);
 #endif
 
 #endif

@@ -242,7 +242,7 @@ bool* ModbusClient::getModbusSensorNotifier(){
 
 bool* ModbusClient::getModbusSensorPanic(){
     boost::lock_guard<boost::mutex> lock(*m_mutex);
-    return &ModbusSensorClientNotifier;
+    return &panic;
 }
 
 

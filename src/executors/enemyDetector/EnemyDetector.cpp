@@ -4,6 +4,7 @@ namespace executor{
 
 std::string EnemyDetector::NAME = "EnemyDetectorExecutor";
 
+
 void EnemyDetector::suscribe(){
 
     this->registerCommand(ActuatorCommand::NAME, static_cast<commandCallback>(&EnemyDetector::processActuatorCommand));
@@ -90,6 +91,8 @@ void EnemyDetector::ProcessEnemySensorCallback4(){
     int angle;
     testBool = true;
     angle = modbusClient->readBrxon()-85;   //85 zato sto je tako
+    std::cout << "brkon" << angle << std::endl;
+
     if (detectedAngle!=angle){
         EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::SENSOR,angle);
         sendNotification(notification);
