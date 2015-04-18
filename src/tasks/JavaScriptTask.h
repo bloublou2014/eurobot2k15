@@ -3,9 +3,8 @@
 
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/locks.hpp>
-#include <boost/asio.hpp>
-#include <boost/asio/write.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/bind.hpp>
+#include <boost/thread.hpp>
 
 #include <include/v8.h>
 #include <include/libplatform/libplatform.h>
@@ -13,12 +12,16 @@
 #include "AbstractTask.h"
 #include "utils/javascript/JavaScriptMessageFactory.h"
 #include "executors/msg/CountdownCommand.h"
+#include "utils/helper/SleepTimer.h"
 
 using namespace v8;
 using javascript::JavaScriptMessageFactory;
+using namespace boost::asio;
 
 using boost::mutex;
 using boost::unique_lock;
+using helper::SleepTimer;
+using helper::TimerCallback;
 
 namespace robot{
 
@@ -28,7 +31,7 @@ struct CommandResponseCallback{
     Persistent<Function> progress;
 };
 
-class JavaScriptTask : public AbstractTask{
+class JavaScriptTask : public AbstractTask, public TimerCallback{
 public:
     JavaScriptTask(const string& _name, string _scriptName):AbstractTask(_name), scriptName(_scriptName){}
 
@@ -40,6 +43,9 @@ public:
     void commandSuccess(CommandResponse* resp);
     void commandError(CommandResponse* resp);
     void commandProgress(CommandResponse* resp);
+
+    //For timeout
+    void onTimeout(const boost::system::error_code &e);
 protected:
 
     //Task callbacks
@@ -102,6 +108,9 @@ private:
     map<int, CommandResponseCallback*> commandResponseCallbacks;
 
     JavaScriptMessageFactory* messageFactory;
+
+    //For timeout
+    list<SleepTimer*> timers;
 };
 
 }

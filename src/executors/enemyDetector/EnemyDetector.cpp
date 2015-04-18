@@ -54,11 +54,12 @@ void EnemyDetector::ProcessSensorCallback(){
 
 void EnemyDetector::ProcessEnemySensorCallback1(){
     testBool = true;
-    //TODO: dodati proveru da li se stanje promenilo
     int angle=0;   //Po dogovoru
     if (detectedAngle!=angle){
         EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::SENSOR,angle);
         sendNotification(notification);
+        detectedAngle=angle;
+        myEnemyDetected=true;
     }
 }
 
@@ -68,6 +69,8 @@ void EnemyDetector::ProcessEnemySensorCallback2(){
     if (detectedAngle!=angle){
         EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::SENSOR,angle);
         sendNotification(notification);
+        detectedAngle=angle;
+        myEnemyDetected=true;
     }
 }
 
@@ -77,17 +80,23 @@ void EnemyDetector::ProcessEnemySensorCallback3(){
     if (detectedAngle!=angle){
         EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::SENSOR,angle);
         sendNotification(notification);
+        detectedAngle=angle;
+        myEnemyDetected=true;
     }
 }
 
 void EnemyDetector::ProcessEnemySensorCallback4(){
-    short data;
+    //short data;
+    int angle;
     testBool = true;
-    std::cout << "ENEMY BRKON" << std::endl;
-    data = modbusClient->readBrxon();
-    std::cout << data << std::endl;
+    angle = modbusClient->readBrxon()-85;   //85 zato sto je tako
+    if (detectedAngle!=angle){
+        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::SENSOR,angle);
+        sendNotification(notification);
+        detectedAngle=angle;
+        myEnemyDetected=true;
+    }
 }
-
 
 void EnemyDetector::ProcessBeaconCallback(){
     testBool = true;
@@ -98,8 +107,6 @@ void EnemyDetector::ProcessBeaconCallback(){
               << this->beaconData.Y_beacon2 << std::endl;
 }
 
-
-
 bool EnemyDetector::liftLoop(){
     //std::cout << "redone" << std::endl;
     if(testBool){
@@ -107,8 +114,10 @@ bool EnemyDetector::liftLoop(){
         //std::cout << "ENEMY DETECTED" << std::endl;
         boost::this_thread::sleep(boost::posix_time::milliseconds(20));
         this->readingSensore = true;
-        if (!this->enemyDetected ) {
-            // TODO
+        if ((!enemyDetected) && myEnemyDetected){
+            EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::SENSOR, 0, false);
+            sendNotification(notification);
+            myEnemyDetected=false;
         }
     }
     return true;

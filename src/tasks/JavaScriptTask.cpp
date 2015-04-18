@@ -476,26 +476,31 @@ void JavaScriptTask::setStateCallback(const v8::FunctionCallbackInfo<v8::Value>&
     isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Unrecognized state"));
 }
 
-void print(const boost::system::error_code& /*e*/)
-{
-  std::cout << "Hello, world!\n";
+void JavaScriptTask::onTimeout(const boost::system::error_code &e){
+    cout << "****FINISHED TIMER*****" << endl;
 }
 
 void JavaScriptTask::sleepCallback(const v8::FunctionCallbackInfo<v8::Value>& args){
-//    Isolate* isolate=Isolate::GetCurrent();
+    Isolate* isolate=Isolate::GetCurrent();
+    JavaScriptTask* task=UnwrapJavascriptTask(args.Holder());
 
-//    if (args.Length()<2){
-//        isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Not enaugh parameters."));
-//    }
+    if (args.Length()<2){
+        isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Not enaugh parameters."));
+    }
 
-//    int value = args[0]->NumberValue();
+    int value = args[0]->NumberValue();
 
-//    boost::asio::io_service io;
-//    boost::asio::deadline_timer t(io, boost::posix_time::seconds(value));
-//    t.async_wait(print);
-
-//    //io.run();
-//    boost::asio::thread t(boost::bind(&boost::asio::io_service::run, &io));
+    bool found=false;
+    list<SleepTimer*>::iterator it=task->timers.begin();
+    for (;it!=task->timers.end();++it){
+        if ( (*it)->isFinished()){
+            found=(*it)->start(value);
+        }
+    }
+    if (!found){
+        task->debug("Creating new timer thread");
+        task->timers.push_back(new SleepTimer(task,value));
+    }
 }
 
 }

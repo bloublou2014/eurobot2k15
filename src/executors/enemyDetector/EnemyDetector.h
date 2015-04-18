@@ -16,6 +16,9 @@ public:
 
 private:
     int detectedAngle;
+    bool myEnemyDetected;
+
+    //Tumbasova promenjiva on je azurira
     bool enemyDetected;
 
     static std::string NAME;

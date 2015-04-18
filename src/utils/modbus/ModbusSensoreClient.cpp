@@ -137,10 +137,10 @@ void ModbusSensorClient::main(){
                     }
                 }else{
                     switch(it->first.functionAddress){
-                    case 1: it->second->enemyDetected = true; break;
-                    case 2: it->second->enemyDetected = true; break;
-                    case 5: it->second->enemyDetected = true; break;
-                    case 7: it->second->enemyDetected = true; break;
+                    case 1: it->second->enemyDetected = false; break;
+                    case 2: it->second->enemyDetected = false; break;
+                    case 5: it->second->enemyDetected = false; break;
+                    case 7: it->second->enemyDetected = false; break;
                     }
                 }
                 didReading = true;
