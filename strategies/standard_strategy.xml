@@ -1,0 +1,26 @@
+<tasks>
+	<task>
+		<name>Init</name>
+		<filename>init.js</filename>
+		<rank>1000</rank>
+		<time>100</time>
+	</task>
+	<task>
+		<name>StartMove</name>
+		<filename>start_move.js</filename>
+		<rank>999</rank>
+		<time>5</time>
+	</task>
+	<task>
+		<name>KlapneNase</name>
+		<filename>klapne_nase.js</filename>
+		<rank>1</rank>
+		<time>20</time>
+	</task>
+	<task>
+		<name>Monitor</name>
+		<filename>monitor.js</filename>
+		<rank>0</rank>
+		<time>20</time>
+	</task>
+</tasks>
