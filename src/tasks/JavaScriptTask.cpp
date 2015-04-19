@@ -2,6 +2,8 @@
 
 namespace robot{
 
+string JavaScriptTask::UTILS_SCRIPT="utils.js";
+
 void JavaScriptTask::InitV8Platform(){
     v8::V8::InitializeICU();
     v8::Platform* platform = v8::platform::CreateDefaultPlatform();
@@ -127,6 +129,18 @@ Handle<Script> JavaScriptTask::compileScript(Handle<String> scriptSource){
     return scope.Escape(compiledScript);
 }
 
+Handle<Script> JavaScriptTask::compileScript(Handle<Script> script, Handle<String> scriptSource){
+    EscapableHandleScope scope(getIsolate());
+
+    TryCatch tryCatch;
+    script->Compile(scriptSource);
+    if (script.IsEmpty()){
+        ReportException(getIsolate(), &tryCatch);
+        throw TaskExecutionException("Compiling script contains errors. Check stack trace for details.");
+    }
+    return script;
+}
+
 Handle<ObjectTemplate> JavaScriptTask::createLogTemplate(Isolate* isolate){
     EscapableHandleScope scope(isolate);
 
@@ -165,9 +179,6 @@ Handle<ObjectTemplate> JavaScriptTask::createManagerTemplate(Isolate* isolate){
 
     result->Set(String::NewFromUtf8(isolate, "updateState", String::kInternalizedString),
                 FunctionTemplate::New(isolate, setStateCallback));
-
-//    result->Set(String::NewFromUtf8(isolate, "sleep", String::kInternalizedString),
-//                FunctionTemplate::New(isolate, sleepCallback));
 
     return scope.Escape(result);
 }
@@ -220,6 +231,12 @@ void JavaScriptTask::onCreate(){
     isolate->SetData(1,this);
 
     createGlobalObjects();
+
+    Handle<String> utilsScript=ReadScript(getIsolate(), directoryName+boost::filesystem::path::preferred_separator+UTILS_SCRIPT);
+    if (!utilsScript.IsEmpty()){
+        Local<Script> compiledUtilsScript=compileScript(utilsScript);
+        runScript(compiledUtilsScript);
+    }
 
     Handle<String> script=ReadScript(getIsolate(), scriptName);
     if (script.IsEmpty()){
@@ -475,32 +492,5 @@ void JavaScriptTask::setStateCallback(const v8::FunctionCallbackInfo<v8::Value>&
     }
     isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Unrecognized state"));
 }
-
-//void JavaScriptTask::onTimeout(const boost::system::error_code &e){
-//    cout << "****FINISHED TIMER*****" << endl;
-//}
-
-//void JavaScriptTask::sleepCallback(const v8::FunctionCallbackInfo<v8::Value>& args){
-//    Isolate* isolate=Isolate::GetCurrent();
-//    JavaScriptTask* task=UnwrapJavascriptTask(args.Holder());
-
-//    if (args.Length()<2){
-//        isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Not enaugh parameters."));
-//    }
-
-//    int value = args[0]->NumberValue();
-
-//    bool found=false;
-//    list<SleepTimer*>::iterator it=task->timers.begin();
-//    for (;it!=task->timers.end();++it){
-//        if ( (*it)->isFinished()){
-//            found=(*it)->start(value);
-//        }
-//    }
-//    if (!found){
-//        task->debug("Creating new timer thread");
-//        task->timers.push_back(new SleepTimer(task,value));
-//    }
-//}
 
 }
