@@ -156,8 +156,7 @@ void ModbusSensorClient::main(){
 
                 boost::this_thread::sleep(boost::posix_time::milliseconds(delayTime));
             }
-            //didReading = true;
-            //boost::this_thread::sleep(boost::posix_time::milliseconds(delayTime));
+           boost::this_thread::sleep(boost::posix_time::milliseconds(delayTime));
         }
     }
     std::cout  << "STOPPING MODBUS SENSORE CLIENT" << std::endl;

@@ -75,7 +75,7 @@ private:
     priorityType priority;
     bool shouldStop = false;
     stateEnum state = RESET_COUNTER;
-    int delayTime = 100;
+    int delayTime = 2000;
     int counter = 0;
     bool sensoreDelay = false;
     bool panic = false;

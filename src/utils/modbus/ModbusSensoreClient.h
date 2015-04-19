@@ -100,9 +100,9 @@ private:
     bool* ModbusSensorClientPanic;
     bool delayAlreadyCalculated = false;
     bool didReading = false;
-    int delayTime = 200;
-    int delayTime2 = 660; // 50
-    int delayTime1 = 200; // 20
+    int delayTime = 20;
+    int delayTime2 = 60; // 50
+    int delayTime1 = 20; // 20
     int timerForDelayTime = 0;
     int respinNumber; // preracuna se kod inicijalicacije
 

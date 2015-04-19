@@ -11,12 +11,7 @@ namespace executor {
 
 class EnemyDetector: public ExecutorCommon, public ModbusSensorClientInterface2{
 public:
-<<<<<<< HEAD
-    EnemyDetector():ExecutorCommon(this->NAME),ModbusSensorClientInterface2(),
-        detectedAngle(1800),enemyDetected(false){}
-=======
-    EnemyDetector():ExecutorCommon(this->NAME),ModbusSensorClientInterface(){}
->>>>>>> c4ce73a9cf805406b9f4079ba5f036e4740d82ee
+    EnemyDetector():ExecutorCommon(this->NAME),ModbusSensorClientInterface2(){}
     ~EnemyDetector(){ modbusClient->stopBecaon();
                       modbusClient->stopBecaon();
                     }

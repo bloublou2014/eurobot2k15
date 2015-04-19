@@ -31,8 +31,8 @@ void ModbusClient::main(){
             //std::cout << "PANIC !! ELECTRONIC IS NOT WORKING" << std::endl;
             while(!registersToSet.empty()) registersToSet.pop();
             while(!coilToSet.empty()) coilToSet.pop();
-            boost::this_thread::sleep(boost::posix_time::milliseconds(2000));
         }
+        boost::this_thread::sleep(boost::posix_time::milliseconds(5));
 
 
         if(!registersToSet.empty()){
