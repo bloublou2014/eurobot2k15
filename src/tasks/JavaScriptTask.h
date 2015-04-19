@@ -5,6 +5,7 @@
 #include <boost/thread/locks.hpp>
 #include <boost/bind.hpp>
 #include <boost/thread.hpp>
+#include <boost/filesystem.hpp>
 
 #include <include/v8.h>
 #include <include/libplatform/libplatform.h>
@@ -29,7 +30,10 @@ struct CommandResponseCallback{
 
 class JavaScriptTask : public AbstractTask{
 public:
-    JavaScriptTask(const string& _name, string _scriptName):AbstractTask(_name), scriptName(_scriptName){}
+    static string UTILS_SCRIPT;
+
+    JavaScriptTask(const string& _name, string _scriptName, const string& _directory):
+        AbstractTask(_name), scriptName(_scriptName), directoryName(_directory){}
 
     static void InitV8Platform();
 
@@ -78,6 +82,7 @@ protected:
 
     void createGlobalObjects();
     Handle<Script> compileScript(Handle<String> scriptSource);
+    Handle<Script> compileScript(Handle<Script> script, Handle<String> scriptSource);
     void runScript(Handle<Script> compiledScript);
 
     bool executeGlobalFunction(Handle<Function> function, const int argc, Handle<Value> argv[]);
@@ -85,6 +90,7 @@ protected:
     inline Isolate* getIsolate() const;
 private:
     std::string scriptName;
+    std::string directoryName;
 
     //Global callback functions
     Persistent<Function> runCallback;
