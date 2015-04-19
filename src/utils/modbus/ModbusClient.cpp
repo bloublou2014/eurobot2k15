@@ -32,7 +32,7 @@ void ModbusClient::main(){
             while(!registersToSet.empty()) registersToSet.pop();
             while(!coilToSet.empty()) coilToSet.pop();
         }
-        boost::this_thread::sleep(boost::posix_time::milliseconds(5));
+        boost::this_thread::sleep(boost::posix_time::milliseconds(2));
 
 
         if(!registersToSet.empty()){

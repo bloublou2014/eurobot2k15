@@ -200,30 +200,35 @@ private:
     int orientation;
 };
 
-//class MotionCommandError : public CommandResponse{
-//public:
-//    enum ErrorType{
-//        ENEMY=1,
-//        STUCK=2,
-//        UART=3
-//    };
+class MotionCommandError : public CommandResponse{
+public:
+    enum ErrorType{
+        ENEMY=1,
+        STUCK=2,
+        UART=3,
+        OLD_COMMAND=4
+    };
 
-//    static string NAME;
-//    /* Exports object */
-//    static void Init(Handle<Object> exports);
-//    /* Constructor */
-//    static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static string NAME;
+    /* Exports object */
+    static void Init(Handle<Object> exports);
+    /* Constructor */
+    static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-//    MotionCommandError(ErrorType _type, const string& to, ResponseStatus _status=ERROR):
-//        CommandResponse(NAME, to, "MotionExecutor", _status),errorType(_type) {}
-//    MotionCommandError(const MotionCommandError& mcr):CommandResponse(mcr){}
+    MotionCommandError(ErrorType _type, const string& to, ResponseStatus _status=ERROR):
+        CommandResponse(NAME, to, "MotionExecutor", ERROR),errorType(_type) {}
+    MotionCommandError(const MotionCommandError& mcr):CommandResponse(mcr), errorType(mcr.errorType){}
 
-//    Message* clone(){
-//        return new MotionCommandError(*this);
-//    }
-//private:
-//    ErrorType errorType;
-//};
+    static void ErrorTypeGetter(Local<String> property, const PropertyCallbackInfo<Value>& info);
+
+    inline int getType(){ return errorType; }
+
+    Message* clone(){
+        return new MotionCommandError(*this);
+    }
+private:
+    ErrorType errorType;
+};
 
 }
 

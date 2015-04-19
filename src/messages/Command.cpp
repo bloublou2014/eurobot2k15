@@ -20,10 +20,6 @@ void Command::setId(int _id){
     id=_id;
 }
 
-int Command::getId() const{
-    return id;
-}
-
 void Command::setDestination(const string& _destination){
     destination=_destination;
 }

@@ -60,10 +60,9 @@ void EnemyDetector::ProcessSensorCallback(){
 void EnemyDetector::ProcessEnemySensorCallback1(){
     readingSensore = true;
     testBool = true;
+//    std::cout<<"sent "<<boost::posix_time::microsec_clock::local_time()<<endl;
     if (previousState.left!=true){
-        std::cout << "LEVI DETECTED SAD" << std::endl;
-
-        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::SENSOR, 0);
+        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::LEFT, 0);
         sendNotification(notification);
         previousState.left=true;
     }
@@ -74,9 +73,7 @@ void EnemyDetector::ProcessEnemySensorCallback2(){
 
     testBool = true;
     if (previousState.right!=true){
-        std::cout << "DESNI DETECTED SAD" << std::endl;
-
-        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::SENSOR, 0);
+        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::RIGHT, 0);
         sendNotification(notification);
         previousState.right=true;
     }
@@ -87,9 +84,7 @@ void EnemyDetector::ProcessEnemySensorCallback3(){
 
     testBool = true;
     if (previousState.back!=true){
-        std::cout << "ZADNJI DETECTED SAD" << std::endl;
-
-        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::SENSOR, 180);
+        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BACK, 180);
         sendNotification(notification);
         previousState.back=true;
     }
@@ -103,8 +98,6 @@ void EnemyDetector::ProcessEnemySensorCallback4(){
     testBool = true;
     if (previousState.brkon!=true){
         angle = modbusClient->readBrxon()-85;   //85 zato sto je tako
-        std::cout <<" BRKON MRACNI DETECTE "<< angle << std::endl;
-
         EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON,angle);
         sendNotification(notification);
         previousState.brkon=true;
@@ -124,8 +117,7 @@ void EnemyDetector::ProcessBeaconCallback(){
 
 void EnemyDetector::ProcessNotEnemySensorCallback1(){
     if (previousState.left){
-        std::cout <<" BRKON LEVI OTISAO " << std::endl;
-        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON, 0, false);
+        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::LEFT, 0, false);
         sendNotification(notification);
         previousState.left=false;
     }
@@ -133,8 +125,7 @@ void EnemyDetector::ProcessNotEnemySensorCallback1(){
 
 void EnemyDetector::ProcessNotEnemySensorCallback2(){
     if (previousState.right){
-        std::cout <<" BRKON DESNI OTISAO " << std::endl;
-        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON, 0, false);
+        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::RIGHT, 0, false);
         sendNotification(notification);
         previousState.right=false;
     }
@@ -142,8 +133,7 @@ void EnemyDetector::ProcessNotEnemySensorCallback2(){
 
 void EnemyDetector::ProcessNotEnemySensorCallback3(){
     if (previousState.back){
-        std::cout <<" BRKON ZADNJI ORTISAO " << std::endl;
-        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON, 0, false);
+        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BACK, 180, false);
         sendNotification(notification);
         previousState.back=false;
     }
@@ -151,7 +141,6 @@ void EnemyDetector::ProcessNotEnemySensorCallback3(){
 
 void EnemyDetector::ProcessNotEnemySensorCallback4(){
     if (previousState.brkon){
-        std::cout <<" BRKON MRACNI OTISAO " << std::endl;
         EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON, 0, false);
         sendNotification(notification);
         previousState.brkon=false;

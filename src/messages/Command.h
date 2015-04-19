@@ -25,7 +25,7 @@ public:
 
     string getDestination() const;
     string getCommandName() const;
-    int getId() const;
+    inline int getId() const{ return id; }
 
     string getName() const;
 protected:

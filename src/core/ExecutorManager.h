@@ -16,6 +16,9 @@
 #include "core/AbstractMessageHandler.h"
 #include "messages/StopMessage.h"
 
+/*Includes for messages that will be processed*/
+#include "executors/msg/EnemyDetectedNotification.h"
+
 using std::map;
 using std::string;
 using std::queue;
@@ -26,6 +29,8 @@ using boost::unique_lock;
 using boost::shared_lock;
 using boost::upgrade_lock;
 using boost::lock_guard;
+
+using executor::EnemyDetectedNotification;
 
 namespace robot{
 
@@ -53,6 +58,8 @@ protected:
     void startAllExecutors();
     void stopAllExecutors();
     void dispatcheMessage();
+
+    bool shouldPropagateToTask(Message* message);
 private:
     shared_mutex executorsMapManipulation;
     map<string,AbstractExecutor*> executorsMap;

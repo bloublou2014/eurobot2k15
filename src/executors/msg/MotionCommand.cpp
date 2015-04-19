@@ -251,6 +251,29 @@ void SetPosition::New(const v8::FunctionCallbackInfo<v8::Value>& args) {
     }
 }
 
+string MotionCommandError::NAME="MotionCommandError";
+void MotionCommandError::Init(Handle<Object> exports){
+    Isolate* isolate = Isolate::GetCurrent();
+    // Prepare constructor template
+    Local<FunctionTemplate> tpl = FunctionTemplate::New(isolate);
+    tpl->SetClassName(String::NewFromUtf8(isolate, MotionCommandError::NAME.c_str()));
+    tpl->InstanceTemplate()->SetAccessor(String::NewFromUtf8(isolate, "errorType"),
+                            MotionCommandError::ErrorTypeGetter);
+    tpl->InstanceTemplate()->SetInternalFieldCount(1);
+
+    JavaScriptMessageProvider* provider=static_cast<JavaScriptMessageProvider*>(isolate->GetData(0));
+    provider->setObjectConstructor(MotionCommandError::NAME, tpl->GetFunction());
+    provider->setObjectTemplate(MotionCommandError::NAME, tpl->InstanceTemplate());
+    exports->Set(String::NewFromUtf8(isolate, MotionCommandError::NAME.c_str()), tpl->GetFunction());
+}
+
+void MotionCommandError::ErrorTypeGetter(Local<String> property, const PropertyCallbackInfo<Value>& info){
+    Local<Object> self = info.Holder();
+    MotionCommandError* notification=Unwrap<MotionCommandError>(self);
+    info.GetReturnValue().Set((int)notification->getType());
+}
+
+
 } // end namespace
 
 

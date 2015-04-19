@@ -16,6 +16,7 @@ void JavaScriptMessageFactory::init(Handle<Object> exportObject){
     motion::StopMovement::Init(exportObject);
     motion::SetSpeedMotion::Init(exportObject);
     motion::SetPosition::Init(exportObject);
+    motion::MotionCommandError::Init(exportObject);
     //Motion notification
     motion::MotionNotification::Init(exportObject);
     //Get motion state

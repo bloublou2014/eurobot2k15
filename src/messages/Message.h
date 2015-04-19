@@ -27,7 +27,7 @@ public:
     }
 
     Message(MessageType _type):type(_type){
-        sentTime=second_clock::local_time();
+        sentTime=boost::posix_time::microsec_clock::local_time();
     }
 
     Message(const Message& message): type(message.type), source(message.source),sentTime(message.sentTime){

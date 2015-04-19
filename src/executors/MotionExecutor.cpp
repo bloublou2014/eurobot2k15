@@ -2,7 +2,6 @@
 
 #include <iostream>
 
-//#define DETECT_STUCK
 #define MOTION_TRESHOLD 10
 
 using namespace std;
@@ -16,6 +15,9 @@ void MotionExecutor::init(){
     this->registerCommand(MotionCommand::NAME,static_cast<commandCallback>(&MotionExecutor::processMotionCommand));
     this->registerCommand(GetMotionState::NAME,static_cast<commandCallback>(&MotionExecutor::processGetMotionState));
 
+    //Subscribe to enemy detection notifications
+    this->subscribe(EnemyDetectedNotification::NAME,static_cast<notificationCallback>(&MotionExecutor::processEnemyDetectedNotification));
+
     motionHandles[MotionCommand::MotionType::MOVE_STRAIGHT]=static_cast<motionCommandHandle>(&MotionExecutor::moveForward);
     motionHandles[MotionCommand::MotionType::MOVE_TO_POSITION]=static_cast<motionCommandHandle>(&MotionExecutor::moveToPosition);
     motionHandles[MotionCommand::MotionType::ROTATE_FOR]=static_cast<motionCommandHandle>(&MotionExecutor::rotateFor);
@@ -24,6 +26,22 @@ void MotionExecutor::init(){
     motionHandles[MotionCommand::MotionType::STOP]=static_cast<motionCommandHandle>(&MotionExecutor::stopMovement);
     motionHandles[MotionCommand::MotionType::SET_SPEED]=static_cast<motionCommandHandle>(&MotionExecutor::setSpeed);
     motionHandles[MotionCommand::MotionType::SET_POSITION]=static_cast<motionCommandHandle>(&MotionExecutor::setPosition);
+
+    memset(detectedSensor,0,sizeof(detectedSensor));    //Set whole array to false
+}
+
+void MotionExecutor::processEnemyDetectedNotification(Notification* notification){
+    EnemyDetectedNotification* ed=static_cast<EnemyDetectedNotification*>(notification);
+
+    detectedSensor[ed->getType()]=ed->isDetected();
+
+//    boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
+//    boost::posix_time::time_duration diff = now - ed->getSentTime();
+
+//    std::stringstream ss;
+//    ss<<"DIFF: "<<diff.total_milliseconds()<<std::endl;
+//        std::cout<<"received "<<boost::posix_time::microsec_clock::local_time()<<endl;
+//    debug(ss.str());
 }
 
 void MotionExecutor::processMotionCommand(Command* command){
@@ -67,33 +85,68 @@ void MotionExecutor::main(){
     shouldStop=false;
     debug("Started main thread execution");
 
-    int commandCycle=0;
-    int maxCommandCycle=5;
-
     while (true){
         if (shouldStop){
             driver.stop();
             break;
         }
 
+        /* Proverim da li robot moze da ide tamo gde se uputio */
+        if (driver.getState()==MotionDriver::State::MOVING){
+            if (detectedSensor[EnemyDetectedNotification::LEFT] || detectedSensor[EnemyDetectedNotification::RIGHT]){
+                if (driver.getDirection()==MotionDriver::MovingDirection::FORWARD){
+                    if (currentMotionCommand!=NULL){
+                        MotionCommandError* errorMsg=new MotionCommandError(MotionCommandError::ENEMY,currentMotionCommand->getSource());
+                        errorMsg->setId(currentMotionCommand->getId());
+                        sendResponse(errorMsg);
+//                        delete currentMotionCommand;
+                        currentMotionCommand=NULL;
+                    }
+                    driver.stop();
+                }
+            }
+            if (detectedSensor[EnemyDetectedNotification::BACK]){
+                if (driver.getDirection()==MotionDriver::MovingDirection::BACKWARD){
+                    if (currentMotionCommand!=NULL){
+                        MotionCommandError* errorMsg=new MotionCommandError(MotionCommandError::ENEMY,currentMotionCommand->getSource());
+                        errorMsg->setId(currentMotionCommand->getId());
+                        sendResponse(errorMsg);
+//                        delete currentMotionCommand;
+                        currentMotionCommand=NULL;
+                    }
+                    driver.stop();
+                }
+            }
+        }
+
         /*Dobavim sledecu komandu*/
         MotionCommand* newCommand=getNextMotionCommand();
         if (newCommand!=NULL && currentMotionCommand!=NULL){
             debug("Newer command received, sending error to old");
-            sendResponseFromCommand(currentMotionCommand,ERROR);
+            MotionCommandError* errorMsg=new MotionCommandError(MotionCommandError::OLD_COMMAND,currentMotionCommand->getSource());
+            errorMsg->setId(currentMotionCommand->getId());
+            sendResponse(errorMsg);
+//            delete currentMotionCommand;
+            currentMotionCommand=NULL;
         }
+
+
 
         //Process received command
         try{
             /*Sad bi trebalo tu komandu odraditi*/
             if (newCommand!=NULL){
                 (this->*motionHandles[newCommand->getMotionType()])(newCommand);
-                commandCycle=0;
-//                boost::this_thread::sleep(boost::posix_time::milliseconds(15));
             }
         }catch(...){
             error("***** Error in UART communication! ****");
-            sendResponseFromCommand(currentMotionCommand,ERROR);
+            if (currentMotionCommand!=NULL){
+                MotionCommandError* errorMsg=new MotionCommandError(MotionCommandError::UART,currentMotionCommand->getSource());
+                errorMsg->setId(currentMotionCommand->getId());
+                sendResponse(errorMsg);
+//                delete currentMotionCommand;
+                currentMotionCommand=NULL;
+            }
             return;
         }
 
@@ -103,7 +156,10 @@ void MotionExecutor::main(){
         }catch(...){
             error("***** Error in UART communication! ****");
             if (currentMotionCommand!=NULL){
-                sendResponseFromCommand(currentMotionCommand,ERROR);
+                MotionCommandError* errorMsg=new MotionCommandError(MotionCommandError::UART,currentMotionCommand->getSource());
+                errorMsg->setId(currentMotionCommand->getId());
+                sendResponse(errorMsg);
+//                delete currentMotionCommand;
                 currentMotionCommand=NULL;
             }
             return;
@@ -124,29 +180,14 @@ void MotionExecutor::main(){
 
         //If driver throws an error, report it
         if ((newState.State==MotionDriver::State::ERROR || newState.State==MotionDriver::State::STUCK) && currentMotionCommand!=NULL){
-            sendResponseFromCommand(currentMotionCommand, ERROR);
             error("Robot stuck, canceling movement");
+            MotionCommandError* errorMsg=new MotionCommandError(MotionCommandError::STUCK,currentMotionCommand->getSource());
+            errorMsg->setId(currentMotionCommand->getId());
+            sendResponse(errorMsg);
+//            delete currentMotionCommand;
             currentMotionCommand=NULL;
             driver.stop();
         }
-
-#ifdef DETECT_STUCK
-        //Detect stuck state
-        if(commandCycle>maxCommandCycle){
-            if (isStuck(previousState, newState)){
-                driver.softStop();
-                error("Robot stuck, stopping movement!");
-                sendResponseFromCommand(currentMotionCommand, ERROR);
-                currentMotionCommand=NULL;
-            }
-            commandCycle=0;
-            //Update variable for stuck detection
-            previousState=newState;
-            maxCommandCycle=6*(100.0f/newState.Speed);  //tako sam probao i radi
-        }else{
-            commandCycle++;
-        }
-#endif
 
         //Send progress if there is a command for it
         if (lastState!=newState){

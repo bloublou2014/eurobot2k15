@@ -9,16 +9,20 @@
 #include <map>
 #include <cmath>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/atomic.hpp>
 
 #include "AbstractExecutor.h"
 #include "executors/msg/MotionCommand.h"
 #include "executors/msg/GetMotionState.h"
 #include "drivers/motion/MotionDriver.h"
 #include "executors/msg/MotionNotification.h"
+#include "executors/msg/EnemyDetectedNotification.h"
 
 using namespace robot;
 using boost::mutex;
 using std::queue;
+
+using executor::EnemyDetectedNotification;
 
 namespace motion{
 
@@ -32,6 +36,8 @@ public:
 
     void processMotionCommand(Command* command);
     void processGetMotionState(Command* command);
+
+    void processEnemyDetectedNotification(Notification* notification);
 protected:
     void main();
 private:
@@ -63,6 +69,11 @@ private:
     MotionState previousState;
     static bool isStuck(MotionState& oldState, MotionState& newState);
     static double distance(double xFirst, double yFirst, double xSecond, double ySecond);
+
+    /*Used for enemy detector*/
+    bool detectedSensor[5];
+
+
 };
 
 }

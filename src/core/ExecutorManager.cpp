@@ -20,7 +20,15 @@ bool ExecutorManager::sendMessage(Message* message){
 }
 
 bool ExecutorManager::receiveMessage(Message* message){
-    //TODO: add pipes to quickly process message before sending to other manager
+    //Notifications that should be processed by other executor
+    if (message->getMessageType()==MessageType::NOTIFICATION){
+        Notification* notification=(Notification*)message;
+        //We should stop enemy detected notification and pass it to motion executor
+        if (notification->getTopic()==EnemyDetectedNotification::NAME){
+            return sendMessage(message);
+        }
+    }
+
     return taskManager->sendMessage(message);
 }
 
@@ -79,12 +87,13 @@ void ExecutorManager::dispatcheMessage(){
         switch (message->getMessageType()) {
         case NOTIFICATION:
         {
+            Notification* notification=(Notification*)message;
             boost::shared_lock<shared_mutex> lock(executorsMapManipulation);
             for (map<string,AbstractExecutor*>::const_iterator it=executorsMap.cbegin();it!=executorsMap.cend();++it){
-                if (it->second->isSubscribed(message))
-                    it->second->processNotification(message->clone());
+                if (it->second->isSubscribed(notification))
+                    it->second->processNotification(notification->clone());
             }
-            delete message;
+            delete notification;
         }
         break;
         case COMMAND:
