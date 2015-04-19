@@ -11,17 +11,12 @@ namespace executor {
 
 class EnemyDetector: public ExecutorCommon, public ModbusSensorClientInterface{
 public:
-    EnemyDetector():ExecutorCommon(this->NAME),ModbusSensorClientInterface(),
-        detectedAngle(1800),enemyDetected(false){}
+    EnemyDetector():ExecutorCommon(this->NAME),ModbusSensorClientInterface(){}
     ~EnemyDetector(){ modbusClient->stopBecaon();
                       modbusClient->stopBecaon();
                     }
 private:
-    int detectedAngle;
-    bool myEnemyDetected;
-
-    //Tumbasova promenjiva on je azurira
-    bool enemyDetected;
+    enemyDetectedStruct previousState;
 
     static std::string NAME;
     void suscribe();

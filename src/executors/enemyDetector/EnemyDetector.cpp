@@ -18,6 +18,10 @@ void EnemyDetector::suscribe(){
     //modbusClient->startBeacon();
     //modbusClient->startBrxon();
 
+    previousState.back=false;
+    previousState.brkon=false;
+    previousState.left=false;
+    previousState.right=false;
 }
 
 bool EnemyDetector::StartBeaconFunction(){
@@ -55,34 +59,28 @@ void EnemyDetector::ProcessSensorCallback(){
 
 void EnemyDetector::ProcessEnemySensorCallback1(){
     testBool = true;
-    int angle=0;   //Po dogovoru
-    if (detectedAngle!=angle){
-        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::SENSOR,angle);
+    if (previousState.left!=true){
+        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::SENSOR, 0);
         sendNotification(notification);
-        detectedAngle=angle;
-        myEnemyDetected=true;
+        previousState.left=true;
     }
 }
 
 void EnemyDetector::ProcessEnemySensorCallback2(){
     testBool = true;
-    int angle=0;   //Po dogovoru
-    if (detectedAngle!=angle){
-        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::SENSOR,angle);
+    if (previousState.right!=true){
+        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::SENSOR, 0);
         sendNotification(notification);
-        detectedAngle=angle;
-        myEnemyDetected=true;
+        previousState.right=true;
     }
 }
 
 void EnemyDetector::ProcessEnemySensorCallback3(){
     testBool = true;
-    int angle=180;   //Po dogovoru
-    if (detectedAngle!=angle){
-        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::SENSOR,angle);
+    if (previousState.back!=true){
+        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::SENSOR, 180);
         sendNotification(notification);
-        detectedAngle=angle;
-        myEnemyDetected=true;
+        previousState.back=true;
     }
 }
 
@@ -90,14 +88,11 @@ void EnemyDetector::ProcessEnemySensorCallback4(){
     //short data;
     int angle;
     testBool = true;
-    angle = modbusClient->readBrxon()-85;   //85 zato sto je tako
-    std::cout << "brkon" << angle << std::endl;
-
-    if (detectedAngle!=angle){
-        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::SENSOR,angle);
+    if (previousState.brkon!=true){
+        angle = modbusClient->readBrxon()-85;   //85 zato sto je tako
+        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON,angle);
         sendNotification(notification);
-        detectedAngle=angle;
-        myEnemyDetected=true;
+        previousState.brkon=true;
     }
 }
 
@@ -117,10 +112,25 @@ bool EnemyDetector::liftLoop(){
         //std::cout << "ENEMY DETECTED" << std::endl;
         boost::this_thread::sleep(boost::posix_time::milliseconds(20));
         this->readingSensore = true;
-        if ((!enemyDetected) && myEnemyDetected){
-            EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::SENSOR, 0, false);
+        if (previousState.brkon && !enemyDetected.brkon){
+            EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON, 0, false);
             sendNotification(notification);
-            myEnemyDetected=false;
+            previousState.brkon=false;
+        }
+        if (previousState.back && !enemyDetected.back){
+            EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::SENSOR, 180, false);
+            sendNotification(notification);
+            previousState.back=false;
+        }
+        if (previousState.left && !enemyDetected.left){
+            EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON, 0, false);
+            sendNotification(notification);
+            previousState.left=false;
+        }
+        if (previousState.right && !enemyDetected.right){
+            EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON, 0, false);
+            sendNotification(notification);
+            previousState.right=false;
         }
     }
     return true;
