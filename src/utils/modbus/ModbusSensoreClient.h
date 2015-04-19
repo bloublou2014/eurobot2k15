@@ -15,11 +15,15 @@ using namespace robot;
 namespace modbus {
 
 class ModbusSensorClientInterface{
-public:
-    ModbusSensorClientInterface(){
-        //std::cout<<"Created interface" << std::endl;
-    }
 
+public:
+    /*
+    ModbusSensorClientInterface(){
+        std::cout<<"Created interface" << std::endl;
+    }
+    */
+    virtual void ProcessLiftLeftSensoreCallback();
+    virtual void ProcessLiftRightSensoreCallback();
     virtual void ProcessSensorCallback();
     virtual void ProcessEnemySensorCallback1();
     virtual void ProcessEnemySensorCallback2();
@@ -31,12 +35,35 @@ public:
 
     enemyDetectedStruct enemyDetected;
 
-    int brxonValue;
+    //int brxonValue;
     beaconDataStruct beaconData;
 
 };
 
-class ModbusSensorClient : public Node, public ModbusSensorClientInterface {
+class ModbusSensorClientInterface2{
+public:
+
+    ModbusSensorClientInterface2(){
+        std::cout << " CREATE INTERFACE" << std::endl;
+    }
+    virtual void ProcessLiftLeftSensoreCallback(){}
+    virtual void ProcessLiftRightSensoreCallback(){}
+    virtual void ProcessSensorCallback(){}
+    virtual void ProcessEnemySensorCallback1(){}
+    virtual void ProcessEnemySensorCallback2(){}
+    virtual void ProcessEnemySensorCallback3(){}
+    virtual void ProcessEnemySensorCallback4(){}
+    virtual void ProcessBeaconCallback(){}
+    bool readingSensore = false ;
+    bool readingBeckon = false;
+
+    enemyDetectedStruct enemyDetected;
+
+    //int brxonValue;
+    beaconDataStruct beaconData;
+};
+
+class ModbusSensorClient : public Node,/* public ModbusSensorClientInterface,*/ public ModbusSensorClientInterface2 {
 private:
 
     struct setSingleRegisterData{
@@ -55,15 +82,15 @@ private:
         bool beaconON;
         int beaconDataCounter;
         bool BeaconDoneReading;
-        ModbusSensorClientInterface* interface;
+        ModbusSensorClientInterface2* interface;
         beaconDataStruct beaconData;
     };
 
     ModbusClient* modbus;
     ModbusSensorClient();
 
-    typedef map <idData, ModbusSensorClientInterface*> callbackRegisterMapType;
-    typedef map <idData, ModbusSensorClientInterface*>::iterator it_type;
+    typedef map <idData, ModbusSensorClientInterface2*> callbackRegisterMapType;
+    typedef map <idData, ModbusSensorClientInterface2*>::iterator it_type;
     callbackRegisterMapType callbackRegisterMap;
 
 
@@ -73,9 +100,9 @@ private:
     bool* ModbusSensorClientPanic;
     bool delayAlreadyCalculated = false;
     bool didReading = false;
-    int delayTime = 20;
-    int delayTime2 = 60; // 50
-    int delayTime1 = 20; // 20
+    int delayTime = 200;
+    int delayTime2 = 660; // 50
+    int delayTime1 = 200; // 20
     int timerForDelayTime = 0;
     int respinNumber; // preracuna se kod inicijalicacije
 
@@ -95,7 +122,8 @@ public:
     static ModbusSensorClient* instance;
     static ModbusSensorClient* getModbusSensorInstance();
     void stopModbusSensorClient();
-    void registerToSensoreCallback(unsigned char _slave_address, unsigned short _coil_address, bool on_bool_callback, ModbusSensorClientInterface *obj);
+    void registerToSensoreCallback(unsigned char _slave_address, unsigned short _coil_address, bool on_bool_callback,
+                                   ModbusSensorClientInterface2 *obj);
 
     short readBrxon();
     bool startBrxon();
@@ -104,7 +132,7 @@ public:
     bool startBeacon();
     bool stopBecaon();
     bool readBeacon();
-    void registerToBeaconInterface(ModbusSensorClientInterface *_interface);
+    void registerToBeaconInterface(ModbusSensorClientInterface2 *_interface);
 
     //void registerToModbusRegisterCallback()
 };

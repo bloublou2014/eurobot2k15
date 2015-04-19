@@ -75,7 +75,7 @@ private:
     priorityType priority;
     bool shouldStop = false;
     stateEnum state = RESET_COUNTER;
-    int delayTime = 5;
+    int delayTime = 100;
     int counter = 0;
     bool sensoreDelay = false;
     bool panic = false;
@@ -106,6 +106,8 @@ public:
     void stopModbusClient();
     bool* getModbusSensorNotifier();
     bool* getModbusSensorPanic();
+
+    bool getPanic();
 
 };
 

@@ -21,6 +21,7 @@ Command* ActuatorAction::LiftLeft(ActuatorType _type){
     case SET_START_CONFIG : return (Command*) new SetStartConfig(LIFT_LEFT);
     case RELOAD_CONFIG : return (Command*) new ReloadConfig(LIFT_LEFT);
     case GET_OBJECT_STOP : return (Command*) new GetObjectStop(LIFT_LEFT);
+    case CALLBACK_GET: return (Command*) new CallbackGet(LIFT_LEFT);
     default : return NULL;
     }
 }
@@ -32,6 +33,7 @@ Command* ActuatorAction::LiftRight(ActuatorType _type){
     case SET_START_CONFIG : return (Command*) new SetStartConfig(LIFT_RIGHT);
     case RELOAD_CONFIG : return (Command*) new ReloadConfig(LIFT_RIGHT);
     case GET_OBJECT_STOP : return (Command*) new GetObjectStop(LIFT_LEFT);
+    case CALLBACK_GET: return (Command*) new CallbackGet(LIFT_LEFT);
     default : return NULL;
     }
 }

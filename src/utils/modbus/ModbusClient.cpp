@@ -11,7 +11,7 @@ ModbusClient* ModbusClient::instance=0;
 ModbusClient::ModbusClient():Node("ModbusClient"),m_mutex(new boost::mutex()){
     modbus = ModbusMaster::getModbusInstance();
     std::cout << "ModbusClient is running" << std::endl;
-    instance = this;
+    //instance = this;
     start();
 }
 
@@ -31,6 +31,7 @@ void ModbusClient::main(){
             //std::cout << "PANIC !! ELECTRONIC IS NOT WORKING" << std::endl;
             while(!registersToSet.empty()) registersToSet.pop();
             while(!coilToSet.empty()) coilToSet.pop();
+            boost::this_thread::sleep(boost::posix_time::milliseconds(2000));
         }
 
 
@@ -122,6 +123,7 @@ bool ModbusClient::writeToRegister(){
 
         if(counter > 9){
             std::cout << "PANIC ELECTRONIC IS NOT WORKING" << std::endl;
+
             panic = true;
         }
 
@@ -272,6 +274,10 @@ bool ModbusClient::readRegister(short* _data, unsigned char _slaveAddress, short
         return success;
     }
     return false;
+}
+
+bool ModbusClient::getPanic(){
+    return panic;
 }
 
 } // end namespace

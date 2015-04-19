@@ -57,7 +57,8 @@ enum ActuatorType{SET_START_CONFIG,
                   START_BEACON,
                   STOP_BEACON,
                   LEAVE_CARPET,
-                  NULL_ACTION
+                  NULL_ACTION,
+                  CALLBACK_GET,
                  };
 
 typedef map<Executors, string> ExecutorsMap;
@@ -161,6 +162,11 @@ public:
 class LeaveCarpet: public ActuatorCommand{
 public:
     LeaveCarpet(Executors _executor):ActuatorCommand(LEAVE_CARPET, _executor){}
+};
+
+class CallbackGet: public ActuatorCommand{
+public:
+    CallbackGet(Executors _executor):ActuatorCommand(CALLBACK_GET, _executor){}
 };
 
 class SetSpeed: public ActuatorCommand {

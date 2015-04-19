@@ -71,14 +71,14 @@ ModbusSensorClient* ModbusSensorClient::getModbusSensorInstance(){
 
 
 void ModbusSensorClient::registerToSensoreCallback(unsigned char _slave_address, unsigned short _coil_address, bool on_bool_callback,
-                                                   ModbusSensorClientInterface *obj){
+                                                   ModbusSensorClientInterface2 *obj){
 
     boost::lock_guard<boost::mutex> lock(*m_mutex);
 
     idData id;
     id.slaveAddress = _slave_address;
     id.functionAddress = _coil_address;
-    callbackRegisterMap[id] =(ModbusSensorClientInterface*) obj;
+    callbackRegisterMap[id] =(ModbusSensorClientInterface2*) obj;
 }
 
 void ModbusSensorClient::main(){
@@ -87,7 +87,7 @@ void ModbusSensorClient::main(){
     bool recalculate = false;
     timerForDelayTime = 0;
 
-    while(!shouldStop){
+    while(!shouldStop && !callbackRegisterMap.empty()){
 
         for(it_type it = callbackRegisterMap.begin(); it != callbackRegisterMap.end(); ++it){
 
@@ -102,7 +102,7 @@ void ModbusSensorClient::main(){
             }
 
             //std::cout << timerForDelayTime << " : " << respinNumber << std::endl;
-            //std::cout << "delayTime" << delayTime << std::endl;
+            //std::cout << "delayTime" << delayTime << std::endl;enemyDetected
 
             if(timerForDelayTime < respinNumber && didReading){
                 timerForDelayTime ++;
@@ -138,6 +138,8 @@ void ModbusSensorClient::main(){
                     switch(it->first.functionAddress){
                     case 1: it->second->ProcessEnemySensorCallback1(); it->second->enemyDetected.left = true; break;
                     case 2: it->second->ProcessEnemySensorCallback2(); it->second->enemyDetected.right = true; break;
+                    case 3: it->second->ProcessLiftRightSensoreCallback();
+                    case 4: it->second->ProcessLiftLeftSensoreCallback();
                     case 5: it->second->ProcessEnemySensorCallback3(); it->second->enemyDetected.back = true; break;
                     case 7: it->second->ProcessEnemySensorCallback4(); it->second->enemyDetected.brkon = true; break;
                     default: it->second->ProcessSensorCallback();
@@ -258,7 +260,7 @@ bool ModbusSensorClient::readBeacon(){
     return success;
 }
 
-void ModbusSensorClient::registerToBeaconInterface(ModbusSensorClientInterface* _interface){
+void ModbusSensorClient::registerToBeaconInterface(ModbusSensorClientInterface2 *_interface){
     std::cout << "registred to Beacon Interface" << std::endl;
     beaconID.interface = _interface;
 }

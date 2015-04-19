@@ -13,11 +13,15 @@
 #include "executors/msg/ActuatorCommand.h"
 
 #include "executors/ExecutorConfig.h"
+#include "utils/modbus/ModbusSensoreClient.h"
 
 using servo::ServoDriver;
 using sensor::SensorDriver;
 using namespace robot;
 using boost::mutex;
+using boost::condition_variable;
+using boost::unique_lock;
+using namespace modbus;
 
 namespace executor {
 
@@ -26,6 +30,22 @@ private:
 
 public:
     ExecutorCommon(string _name):AbstractExecutor(_name), ExecutorConfig(), currentActuatorCommand(NULL), executorName(_name){}
+
+protected:
+
+    struct Instruction{
+        enum Type{
+            COMMAND,
+            STOP
+        };
+
+        Instruction(Command* _command):command(_command),type(COMMAND){}
+        Instruction(Type _type):type(_type),command(NULL){}
+
+        Command* command;
+        Type type;
+    };
+
 
     void init();
     void stop();
@@ -38,8 +58,9 @@ public:
     void processActuatorCommand(Command* _command);
     void processGetActuatorCommand(Command* _command);
 
+
     mutex commandQueueLock;
-    queue<Command*> commandsToProcess;
+    queue<Instruction> commandsToProcess;
 
     ActuatorCommand* getNextCommand();
     bool shouldStop;
@@ -48,7 +69,7 @@ public:
 
     string executorName;
 
-protected:
+    //bool ProcessSensorCallback();
 
     virtual void suscribe();
     virtual void mapping();
@@ -71,10 +92,10 @@ protected:
     virtual bool StopBrxonFunction();
     virtual bool StartBeaconFunction();
     virtual bool StopBeaconFunction();
-    virtual bool liftLoop();
     virtual bool LeaveCarpetFunction();
+    virtual bool CallbackGetFunction();
 
-private:
+protected:
 
     void reloadConfig(ActuatorCommand *_command);
     void getObject(ActuatorCommand* _command);
@@ -86,6 +107,7 @@ private:
     void unKickLeft(ActuatorCommand* _command);
     void unloadPopcorn(ActuatorCommand* _command);
     void getPopcorn(ActuatorCommand* _command);
+    void callbackGet(ActuatorCommand* _commnad);
 
     void stopBrxon(ActuatorCommand* _command);
     void startBrxon(ActuatorCommand* _command);
@@ -93,6 +115,8 @@ private:
     void startBeacon(ActuatorCommand* _command);
 
     void leaveCarpet(ActuatorCommand* _command);
+
+    condition_variable queueNotEmpty;
 
 
 

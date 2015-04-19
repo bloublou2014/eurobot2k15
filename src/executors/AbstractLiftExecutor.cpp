@@ -10,6 +10,8 @@ void AbstractLiftExecutor::maping(){
 
 void AbstractLiftExecutor::suscribe(){
     this->registerCommand(ActuatorCommand::NAME, static_cast<commandCallback>(&AbstractLiftExecutor::processActuatorCommand));
+    //modbusClient->registerToSensoreCallback(char(4),char(4),true,this);
+    //modbusClient->registerToSensoreCallback(char(4),char(3),true,this);
 }
 
 
@@ -46,9 +48,6 @@ bool AbstractLiftExecutor::GetObjectStopFunction(){
     return true;
 }
 
-void AbstractLiftExecutor::brodcastNotification(){
-    // overide this function
-}
 
 
 void AbstractLiftExecutor::SetHandAddresses(unsigned char _slave_address, unsigned short _position_address, unsigned short _speed_address){
@@ -171,6 +170,34 @@ bool AbstractLiftExecutor::doorS(){
 bool AbstractLiftExecutor::handS(){
     return hand.getServoStatus();
 }
+/*
+void AbstractLiftExecutor::ProcessLiftRightSensoreCallback(){
+    Command* cmd = ActuatorAction::LiftRight(CALLBACK_GET);
+        commandQueueLock.lock();
+        commandsToProcess.push(Instruction(cmd));
+        commandQueueLock.unlock();
+        queueNotEmpty.notify_one();
+    }
 
+void AbstractLiftExecutor::ProcessLiftLeftSensoreCallback(){
+    Command* cmd = ActuatorAction::LiftLeft(CALLBACK_GET);
+        commandQueueLock.lock();
+        commandsToProcess.push(Instruction(cmd));
+        commandQueueLock.unlock();
+        queueNotEmpty.notify_one();
+    }
+
+bool AbstractLiftExecutor::CallbackGetFunction(){
+    bool success = false;
+    success = this->liftProcess();
+    if(success) readingSensore = true;
+    else readingSensore = false;
+
+}
+*/
+
+bool AbstractLiftExecutor::liftProcess(){
+
+}
 
 }

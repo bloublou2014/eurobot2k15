@@ -20,6 +20,7 @@ void ExecutorCommon::init(){
     actuatorHandles[ActuatorType::START_BEACON]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::startBeacon);
     actuatorHandles[ActuatorType::STOP_BEACON]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::stopBeacon);
     actuatorHandles[ActuatorType::LEAVE_CARPET]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::leaveCarpet);
+    actuatorHandles[ActuatorType::CALLBACK_GET]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::callbackGet);
 
 
     suscribe();
@@ -28,42 +29,49 @@ void ExecutorCommon::init(){
 }
 
 
-void ExecutorCommon::stop(){
-    shouldStop = true;
-}
+
 
 void ExecutorCommon::processActuatorCommand(Command *_command){
     commandQueueLock.lock();
-    commandsToProcess.push(_command);
+    commandsToProcess.push(Instruction(_command));
     commandQueueLock.unlock();
+    queueNotEmpty.notify_one();
 }
 
 ActuatorCommand* ExecutorCommon::getNextCommand(){  // if there is more then one command = send error to old one onda execute new one , returns new command
+    unique_lock<boost::mutex> lock(commandQueueLock);
     ActuatorCommand* newCommand = NULL;
-    commandQueueLock.lock();
 
     //while (instructionQueue.empty()) {
     //    queueNotEmpty.wait(lock);
     //}
 
-    if(!commandsToProcess.empty()){
-        while(commandsToProcess.size() > 1){
-            Command* cmd = commandsToProcess.front();
-            commandsToProcess.pop();
-            debug("newer Command, seding error to old");
-            sendResponseFromCommand(cmd, ERROR);
-        }
-        newCommand =(ActuatorCommand*)commandsToProcess.front();
-        commandsToProcess.pop();
+    while (commandsToProcess.empty()) {
+        queueNotEmpty.wait(lock);
     }
 
-    commandQueueLock.unlock();
+    if(!commandsToProcess.empty()){
+        while(commandsToProcess.size() > 1){
+            Instruction cmd = commandsToProcess.front();
+            commandsToProcess.pop();
+            debug("newer Command, seding error to old");
+            ActuatorCommand* cmdAct = cmd.command;
+
+            sendResponseFromCommand(cmdAct, ERROR);
+        }
+        Instruction newInst = commandsToProcess.front();
+        commandsToProcess.pop();
+        newCommand = newInst.command;
+    }
+
     return newCommand;
 }
 
 void ExecutorCommon::main(){
     shouldStop = false;
     while(!shouldStop){
+
+
         ActuatorCommand* newCommand = getNextCommand();
         if (newCommand!= NULL && currentActuatorCommand!= NULL){
             //send error to old command
@@ -76,11 +84,18 @@ void ExecutorCommon::main(){
             (this->*actuatorHandles[newCommand->getActuatorType()])(newCommand); // do new command ( map static cast )
 
         }
-        //brodcastNotification();
-        liftLoop();
-        boost::this_thread::sleep(boost::posix_time::milliseconds(2));
     }
 }
+
+void ExecutorCommon::stop(){
+    commandQueueLock.lock();
+    commandsToProcess.push(Instruction::STOP);
+    commandQueueLock.unlock();
+    queueNotEmpty.notify_one();
+}
+
+
+
 
 void ExecutorCommon::mapping(){
     debug("TODO: must redefine mapping");
@@ -312,6 +327,20 @@ void ExecutorCommon::leaveCarpet(ActuatorCommand * _command){
     }
 }
 
+void ExecutorCommon::callbackGet(ActuatorCommand * _command){
+    bool success;
+    CallbackGet* command = (CallbackGet*) _command;
+    currentActuatorCommand = command;
+    success =  CallbackGetFunction();
+    if (success){
+        sendResponseFromCommand(currentActuatorCommand, SUCCESS);
+        currentActuatorCommand = NULL;
+    }else{
+        sendResponseFromCommand(currentActuatorCommand, ERROR);
+        currentActuatorCommand = NULL;
+    }
+}
+
 bool ExecutorCommon::KickRightFunction(){
     debug("KICK RIGHT: REDEFINE PLEASE");
     return false;
@@ -366,10 +395,6 @@ bool ExecutorCommon::GetObjectStopFunction(){
     return false;
 }
 
-bool ExecutorCommon::liftLoop(){
-    return true;
-}
-
 bool ExecutorCommon::StopBrxonFunction(){
     debug("REDEFINE PLEASE");
     return false;
@@ -394,6 +419,12 @@ bool ExecutorCommon::LeaveCarpetFunction(){
     debug("REDEFINE PLEASE");
     return false;
 }
+
+bool ExecutorCommon::CallbackGetFunction(){
+    debug("REDEFINE PLEASE");
+    return false;
+}
+
 
 
 }

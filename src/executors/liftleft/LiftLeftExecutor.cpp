@@ -11,9 +11,9 @@ void LiftLeftExecutor::suscribe(){
     lastState.Aveable = true;
     lastState.Quantity = 0;
     executorName = this->NAME;
-    modbus = ModbusClient::getMobusClientInstance();
-    modbusClient = ModbusSensorClient::getModbusSensorInstance();
-    modbusClient->registerToSensoreCallback(char(4),char(4),true ,this);
+    //modbus = ModbusClient::getMobusClientInstance();
+    //modbusClient = ModbusSensorClient::getModbusSensorInstance();
+    //modbusClient->registerToSensoreCallback(char(4),char(4),true ,this);
 
 }
 
@@ -48,7 +48,7 @@ void LiftLeftExecutor::mapping(){
 bool LiftLeftExecutor::GetObjectFunction(){
     debug("LiftLeft Get");
     shoulGetObject = true;
-    readingSensore = true;
+
     return true;
 
 }
@@ -56,10 +56,10 @@ bool LiftLeftExecutor::GetObjectFunction(){
 bool LiftLeftExecutor::liftProcess(){
     //debug("DOING SOMETHING");
 
-        if(lastState.Quantity < 3){
+        if(lastState.Quantity < 3 && shoulGetObject){
             debug("FIRST ONE ");
             stateLock.lock();
-            readingSensore = false;
+            //readingSensore = false;
             stateLock.unlock();
 
             // NEW CONFIG
@@ -77,14 +77,16 @@ bool LiftLeftExecutor::liftProcess(){
             stateLock.lock();
             lastState.Quantity++;
             lastState.Aveable = true;
-            readingSensore = true;
+            //readingSensore = true;
             count=lastState.Quantity;
             stateLock.unlock();
 
             LIftNotification* liftNotification=new LIftNotification(LIftNotification::Side::LEFT, count);
             sendNotification(liftNotification);
 
-        }else if(lastState.Quantity == 3){
+            return true;
+
+        }else if(lastState.Quantity == 3 && shoulGetObject){
 
             debug(" SECOND .... ");
 
@@ -107,19 +109,23 @@ bool LiftLeftExecutor::liftProcess(){
             lastState.Quantity++;
             lastState.Aveable = true;
             //readingSensore = true;
-            readingSensore = false;
+            //readingSensore = false;
             stateLock.unlock();
 
             LIftNotification* liftNotification=new LIftNotification(LIftNotification::Side::LEFT, 4);
             sendNotification(liftNotification);
 
+            return true;
 
-        }else if(lastState.Quantity < 5 ){
-            readingSensore = false;
+
+        }else if(lastState.Quantity < 5  && shoulGetObject){
+            //readingSensore = false;
             error("NO MORE SPACE IN STORAGE");
             //sendResponseFromCommand(currentActuatorCommand, ERROR);
-            return true;
+            return false;
         }
+
+        return false;
 
     //debug("LL CANT DOIT");
 }
@@ -159,22 +165,6 @@ void LiftLeftExecutor::processGetLiftState(Command* _command){
 
 }
 
-void LiftLeftExecutor::ProcessSensorCallback(){
 
-    if ( lastState.Aveable ) {
-        sensoreCallbackRecived = true;
-        debug(" LL DETECTEC OBJECT");
-    }
-    return;
-}
-
-bool LiftLeftExecutor::liftLoop(){
-
-    if(shoulGetObject && !shouldStop && sensoreCallbackRecived){
-        sensoreCallbackRecived = false;
-        liftProcess();
-    }
-
-}
 
 } // end namespace

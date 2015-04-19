@@ -39,6 +39,7 @@ public:
 
     void onTimeout(const boost::system::error_code &e, void* obj);
 protected:
+
     struct Instruction{
         enum Type{
             COMMAND,

@@ -14,7 +14,9 @@ private:
     unsigned char slaveAddress;
     unsigned short address;
 public:
-    ElectroSwitch(){}
+    ElectroSwitch(){
+        modbus = ModbusClient::getMobusClientInstance();
+    }
 
     void setCoilSlaveAddress(unsigned char _slave_address);
     void setCoilAddress(unsigned short _address);

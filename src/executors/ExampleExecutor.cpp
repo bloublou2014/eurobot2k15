@@ -10,6 +10,7 @@ string ExampleExecutor::NAME="ExampleExecutor";
 
 void ExampleExecutor::init(){
     this->registerCommand(CountdownCommand::NAME,(commandCallback)&ExampleExecutor::countdown);
+
 }
 
 void ExampleExecutor::countdown(Command* command){

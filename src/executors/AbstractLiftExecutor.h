@@ -15,6 +15,8 @@
 
 #include "executors/ExecutorConfig.h"
 #include"executors/ExecutorCommon.h"
+#include "utils/modbus/ModbusSensoreClient.h"
+
 
 /*
  * API
@@ -30,15 +32,19 @@ using servo::ServoDriver;
 using sensor::SensorDriver;
 using namespace robot;
 using boost::mutex;
+using namespace modbus;
 
 namespace executor {
 
-class AbstractLiftExecutor: public ExecutorCommon {
+class AbstractLiftExecutor: public ExecutorCommon, public ModbusSensorClientInterface2{
 private:
 
 
 public:
-    AbstractLiftExecutor(string _name):ExecutorCommon(_name){} //
+    AbstractLiftExecutor(string _name):ExecutorCommon(_name) /*,ModbusSensorClientInterface()*/{
+        //modbusClient = ModbusSensorClient::getModbusSensorInstance();
+        //modbus = ModbusClient::getMobusClientInstance();
+        }
 
     void SetDoorAddresses(unsigned char _slave_address, unsigned short _position_address, unsigned short _speed_address);
     void SetHandAddresses(unsigned char _slave_address, unsigned short _position_address, unsigned short _speed_address);
@@ -87,10 +93,17 @@ protected:
     virtual bool doorS();
     virtual bool handS();
     virtual bool liftS();
+    virtual bool liftProcess();
 
-    virtual void brodcastNotification();
+    //void ProcessLiftLeftSensoreCallback();
+//    void ProcessLiftRightSensoreCallback();
+
+//    bool CallbackGetFunction();
 
 private:
+
+//    ModbusSensorClient* modbusClient;
+//    ModbusClient* modbus;
 
     void getObject(ActuatorCommand* _actionCommand);
     void unloadObject(ActuatorCommand* _actionCommand);

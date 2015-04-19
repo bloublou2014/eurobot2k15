@@ -9,9 +9,9 @@ using namespace modbus;
 
 namespace executor {
 
-class EnemyDetector: public ExecutorCommon, public ModbusSensorClientInterface{
+class EnemyDetector: public ExecutorCommon, public ModbusSensorClientInterface2{
 public:
-    EnemyDetector():ExecutorCommon(this->NAME),ModbusSensorClientInterface(),
+    EnemyDetector():ExecutorCommon(this->NAME),ModbusSensorClientInterface2(),
         detectedAngle(1800),enemyDetected(false){}
     ~EnemyDetector(){ modbusClient->stopBecaon();
                       modbusClient->stopBecaon();

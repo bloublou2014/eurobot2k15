@@ -9,8 +9,8 @@ void LiftRightExecutor::suscribe(){
     lastState.Aveable = true;
     lastState.Quantity = 0;
     executorName = this->NAME;
-    modbusClient = ModbusSensorClient::getModbusSensorInstance();
-    modbusClient->registerToSensoreCallback(char(4),char(3),true, this);
+    //modbusClient = ModbusSensorClient::getModbusSensorInstance();
+    //modbusClient->registerToSensoreCallback(char(4),char(3),true, this);
 }
 
 void LiftRightExecutor::mapping(){
@@ -44,81 +44,86 @@ void LiftRightExecutor::mapping(){
 bool LiftRightExecutor::GetObjectFunction(){
     debug("LiftRight Get");
     shoulGetObject = true;
-    readingSensore = true;
+    //readingSensore = true;
     return true;
 }
 
 bool LiftRightExecutor::liftProcess(){
     //debug("DOING SOMETHING");
 
-        if(lastState.Quantity < 3){
-            debug("FIRST ONE ");
-            stateLock.lock();
-            readingSensore = false;
-            stateLock.unlock();
+    if(lastState.Quantity < 3 && shoulGetObject){
+        debug("FIRST ONE ");
+        stateLock.lock();
+       //readingSensore = false;
+        stateLock.unlock();
 
-            // NEW CONFIG
+        // NEW CONFIG
 
-            doorF(OPEN_GET);
-            handF(OPEN);
-            liftF(LEVEL0);
-            handF(CLOSE);
-            delayF(value.LiftConfigs.time.handOpenClose);
-            liftF(LEVEL2);
-            doorF(CLOSE_);
-
-
-            int count=0;
-            stateLock.lock();
-            lastState.Quantity++;
-            lastState.Aveable = true;
-            readingSensore = true;
-            count=lastState.Quantity;
-            stateLock.unlock();
-
-            //Send Notification
-            LIftNotification* liftNotification=new LIftNotification(LIftNotification::Side::RIGHT, count);
-            sendNotification(liftNotification);
-
-        }else if(lastState.Quantity == 3){
-
-            debug(" SECOND .... ");
-
-            stateLock.lock();
-            lastState.Aveable = false;
-            stateLock.unlock();
-
-            doorF(OPEN_GET);
-            handF(OPEN);
-            liftF(LEVEL0);
-            handF(CLOSE);
-            delayF(value.LiftConfigs.time.handOpenClose);
-            liftF(LEVEL1);
-            doorF(CLOSE_);
-
-            delayF(value.LiftConfigs.time.doorOpenClose);
+        doorF(OPEN_GET);
+        handF(OPEN);
+        liftF(LEVEL0);
+        handF(CLOSE);
+        delayF(value.LiftConfigs.time.handOpenClose);
+        liftF(LEVEL2);
+        doorF(CLOSE_);
 
 
-            stateLock.lock();
-            lastState.Quantity++;
-            lastState.Aveable = true;
-            readingSensore = false;
-            //readingSensore = true;
-            stateLock.unlock();
+        int count=0;
+        stateLock.lock();
+        lastState.Quantity++;
+        lastState.Aveable = true;
+        //readingSensore = true;
+        count=lastState.Quantity;
+        stateLock.unlock();
 
-            //Send notification
-            LIftNotification* liftNotification=new LIftNotification(LIftNotification::Side::RIGHT, 4);
-            sendNotification(liftNotification);
+        //Send Notification
+        LIftNotification* liftNotification=new LIftNotification(LIftNotification::Side::RIGHT, count);
+        sendNotification(liftNotification);
+
+        return true;
+
+    }else if(lastState.Quantity == 3 && shoulGetObject){
+
+        debug(" SECOND .... ");
+
+        stateLock.lock();
+        lastState.Aveable = false;
+        stateLock.unlock();
+
+        doorF(OPEN_GET);
+        handF(OPEN);
+        liftF(LEVEL0);
+        handF(CLOSE);
+        delayF(value.LiftConfigs.time.handOpenClose);
+        liftF(LEVEL1);
+        doorF(CLOSE_);
+
+        delayF(value.LiftConfigs.time.doorOpenClose);
+
+
+        stateLock.lock();
+        lastState.Quantity++;
+        lastState.Aveable = true;
+        //readingSensore = false;
+        //readingSensore = true;
+        stateLock.unlock();
+
+        //Send notification
+        LIftNotification* liftNotification=new LIftNotification(LIftNotification::Side::RIGHT, 4);
+        sendNotification(liftNotification);
+
+        return true;
 
 
 
-        }else if(lastState.Quantity < 5 ){
-            readingSensore = false;
-            error("NO MORE SPACE IN STORAGE");
-            return true;
-        }
+    }else if(lastState.Quantity < 5 && shoulGetObject){
+        //readingSensore = false;
+        error("NO MORE SPACE IN STORAGE");
+        return true;
+    }
 
     //debug("LR CANT DOIT");
+    return false;
 
 }
 
@@ -153,25 +158,12 @@ void LiftRightExecutor::processGetLiftState(Command* _command){
     sendResponse(resp);
 }
 
-void LiftRightExecutor::brodcastNotification(){
-
-}
 
 
-bool LiftRightExecutor::liftLoop(){
-    if(shoulGetObject && !shouldStop && sensoreCallbackRecived){
-        sensoreCallbackRecived = false;
-        liftProcess();
-    }
-}
 
 
-void LiftRightExecutor::ProcessSensorCallback(){
-    if ( lastState.Aveable ) {
-        sensoreCallbackRecived = true;
-        //debug("LR DETECTEC OBJECT");
-    }
-    return;
-}
+
+
+
 
 } // namespace end
