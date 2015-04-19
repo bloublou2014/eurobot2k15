@@ -13,15 +13,15 @@
 using boost::mutex;
 using namespace robot;
 namespace modbus {
-
+/*
 class ModbusSensorClientInterface{
 
 public:
-    /*
+
     ModbusSensorClientInterface(){
         std::cout<<"Created interface" << std::endl;
     }
-    */
+
     virtual void ProcessLiftLeftSensoreCallback();
     virtual void ProcessLiftRightSensoreCallback();
     virtual void ProcessSensorCallback();
@@ -39,6 +39,7 @@ public:
     beaconDataStruct beaconData;
 
 };
+*/
 
 class ModbusSensorClientInterface2{
 public:
@@ -53,6 +54,12 @@ public:
     virtual void ProcessEnemySensorCallback2(){}
     virtual void ProcessEnemySensorCallback3(){}
     virtual void ProcessEnemySensorCallback4(){}
+
+    virtual void ProcessNotEnemySensorCallback1(){}
+    virtual void ProcessNotEnemySensorCallback2(){}
+    virtual void ProcessNotEnemySensorCallback3(){}
+    virtual void ProcessNotEnemySensorCallback4(){}
+
     virtual void ProcessBeaconCallback(){}
     bool readingSensore = false ;
     bool readingBeckon = false;

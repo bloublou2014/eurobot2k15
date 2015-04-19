@@ -28,6 +28,11 @@ private:
     void ProcessEnemySensorCallback4();
     void ProcessBeaconCallback();
 
+    void ProcessNotEnemySensorCallback1();
+    void ProcessNotEnemySensorCallback2();
+    void ProcessNotEnemySensorCallback3();
+    void ProcessNotEnemySensorCallback4();
+
     bool StartBeaconFunction();
     bool StopBeaconFunction();
     bool StartBrxonFunction();
@@ -35,7 +40,6 @@ private:
 
     bool testBool = false;
     void testProcess();
-    bool liftLoop();
 };
 
 } // end namespace

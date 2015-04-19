@@ -58,8 +58,11 @@ void EnemyDetector::ProcessSensorCallback(){
 }
 
 void EnemyDetector::ProcessEnemySensorCallback1(){
+    readingSensore = true;
     testBool = true;
     if (previousState.left!=true){
+        std::cout << "LEVI DETECTED SAD" << std::endl;
+
         EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::SENSOR, 0);
         sendNotification(notification);
         previousState.left=true;
@@ -67,8 +70,12 @@ void EnemyDetector::ProcessEnemySensorCallback1(){
 }
 
 void EnemyDetector::ProcessEnemySensorCallback2(){
+    readingSensore = true;
+
     testBool = true;
     if (previousState.right!=true){
+        std::cout << "DESNI DETECTED SAD" << std::endl;
+
         EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::SENSOR, 0);
         sendNotification(notification);
         previousState.right=true;
@@ -76,8 +83,12 @@ void EnemyDetector::ProcessEnemySensorCallback2(){
 }
 
 void EnemyDetector::ProcessEnemySensorCallback3(){
+    readingSensore = true;
+
     testBool = true;
     if (previousState.back!=true){
+        std::cout << "ZADNJI DETECTED SAD" << std::endl;
+
         EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::SENSOR, 180);
         sendNotification(notification);
         previousState.back=true;
@@ -85,11 +96,15 @@ void EnemyDetector::ProcessEnemySensorCallback3(){
 }
 
 void EnemyDetector::ProcessEnemySensorCallback4(){
+    readingSensore = true;
+
     //short data;
     int angle;
     testBool = true;
     if (previousState.brkon!=true){
         angle = modbusClient->readBrxon()-85;   //85 zato sto je tako
+        std::cout <<" BRKON MRACNI DETECTE "<< angle << std::endl;
+
         EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON,angle);
         sendNotification(notification);
         previousState.brkon=true;
@@ -97,6 +112,8 @@ void EnemyDetector::ProcessEnemySensorCallback4(){
 }
 
 void EnemyDetector::ProcessBeaconCallback(){
+    readingSensore = true;
+
     testBool = true;
     std::cout << "BECON" << std::endl;
     std::cout << this->beaconData.X_beacon1 << std::endl
@@ -105,35 +122,41 @@ void EnemyDetector::ProcessBeaconCallback(){
               << this->beaconData.Y_beacon2 << std::endl;
 }
 
-bool EnemyDetector::liftLoop(){
-    //std::cout << "redone" << std::endl;
-    if(testBool){
-        testBool = false;
-        //std::cout << "ENEMY DETECTED" << std::endl;
-        boost::this_thread::sleep(boost::posix_time::milliseconds(20));
-        this->readingSensore = true;
-        if (previousState.brkon && !enemyDetected.brkon){
-            EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON, 0, false);
-            sendNotification(notification);
-            previousState.brkon=false;
-        }
-        if (previousState.back && !enemyDetected.back){
-            EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::SENSOR, 180, false);
-            sendNotification(notification);
-            previousState.back=false;
-        }
-        if (previousState.left && !enemyDetected.left){
-            EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON, 0, false);
-            sendNotification(notification);
-            previousState.left=false;
-        }
-        if (previousState.right && !enemyDetected.right){
-            EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON, 0, false);
-            sendNotification(notification);
-            previousState.right=false;
-        }
+void EnemyDetector::ProcessNotEnemySensorCallback1(){
+    if (previousState.left){
+        std::cout <<" BRKON LEVI OTISAO " << std::endl;
+        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON, 0, false);
+        sendNotification(notification);
+        previousState.left=false;
     }
-    return true;
 }
+
+void EnemyDetector::ProcessNotEnemySensorCallback2(){
+    if (previousState.right){
+        std::cout <<" BRKON DESNI OTISAO " << std::endl;
+        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON, 0, false);
+        sendNotification(notification);
+        previousState.right=false;
+    }
+}
+
+void EnemyDetector::ProcessNotEnemySensorCallback3(){
+    if (previousState.back){
+        std::cout <<" BRKON ZADNJI ORTISAO " << std::endl;
+        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON, 0, false);
+        sendNotification(notification);
+        previousState.back=false;
+    }
+}
+
+void EnemyDetector::ProcessNotEnemySensorCallback4(){
+    if (previousState.brkon){
+        std::cout <<" BRKON MRACNI OTISAO " << std::endl;
+        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON, 0, false);
+        sendNotification(notification);
+        previousState.brkon=false;
+    }
+}
+
 
 }

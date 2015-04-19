@@ -1,7 +1,7 @@
 #include "ModbusSensoreClient.h"
 
 namespace modbus{
-
+/*
 void ModbusSensorClientInterface::ProcessSensorCallback(){
     std::cout<< "called sensore callback, PLEASE REDEFINE" << std::endl;
 }
@@ -24,7 +24,7 @@ void ModbusSensorClientInterface::ProcessEnemySensorCallback3(){
 void ModbusSensorClientInterface::ProcessEnemySensorCallback4(){
     std::cout<< "called sensore callback, PLEASE REDEFINE" << std::endl;
 }
-
+*/
 bool operator< (const idData &id1, const idData &id2){
     if((id1.functionAddress*id1.slaveAddress)< (id2.functionAddress * id2.slaveAddress)) return true;
     else return false;
@@ -136,20 +136,20 @@ void ModbusSensorClient::main(){
                 if (doCallbak){
                     it->second->readingSensore = false;
                     switch(it->first.functionAddress){
-                    case 1: it->second->ProcessEnemySensorCallback1(); it->second->enemyDetected.left = true; break;
-                    case 2: it->second->ProcessEnemySensorCallback2(); it->second->enemyDetected.right = true; break;
-                    case 3: it->second->ProcessLiftRightSensoreCallback();
-                    case 4: it->second->ProcessLiftLeftSensoreCallback();
+                    case 2: it->second->ProcessEnemySensorCallback1(); it->second->enemyDetected.left = true; break;
+                    case 1: it->second->ProcessEnemySensorCallback2(); it->second->enemyDetected.right = true; break;
+                    case 3: it->second->ProcessLiftRightSensoreCallback(); std::cout << "desni" << std::endl; break;
+                    case 4: it->second->ProcessLiftLeftSensoreCallback(); std::cout << "levi"  << std::endl; break;
                     case 5: it->second->ProcessEnemySensorCallback3(); it->second->enemyDetected.back = true; break;
                     case 7: it->second->ProcessEnemySensorCallback4(); it->second->enemyDetected.brkon = true; break;
                     default: it->second->ProcessSensorCallback();
                     }
                 }else{
                     switch(it->first.functionAddress){
-                    case 1: it->second->enemyDetected.left = false; break;
-                    case 2: it->second->enemyDetected.right = false; break;
-                    case 5: it->second->enemyDetected.back = false; break;
-                    case 7: it->second->enemyDetected.brkon = false; break;
+                    case 2: it->second->ProcessNotEnemySensorCallback1(); it->second->enemyDetected.left = false;  break;
+                    case 1: it->second->ProcessNotEnemySensorCallback2(); it->second->enemyDetected.right = false; break;
+                    case 5: it->second->ProcessNotEnemySensorCallback3(); it->second->enemyDetected.back = false; break;
+                    case 7: it->second->ProcessNotEnemySensorCallback4(); it->second->enemyDetected.brkon = false; break;
                     }
                 }
                 didReading = true;

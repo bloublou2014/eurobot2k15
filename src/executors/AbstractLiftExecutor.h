@@ -41,10 +41,7 @@ private:
 
 
 public:
-    AbstractLiftExecutor(string _name):ExecutorCommon(_name) /*,ModbusSensorClientInterface()*/{
-        //modbusClient = ModbusSensorClient::getModbusSensorInstance();
-        //modbus = ModbusClient::getMobusClientInstance();
-        }
+    AbstractLiftExecutor(string _name):ExecutorCommon(_name) ,ModbusSensorClientInterface2(){ }
 
     void SetDoorAddresses(unsigned char _slave_address, unsigned short _position_address, unsigned short _speed_address);
     void SetHandAddresses(unsigned char _slave_address, unsigned short _position_address, unsigned short _speed_address);
@@ -95,15 +92,15 @@ protected:
     virtual bool liftS();
     virtual bool liftProcess();
 
-    //void ProcessLiftLeftSensoreCallback();
-//    void ProcessLiftRightSensoreCallback();
+    void ProcessLiftLeftSensoreCallback();
+    void ProcessLiftRightSensoreCallback();
 
-//    bool CallbackGetFunction();
+    bool CallbackGetFunction();
 
 private:
 
-//    ModbusSensorClient* modbusClient;
-//    ModbusClient* modbus;
+   ModbusSensorClient* modbusClient;
+    ModbusClient* modbus;
 
     void getObject(ActuatorCommand* _actionCommand);
     void unloadObject(ActuatorCommand* _actionCommand);
