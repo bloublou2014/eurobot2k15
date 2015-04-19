@@ -10,3 +10,6 @@ Makefile
 /libs/boost
 /libs/mongoose-cpp
 /libs/boost_arm
+
+# eclipse project file
+.project
