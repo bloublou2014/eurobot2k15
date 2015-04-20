@@ -15,6 +15,7 @@
 #include "executors/popcorn/PopcornExecutor.h"
 #include "executors/flap/FlapExecutor.h"
 #include "executors/enemyDetector/EnemyDetector.h"
+#include "executors/jumpers/jumpers.h"
 
 #include "executors/carpet/CarpetExecutor.h"
 
@@ -65,11 +66,12 @@ int main(int argn, char** argc){
 #ifdef CROSS_COMPILING
 
 #ifdef VELIKI
+    //JumpersExecutor jumpExec;
     EnemyDetector enemyDetExec;
     MotionExecutor motionExec;
+    LiftLeftExecutor liftLeftExec;
     LiftCenterExecutor liftCenterExec;
     LiftRightExecutor liftRightExec;
-    LiftLeftExecutor liftLeftExec;
     PopcornExecutor popcornExec;
     FlapExecutor flapExec;
 #endif
@@ -88,11 +90,12 @@ int main(int argn, char** argc){
 #ifdef CROSS_COMPILING
 
 #ifdef VELIKI
+    //execMgr->addExecutor(&jumpExec);
     execMgr->addExecutor(&enemyDetExec);
     execMgr->addExecutor(&motionExec);
+    execMgr->addExecutor(&liftLeftExec);
     execMgr->addExecutor(&liftCenterExec);
     execMgr->addExecutor(&liftRightExec);
-    execMgr->addExecutor(&liftLeftExec);
     execMgr->addExecutor(&popcornExec);
     execMgr->addExecutor(&flapExec);
 #endif
@@ -110,7 +113,7 @@ int main(int argn, char** argc){
     execMgr->start();
 
     getchar();
-//    boost::this_thread::sleep(boost::posix_time::milliseconds(500));
+    //    boost::this_thread::sleep(boost::posix_time::milliseconds(500));
     taskMgr->sendMessage(new StartMessage("Milan"));
 
     taskMgr->join();

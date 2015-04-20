@@ -23,7 +23,7 @@ private:
     LiftState lastState;
     boost::mutex stateLock;
     bool shouldCollect = false;
-
+    bool CallbackGetRightFunction();
 
     bool liftProcess();
 

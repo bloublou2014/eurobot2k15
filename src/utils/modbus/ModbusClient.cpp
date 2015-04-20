@@ -31,36 +31,51 @@ void ModbusClient::main(){
             //std::cout << "PANIC !! ELECTRONIC IS NOT WORKING" << std::endl;
             while(!registersToSet.empty()) registersToSet.pop();
             while(!coilToSet.empty()) coilToSet.pop();
-        }
-        boost::this_thread::sleep(boost::posix_time::milliseconds(2));
-
-
-        if(!registersToSet.empty()){
-            m_mutex->lock();
-            ModbusSensorClientNotifier = true;
-            m_mutex->unlock();
-            writeToRegister();
+            return;
         }
 
-        if(!coilToSet.empty()){
-            writeToCoil();
-        }
+        Instruction inst = getNextInstruction();
+       switch(inst.instruction){
+       case SET_REGISTER: writeToRegister(inst.id_data); break;
+       case SET_COIL: writeToCoil(inst.id_data); break;
+       case STOP: return;
+       }
 
     }
 }
 
 
+ModbusClient::Instruction ModbusClient::getNextInstruction(){
+    unique_lock<boost::mutex> lock(InstructionQueueMutex);
+    while(InstructionQueue.empty()){
+        queueNotEmpty.wait(lock);
+    }
+    Instruction inst;
+    inst = InstructionQueue.front();
+    InstructionQueue.pop();
+
+    return inst;
+
+}
+
 
 bool ModbusClient::setRegister(unsigned char _slave_address, short _function_address, short _data ){ // za klienta
     setSingleRegisterData data;
+    //Instruction inst;
+
 
     data.ID.slaveAddress = _slave_address;
     data.ID.functionAddress = _function_address;
     data.data = _data;
 
+    //inst.insctruction = SET_REGISTER;
+    //inst.id_data = data;
+
+
     queueLock.lock();
-    registersToSet.push(data);
+    InstructionQueue.push(Instruction(SET_REGISTER, data));
     queueLock.unlock();
+    queueNotEmpty.notify_one();
 
     return true;
 }
@@ -74,31 +89,19 @@ bool ModbusClient::setCoil(unsigned char _slave_address, short _function_address
     data.data = _data;
 
     queueLock.lock();
-    coilToSet.push(data);
+    InstructionQueue.push(Instruction(SET_COIL,data));
     queueLock.unlock();
-
+    queueNotEmpty.notify_one();
     return true;
 
 }
 
 
 
-bool ModbusClient::writeToRegister(){
+bool ModbusClient::writeToRegister(setSingleRegisterData data){
     bool success;
     int counter = 0;
-    setSingleRegisterData data;
 
-    if(!panic){
-
-        queueLock.lock();
-        if(!registersToSet.empty()){
-            data =(setSingleRegisterData) registersToSet.front();
-            registersToSet.pop();
-            queueLock.unlock();
-        }else{
-            queueLock.unlock();
-            return true;
-        }
         /*
     std::cout << "writeing to register: "
               << int(data.ID.slaveAddress) << ":"
@@ -106,13 +109,7 @@ bool ModbusClient::writeToRegister(){
               << data.data << std::endl;
     */
         boost::lock_guard<boost::mutex> lock(*m_mutex);
-        /*
-    success = modbus->ModbusPresetSingleRegister(data.ID.slaveAddress, data.ID.functionAddress, data.data);
-    if (!success){
-        boost::this_thread::sleep(boost::posix_time::milliseconds(delayTime));
-        success = modbus->ModbusPresetSingleRegister(data.ID.slaveAddress, data.ID.functionAddress, data.data);
-    }
-    */
+
         success = modbus->ModbusPresetSingleRegister(data.ID.slaveAddress, data.ID.functionAddress, data.data);
 
         while(!success && !shouldStop && counter < 10 ) {
@@ -120,34 +117,19 @@ bool ModbusClient::writeToRegister(){
             success = modbus->ModbusPresetSingleRegister(data.ID.slaveAddress, data.ID.functionAddress, data.data);
             counter ++;
         }
-
         if(counter > 9){
             std::cout << "PANIC ELECTRONIC IS NOT WORKING" << std::endl;
-
             panic = true;
         }
 
+        counter = 0;
         return success;
-    }
-    return false;
+
 }
 
-bool ModbusClient::writeToCoil(){
+bool ModbusClient::writeToCoil(setSingleRegisterData data){
     bool success;
     int counter = 0;
-    setSingleRegisterData data;
-
-    if(!panic){
-
-        queueLock.lock();
-        if(!coilToSet.empty()){
-            data =(setSingleRegisterData) coilToSet.front();
-            coilToSet.pop();
-            queueLock.unlock();
-        }else{
-            queueLock.unlock();
-            return true;
-        }
 
         std::cout << "writeing to coil: "
                   << int(data.ID.slaveAddress) << ":"
@@ -157,12 +139,6 @@ bool ModbusClient::writeToCoil(){
         boost::lock_guard<boost::mutex> lock(*m_mutex);
 
         success = modbus->ModbusForceSingleCoil(data.ID.slaveAddress, data.ID.functionAddress, data.data);
-        /*
-    if (!success){
-        boost::this_thread::sleep(boost::posix_time::milliseconds(delayTime));
-        success = modbus->ModbusForceSingleCoil(data.ID.slaveAddress, data.ID.functionAddress, data.data);
-    }
-    */
 
         while(!success && !shouldStop && counter < 10){
             boost::this_thread::sleep(boost::posix_time::milliseconds(delayTime));
@@ -174,9 +150,10 @@ bool ModbusClient::writeToCoil(){
             std::cout << "PANIC ELECTRONIC IS NOT WORKING" << std::endl;
             panic = true;
         }
+
+        counter = 0;
         return success;
-    }
-    return false;
+
 }
 
 
@@ -198,6 +175,8 @@ bool ModbusClient::readCoil(bool* _callFunction, idData _id ){
             std::cout << "PANIC ELECTRONIC IS NOT WORKING" << std::endl;
             panic = true;
         }
+
+        counter = 0;
 
         /*
     std::cout << "reading from register: "
@@ -233,6 +212,11 @@ bool ModbusClient::readCoil(bool* _callFunction, idData _id ){
 }
 
 void ModbusClient::stopModbusClient(){
+    setSingleRegisterData data;
+    queueLock.lock();
+    InstructionQueue.push(Instruction(STOP, data));
+    queueLock.unlock();
+    queueNotEmpty.notify_one();
     shouldStop = true;
 }
 

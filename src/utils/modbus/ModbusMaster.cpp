@@ -94,7 +94,8 @@ bool ModbusMaster::ModbusGetStartChar()
 	unsigned char attempts = 30;
 	signed char c;
 
-    usleep(1*1000);
+    //usleep(1*1000);
+    usleep(1*1000); // TOME EDIT
 
 	while(attempts > 0 && rs485.getChar((char*)&c) > 0)
 	{

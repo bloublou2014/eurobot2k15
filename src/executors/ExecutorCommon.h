@@ -62,7 +62,7 @@ protected:
     mutex commandQueueLock;
     queue<Instruction> commandsToProcess;
 
-    ActuatorCommand* getNextCommand();
+    Instruction getNextCommand();
     bool shouldStop;
 
     ActuatorCommand *currentActuatorCommand = NULL;
@@ -73,7 +73,7 @@ protected:
 
     virtual void suscribe();
     virtual void mapping();
-    virtual void brodcastNotification();
+    virtual void suscribeToSensore(){}
 
     ConfigValues value;
 
@@ -93,7 +93,9 @@ protected:
     virtual bool StartBeaconFunction();
     virtual bool StopBeaconFunction();
     virtual bool LeaveCarpetFunction();
-    virtual bool CallbackGetFunction();
+    virtual bool CallbackGetRightFunction(){}
+    virtual bool CallbackGetLeftFunction(){}
+
 
 protected:
 
@@ -107,7 +109,8 @@ protected:
     void unKickLeft(ActuatorCommand* _command);
     void unloadPopcorn(ActuatorCommand* _command);
     void getPopcorn(ActuatorCommand* _command);
-    void callbackGet(ActuatorCommand* _commnad);
+    void callbackGetRight(ActuatorCommand* _commnad);
+    void callbackGetLeft(ActuatorCommand* _commnad);
 
     void stopBrxon(ActuatorCommand* _command);
     void startBrxon(ActuatorCommand* _command);

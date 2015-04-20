@@ -20,9 +20,11 @@ void ExecutorCommon::init(){
     actuatorHandles[ActuatorType::START_BEACON]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::startBeacon);
     actuatorHandles[ActuatorType::STOP_BEACON]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::stopBeacon);
     actuatorHandles[ActuatorType::LEAVE_CARPET]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::leaveCarpet);
-    actuatorHandles[ActuatorType::CALLBACK_GET]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::callbackGet);
+    actuatorHandles[ActuatorType::CALLBACK_GET_LEFT]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::callbackGetLeft);
+    actuatorHandles[ActuatorType::CALLBACK_GET_RIGHT]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::callbackGetRight);
 
 
+    suscribeToSensore();
     suscribe();
     mapping();
 
@@ -38,7 +40,7 @@ void ExecutorCommon::processActuatorCommand(Command *_command){
     queueNotEmpty.notify_one();
 }
 
-ActuatorCommand* ExecutorCommon::getNextCommand(){  // if there is more then one command = send error to old one onda execute new one , returns new command
+ExecutorCommon::Instruction ExecutorCommon::getNextCommand(){  // if there is more then one command = send error to old one onda execute new one , returns new command
     unique_lock<boost::mutex> lock(commandQueueLock);
     ActuatorCommand* newCommand = NULL;
 
@@ -50,7 +52,6 @@ ActuatorCommand* ExecutorCommon::getNextCommand(){  // if there is more then one
         queueNotEmpty.wait(lock);
     }
 
-    if(!commandsToProcess.empty()){
         while(commandsToProcess.size() > 1){
             Instruction cmd = commandsToProcess.front();
             commandsToProcess.pop();
@@ -61,18 +62,22 @@ ActuatorCommand* ExecutorCommon::getNextCommand(){  // if there is more then one
         }
         Instruction newInst = commandsToProcess.front();
         commandsToProcess.pop();
-        newCommand = newInst.command;
-    }
+        //newCommand = newInst.command;
 
-    return newCommand;
+    return newInst;
 }
 
 void ExecutorCommon::main(){
     shouldStop = false;
     while(!shouldStop){
 
+        Instruction inst = getNextCommand();
 
-        ActuatorCommand* newCommand = getNextCommand();
+        if(inst.type == Instruction::STOP){
+            return;
+        }
+
+        ActuatorCommand* newCommand = (ActuatorCommand*) inst.command;
         if (newCommand!= NULL && currentActuatorCommand!= NULL){
             //send error to old command
             debug("Newer command recived seding error to old one");
@@ -103,10 +108,6 @@ void ExecutorCommon::mapping(){
 
 void ExecutorCommon::suscribe(){
     debug("TODO: must redefine suscribe");
-}
-
-void ExecutorCommon::brodcastNotification(){
-    //debug("TODO: must redefine brodcastNotification");
 }
 
 void ExecutorCommon::reloadConfig(ActuatorCommand* _command){
@@ -327,16 +328,30 @@ void ExecutorCommon::leaveCarpet(ActuatorCommand * _command){
     }
 }
 
-void ExecutorCommon::callbackGet(ActuatorCommand * _command){
+void ExecutorCommon::callbackGetRight(ActuatorCommand * _command){
     bool success;
-    CallbackGet* command = (CallbackGet*) _command;
+    CallbackGetRight* command = (CallbackGetRight*) _command;
     currentActuatorCommand = command;
-    success =  CallbackGetFunction();
+    success =  CallbackGetRightFunction();
     if (success){
-        sendResponseFromCommand(currentActuatorCommand, SUCCESS);
+        //sendResponseFromCommand(currentActuatorCommand, SUCCESS);
         currentActuatorCommand = NULL;
     }else{
-        sendResponseFromCommand(currentActuatorCommand, ERROR);
+        //sendResponseFromCommand(currentActuatorCommand, ERROR);
+        currentActuatorCommand = NULL;
+    }
+}
+
+void ExecutorCommon::callbackGetLeft(ActuatorCommand * _command){
+    bool success;
+    CallbackGetLeft* command = (CallbackGetLeft*) _command;
+    currentActuatorCommand = command;
+    success =  CallbackGetLeftFunction();
+    if (success){
+        //sendResponseFromCommand(currentActuatorCommand, SUCCESS);
+        currentActuatorCommand = NULL;
+    }else{
+        //sendResponseFromCommand(currentActuatorCommand, ERROR);
         currentActuatorCommand = NULL;
     }
 }
@@ -420,10 +435,6 @@ bool ExecutorCommon::LeaveCarpetFunction(){
     return false;
 }
 
-bool ExecutorCommon::CallbackGetFunction(){
-    debug("REDEFINE PLEASE");
-    return false;
-}
 
 
 

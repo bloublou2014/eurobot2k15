@@ -29,6 +29,8 @@ private:
 
     boost::mutex stateLock;
     bool shouldCollect = false;
+    bool CallbackGetLeftFunction();
+
 
 };
 

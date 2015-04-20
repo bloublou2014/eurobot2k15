@@ -15,25 +15,27 @@ ExecutorsMap ExecutorName={
 string ActuatorCommand::NAME="ActuatorCommand";
 
 Command* ActuatorAction::LiftLeft(ActuatorType _type){
+    std::cout << "Creating mssg for Lift LEFT" << std::endl;
     switch (_type){
     case GET_OBJECT :    return (Command*) new GetObject(LIFT_LEFT);
     case UNLOAD_OBJECT : return (Command*) new UnloadObject(LIFT_LEFT);
     case SET_START_CONFIG : return (Command*) new SetStartConfig(LIFT_LEFT);
     case RELOAD_CONFIG : return (Command*) new ReloadConfig(LIFT_LEFT);
     case GET_OBJECT_STOP : return (Command*) new GetObjectStop(LIFT_LEFT);
-    case CALLBACK_GET: return (Command*) new CallbackGet(LIFT_LEFT);
+    case CALLBACK_GET_LEFT: return (Command*) new CallbackGetLeft(LIFT_LEFT);
     default : return NULL;
     }
 }
 
 Command* ActuatorAction::LiftRight(ActuatorType _type){
+    std::cout << "Creating mssg for Lift RIGHT" << std::endl;
     switch (_type){
     case GET_OBJECT :    return (Command*) new GetObject(LIFT_RIGHT);
     case UNLOAD_OBJECT : return (Command*) new UnloadObject(LIFT_RIGHT);
     case SET_START_CONFIG : return (Command*) new SetStartConfig(LIFT_RIGHT);
     case RELOAD_CONFIG : return (Command*) new ReloadConfig(LIFT_RIGHT);
-    case GET_OBJECT_STOP : return (Command*) new GetObjectStop(LIFT_LEFT);
-    case CALLBACK_GET: return (Command*) new CallbackGet(LIFT_LEFT);
+    case GET_OBJECT_STOP : return (Command*) new GetObjectStop(LIFT_RIGHT);
+    case CALLBACK_GET_RIGHT: return (Command*) new CallbackGetRight(LIFT_RIGHT);
     default : return NULL;
     }
 }

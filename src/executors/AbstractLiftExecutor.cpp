@@ -8,7 +8,7 @@ void AbstractLiftExecutor::maping(){
 
 }
 
-void AbstractLiftExecutor::suscribe(){
+void AbstractLiftExecutor::suscribeToSensore(){
     this->registerCommand(ActuatorCommand::NAME, static_cast<commandCallback>(&AbstractLiftExecutor::processActuatorCommand));
     modbusClient = ModbusSensorClient::getModbusSensorInstance();
     modbus = ModbusClient::getMobusClientInstance();
@@ -176,8 +176,8 @@ bool AbstractLiftExecutor::handS(){
 
 void AbstractLiftExecutor::ProcessLiftRightSensoreCallback(){
     std::cout << "LIRT RIGHT" << std::endl;
-    readingSensore = true;
-    Command* cmd = ActuatorAction::LiftRight(CALLBACK_GET);
+    //readingSensore = true;
+    Command* cmd = ActuatorAction::LiftRight(CALLBACK_GET_RIGHT);
         commandQueueLock.lock();
         commandsToProcess.push(Instruction(cmd));
         commandQueueLock.unlock();
@@ -186,14 +186,14 @@ void AbstractLiftExecutor::ProcessLiftRightSensoreCallback(){
 
 void AbstractLiftExecutor::ProcessLiftLeftSensoreCallback(){
     std::cout << "LIRT LEFT" << std::endl;
-    readingSensore = true;
-    Command* cmd = ActuatorAction::LiftLeft(CALLBACK_GET);
+    //readingSensore = true;
+    Command* cmd = ActuatorAction::LiftLeft(CALLBACK_GET_LEFT);
         commandQueueLock.lock();
         commandsToProcess.push(Instruction(cmd));
         commandQueueLock.unlock();
         queueNotEmpty.notify_one();
     }
-
+/*
 bool AbstractLiftExecutor::CallbackGetFunction(){
     bool success = false;
     success = this->liftProcess();
@@ -201,6 +201,7 @@ bool AbstractLiftExecutor::CallbackGetFunction(){
     else readingSensore = false;
 
 }
+*/
 
 bool AbstractLiftExecutor::liftProcess(){
 

@@ -6,15 +6,9 @@ string LiftLeftExecutor::NAME = "LiftLeftExecutor";
 
 void LiftLeftExecutor::suscribe(){
     this->registerCommand(ActuatorCommand::NAME, static_cast<commandCallback>(&LiftLeftExecutor::processActuatorCommand));
-    //this->registerCommand(GetLiftState::NAME, static_cast<commandCallback>(&LiftLeftExecutor::processGetLiftState));
-    //TODO zakimentarisano jer nije uradjeno preslikavanje u JS
     lastState.Aveable = true;
     lastState.Quantity = 0;
     executorName = this->NAME;
-    //modbus = ModbusClient::getMobusClientInstance();
-    //modbusClient = ModbusSensorClient::getModbusSensorInstance();
-    //modbusClient->registerToSensoreCallback(char(4),char(4),true ,this);
-
 }
 
 void LiftLeftExecutor::mapping(){
@@ -78,6 +72,7 @@ bool LiftLeftExecutor::liftProcess(){
             lastState.Quantity++;
             lastState.Aveable = true;
             //readingSensore = true;
+            readingSensore = true;
             count=lastState.Quantity;
             stateLock.unlock();
 
@@ -108,8 +103,7 @@ bool LiftLeftExecutor::liftProcess(){
             stateLock.lock();
             lastState.Quantity++;
             lastState.Aveable = true;
-            //readingSensore = true;
-            //readingSensore = false;
+            readingSensore = true;
             stateLock.unlock();
 
             LIftNotification* liftNotification=new LIftNotification(LIftNotification::Side::LEFT, 4);
@@ -147,6 +141,8 @@ bool LiftLeftExecutor::UnloadObjectFunction(){
     stateLock.lock();
     lastState.Quantity = 0;
     lastState.Aveable = true;
+    readingSensore = true;
+
     stateLock.unlock();
 
     LIftNotification* liftNotification=new LIftNotification(LIftNotification::Side::LEFT, 0);
@@ -164,6 +160,17 @@ void LiftLeftExecutor::processGetLiftState(Command* _command){
     sendResponse(resp);
 
 }
+
+
+bool LiftLeftExecutor::CallbackGetLeftFunction(){
+    debug("executeing lift left callback command");
+    bool success = false;
+    success = this->liftProcess();
+    if(success) readingSensore = true;
+    else readingSensore = false;
+
+}
+
 
 
 

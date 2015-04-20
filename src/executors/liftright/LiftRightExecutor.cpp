@@ -9,8 +9,6 @@ void LiftRightExecutor::suscribe(){
     lastState.Aveable = true;
     lastState.Quantity = 0;
     executorName = this->NAME;
-    //modbusClient = ModbusSensorClient::getModbusSensorInstance();
-    //modbusClient->registerToSensoreCallback(char(4),char(3),true, this);
 }
 
 void LiftRightExecutor::mapping(){
@@ -49,7 +47,7 @@ bool LiftRightExecutor::GetObjectFunction(){
 }
 
 bool LiftRightExecutor::liftProcess(){
-    //debug("DOING SOMETHING");
+    debug("DOING SOMETHING");
 
     if(lastState.Quantity < 3 && shoulGetObject){
         debug("FIRST ONE ");
@@ -72,7 +70,7 @@ bool LiftRightExecutor::liftProcess(){
         stateLock.lock();
         lastState.Quantity++;
         lastState.Aveable = true;
-        //readingSensore = true;
+        readingSensore = true;
         count=lastState.Quantity;
         stateLock.unlock();
 
@@ -104,8 +102,7 @@ bool LiftRightExecutor::liftProcess(){
         stateLock.lock();
         lastState.Quantity++;
         lastState.Aveable = true;
-        //readingSensore = false;
-        //readingSensore = true;
+        readingSensore = true;
         stateLock.unlock();
 
         //Send notification
@@ -141,6 +138,7 @@ bool LiftRightExecutor::UnloadObjectFunction(){
     stateLock.lock();
     lastState.Quantity = 0;
     lastState.Aveable = true;
+    readingSensore = true;
     stateLock.unlock();
 
     //Send notification
@@ -156,6 +154,16 @@ void LiftRightExecutor::processGetLiftState(Command* _command){
     GetLiftStateResponse* resp = new GetLiftStateResponse(_command->getSource(), _command->getDestination(),lastState);
     resp->setId(_command->getId());
     sendResponse(resp);
+}
+
+
+bool LiftRightExecutor::CallbackGetRightFunction(){
+    debug("executeing lift right callback command");
+    bool success = false;
+    success = this->liftProcess();
+    if(success) readingSensore = true;
+    else readingSensore = false;
+
 }
 
 

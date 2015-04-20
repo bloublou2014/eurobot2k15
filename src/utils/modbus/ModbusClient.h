@@ -13,6 +13,9 @@
 using boost::mutex;
 using boost::thread;
 using namespace robot;
+using boost::condition_variable;
+using boost::unique_lock;
+
 namespace modbus {
 
 struct idData{
@@ -35,15 +38,6 @@ class ModbusClient: public Node, public ModbusClientCallbackInterface{
 public:
 
 private:
-    enum stateEnum{
-        READ_SENSORE,
-        READ_SERVO_STATE,        
-        SET_REGISTER,
-        MASTER_STATE,
-        END,
-        RESET_COUNTER
-    };
-
 
 
     struct setSingleRegisterData{
@@ -51,18 +45,29 @@ private:
         short data;
     };
 
+    enum InstructionType{
+        SET_REGISTER,
+        SET_COIL,
+        STOP
+    };
+
+
+    struct Instruction{
+
+
+        Instruction(){}
+        Instruction(InstructionType _type, setSingleRegisterData _id_data): instruction(_type),id_data(_id_data){}
+
+        InstructionType instruction;
+        setSingleRegisterData id_data;
+    };
+
+
     struct priorityValues{
         int priority;
         int counter;
     };
 
-    struct priorityType{
-        priorityValues readSensore;
-        priorityValues readServoState;
-        priorityValues setRegister;
-        priorityValues readRegister;
-        int counter;
-    };
 
     ModbusClient();
     ModbusMaster* modbus;
@@ -72,14 +77,16 @@ private:
     std::queue<setSingleRegisterData> registersToSet;
     std::queue<setSingleRegisterData> coilToSet;
 
-    priorityType priority;
+    std::queue<Instruction> InstructionQueue;
+    Instruction getNextInstruction();
+    mutex InstructionQueueMutex;
+    condition_variable queueNotEmpty;
+
     bool shouldStop = false;
-    stateEnum state = RESET_COUNTER;
-    int delayTime = 2000;
+    int delayTime = 5;
     int counter = 0;
     bool sensoreDelay = false;
     bool panic = false;
-    std::queue<stateEnum> stateQueue;
 
     void main();
 
@@ -97,8 +104,8 @@ public:
     bool readCoil(bool* _callFunction, idData _id);
     bool readRegister(short* _data, unsigned char _slaveAddress, short _functionAddress);
 
-    bool writeToRegister();
-    bool writeToCoil();
+    bool writeToRegister(setSingleRegisterData data);
+    bool writeToCoil(setSingleRegisterData data);
 
     bool setCoil(unsigned char _slave_address, short _function_address, short _data );
     bool setRegister(unsigned char _slave_address, short _function_address, short _data );

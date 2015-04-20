@@ -135,7 +135,7 @@ void ModbusSensorClient::main(){
                 //std::cout << "reading coil" << std::endl;
                 if (doCallbak){
                     it->second->readingSensore = false;
-                    std::cout << "detected" << std::endl;
+                    //std::cout << "detected" << std::endl;
                      switch(it->first.functionAddress){
                     case 2: it->second->ProcessEnemySensorCallback1(); it->second->enemyDetected.left = true; break;
                     case 1: it->second->ProcessEnemySensorCallback2(); it->second->enemyDetected.right = true; break;

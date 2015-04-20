@@ -6,6 +6,7 @@ add_subdirectory(helper)
 add_subdirectory(javascript)
 add_subdirectory(rs485)
 add_subdirectory(modbus)
+add_subdirectory(gpio)
 
 add_library(utils ${UTILS_SRC})
 

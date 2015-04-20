@@ -63,8 +63,9 @@ protected:
                            LEVEL2};
 
 
-    virtual void suscribe();
+    virtual void suscribe(){}
     virtual void maping();
+    void suscribeToSensore();
 
     virtual bool GetObjectFunction();
     virtual bool UnloadObjectFunction();
@@ -95,7 +96,8 @@ protected:
     void ProcessLiftLeftSensoreCallback();
     void ProcessLiftRightSensoreCallback();
 
-    bool CallbackGetFunction();
+    virtual bool CallbackGetRightFunction(){}
+    virtual bool CallbackGetLeftFunction(){}
 
 private:
 
