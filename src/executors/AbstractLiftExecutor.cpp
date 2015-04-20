@@ -12,9 +12,9 @@ void AbstractLiftExecutor::suscribeToSensore(){
     this->registerCommand(ActuatorCommand::NAME, static_cast<commandCallback>(&AbstractLiftExecutor::processActuatorCommand));
     modbusClient = ModbusSensorClient::getModbusSensorInstance();
     modbus = ModbusClient::getMobusClientInstance();
-    modbusClient->registerToSensoreCallback(char(4),char(4),true,this);
-    modbusClient->registerToSensoreCallback(char(4),char(3),true,this);
-    this->readingSensore = true;
+    //modbusClient->registerToSensoreCallback(char(4),char(4),true,this);   ne moze ovde
+    //modbusClient->registerToSensoreCallback(char(4),char(3),true,this);
+    //this->readingSensore = true;
 }
 
 
@@ -173,7 +173,7 @@ bool AbstractLiftExecutor::doorS(){
 bool AbstractLiftExecutor::handS(){
     return hand.getServoStatus();
 }
-
+/*
 void AbstractLiftExecutor::ProcessLiftRightSensoreCallback(){
     std::cout << "LIRT RIGHT" << std::endl;
     //readingSensore = true;
@@ -193,6 +193,7 @@ void AbstractLiftExecutor::ProcessLiftLeftSensoreCallback(){
         commandQueueLock.unlock();
         queueNotEmpty.notify_one();
     }
+*/
 /*
 bool AbstractLiftExecutor::CallbackGetFunction(){
     bool success = false;

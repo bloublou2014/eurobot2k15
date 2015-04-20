@@ -36,12 +36,12 @@ using namespace modbus;
 
 namespace executor {
 
-class AbstractLiftExecutor: public ExecutorCommon, public ModbusSensorClientInterface2{
+class AbstractLiftExecutor: public ExecutorCommon /*,public ModbusSensorClientInterface2*/ {
 private:
 
 
 public:
-    AbstractLiftExecutor(string _name):ExecutorCommon(_name) ,ModbusSensorClientInterface2(){ }
+    AbstractLiftExecutor(string _name):ExecutorCommon(_name) /*,ModbusSensorClientInterface2()*/ { }
 
     void SetDoorAddresses(unsigned char _slave_address, unsigned short _position_address, unsigned short _speed_address);
     void SetHandAddresses(unsigned char _slave_address, unsigned short _position_address, unsigned short _speed_address);
@@ -93,12 +93,13 @@ protected:
     virtual bool liftS();
     virtual bool liftProcess();
 
+    /*
     void ProcessLiftLeftSensoreCallback();
     void ProcessLiftRightSensoreCallback();
 
     virtual bool CallbackGetRightFunction(){}
     virtual bool CallbackGetLeftFunction(){}
-
+    */
 private:
 
    ModbusSensorClient* modbusClient;

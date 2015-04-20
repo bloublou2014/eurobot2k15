@@ -66,7 +66,7 @@ int main(int argn, char** argc){
 #ifdef CROSS_COMPILING
 
 #ifdef VELIKI
-    //JumpersExecutor jumpExec;
+    JumpersExecutor jumpExec;
     EnemyDetector enemyDetExec;
     MotionExecutor motionExec;
     LiftLeftExecutor liftLeftExec;
@@ -90,7 +90,7 @@ int main(int argn, char** argc){
 #ifdef CROSS_COMPILING
 
 #ifdef VELIKI
-    //execMgr->addExecutor(&jumpExec);
+    execMgr->addExecutor(&jumpExec);
     execMgr->addExecutor(&enemyDetExec);
     execMgr->addExecutor(&motionExec);
     execMgr->addExecutor(&liftLeftExec);

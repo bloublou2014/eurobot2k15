@@ -6,6 +6,8 @@ string LiftRightExecutor::NAME = "LiftRightExecutor";
 
 void LiftRightExecutor::suscribe(){
     this->registerCommand(ActuatorCommand::NAME, static_cast<commandCallback>(&LiftRightExecutor::processActuatorCommand));
+    modbusClient = ModbusSensorClient::getModbusSensorInstance();
+    readingSensore = true;
     lastState.Aveable = true;
     lastState.Quantity = 0;
     executorName = this->NAME;
@@ -28,9 +30,9 @@ void LiftRightExecutor::mapping(){
     door.setServoStatusSetAddress(char(14));
     door.setServoStatusReadAddress(char(15));
 
-    sensor.setSlaveAddress(char(4));
-    sensor.setScanAddress(char(3));
-
+//    sensor.setSlaveAddress(char(4));
+//    sensor.setScanAddress(char(3));
+    modbusClient->registerToSensoreCallback(char(4),char(3),true, this);
     reload(&value, executorName);
 
     doorF(OPEN_GET);
@@ -165,6 +167,17 @@ bool LiftRightExecutor::CallbackGetRightFunction(){
     else readingSensore = false;
 
 }
+
+
+ void LiftRightExecutor::ProcessLiftRightSensoreCallback(){
+     std::cout << "LIRT RIGHT" << std::endl;
+     //readingSensore = true;
+     Command* cmd = ActuatorAction::LiftRight(CALLBACK_GET_RIGHT);
+         commandQueueLock.lock();
+         commandsToProcess.push(Instruction(cmd));
+         commandQueueLock.unlock();
+         queueNotEmpty.notify_one();
+ }
 
 
 

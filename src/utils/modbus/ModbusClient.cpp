@@ -26,14 +26,14 @@ ModbusClient* ModbusClient::getMobusClientInstance(){
 void ModbusClient::main(){
 
     while(!shouldStop){
-
+       /* **********************************************************************************
         if(panic){
             //std::cout << "PANIC !! ELECTRONIC IS NOT WORKING" << std::endl;
             while(!registersToSet.empty()) registersToSet.pop();
             while(!coilToSet.empty()) coilToSet.pop();
             return;
         }
-
+        */
         Instruction inst = getNextInstruction();
        switch(inst.instruction){
        case SET_REGISTER: writeToRegister(inst.id_data); break;
@@ -119,8 +119,8 @@ bool ModbusClient::writeToRegister(setSingleRegisterData data){
         }
         if(counter > 9){
             std::cout << "PANIC ELECTRONIC IS NOT WORKING" << std::endl;
-            panic = true;
-        }
+//            panic = true;   //***************************************************************************
+         }
 
         counter = 0;
         return success;
@@ -148,7 +148,7 @@ bool ModbusClient::writeToCoil(setSingleRegisterData data){
 
         if(counter > 9 ){
             std::cout << "PANIC ELECTRONIC IS NOT WORKING" << std::endl;
-            panic = true;
+            panic = true; // **************************************************************************
         }
 
         counter = 0;
@@ -173,7 +173,7 @@ bool ModbusClient::readCoil(bool* _callFunction, idData _id ){
 
         if(counter > 9){
             std::cout << "PANIC ELECTRONIC IS NOT WORKING" << std::endl;
-            panic = true;
+            //panic = true;  // ****************************************************************
         }
 
         counter = 0;

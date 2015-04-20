@@ -12,9 +12,9 @@
 using namespace modbus;
 namespace executor {
 
-class LiftLeftExecutor: public AbstractLiftExecutor {
+class LiftLeftExecutor: public AbstractLiftExecutor, public ModbusSensorClientInterface2 {
 public:
-    LiftLeftExecutor():AbstractLiftExecutor(this->NAME){}
+    LiftLeftExecutor():AbstractLiftExecutor(this->NAME), ModbusSensorClientInterface2(){    }
 
     static string NAME;
     void suscribe();
@@ -30,6 +30,9 @@ private:
     boost::mutex stateLock;
     bool shouldCollect = false;
     bool CallbackGetLeftFunction();
+
+    ModbusSensorClient* modbusClient;
+    void ProcessLiftLeftSensoreCallback();
 
 
 };

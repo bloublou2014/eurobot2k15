@@ -2,7 +2,8 @@
 #define _JUMPERS
 
 #include "executors/AbstractExecutor.h"
-#include "utils/gpio/gpio.h"
+#include <wiringPi.h>
+
 
 using namespace robot;
 namespace executor{
@@ -15,12 +16,6 @@ private:
     void stop();
     void main();
     void init();
-
-    GPIOClass* gpio_start;
-    GPIOClass* gpio_collor;
-
-    std::string input_start;
-    std::string input_collor;
 
     bool shouldStop = false;
 };

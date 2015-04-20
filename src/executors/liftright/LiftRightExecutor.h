@@ -10,9 +10,9 @@
 
 namespace executor {
 
-class LiftRightExecutor: public AbstractLiftExecutor{
+class LiftRightExecutor: public AbstractLiftExecutor, public ModbusSensorClientInterface2{
 public:
-    LiftRightExecutor():AbstractLiftExecutor(this->NAME){}
+    LiftRightExecutor():AbstractLiftExecutor(this->NAME), ModbusSensorClientInterface2(){}
     static string NAME;
     void suscribe();
     bool GetObjectFunction();
@@ -24,8 +24,10 @@ private:
     boost::mutex stateLock;
     bool shouldCollect = false;
     bool CallbackGetRightFunction();
-
+    ModbusSensorClient* modbusClient;
     bool liftProcess();
+
+    void ProcessLiftRightSensoreCallback();
 
 
 };

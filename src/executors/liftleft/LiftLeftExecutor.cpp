@@ -6,6 +6,8 @@ string LiftLeftExecutor::NAME = "LiftLeftExecutor";
 
 void LiftLeftExecutor::suscribe(){
     this->registerCommand(ActuatorCommand::NAME, static_cast<commandCallback>(&LiftLeftExecutor::processActuatorCommand));
+    modbusClient = ModbusSensorClient::getModbusSensorInstance();
+    this->readingSensore = true;
     lastState.Aveable = true;
     lastState.Quantity = 0;
     executorName = this->NAME;
@@ -28,8 +30,11 @@ void LiftLeftExecutor::mapping(){
     door.setServoStatusSetAddress(char(12));
     door.setServoStatusReadAddress(char(13));
 
-    sensor.setSlaveAddress(char(4));
-    sensor.setScanAddress(char(4));
+    //sensor.setSlaveAddress(char(4));
+    //sensor.setScanAddress(char(4));
+    modbusClient->registerToSensoreCallback(char(4),char(4), true, this);
+
+
 
     reload(&value, executorName);
 
@@ -167,8 +172,20 @@ bool LiftLeftExecutor::CallbackGetLeftFunction(){
     bool success = false;
     success = this->liftProcess();
     if(success) readingSensore = true;
-    else readingSensore = false;
+    else readingSensore = false;   
+    return success;
+}
 
+
+void LiftLeftExecutor::ProcessLiftLeftSensoreCallback(){
+
+    std::cout << "LIRT LEFT" << std::endl;
+    //readingSensore = true;
+    Command* cmd = ActuatorAction::LiftLeft(CALLBACK_GET_LEFT);
+        commandQueueLock.lock();
+        commandsToProcess.push(Instruction(cmd));
+        commandQueueLock.unlock();
+        queueNotEmpty.notify_one();
 }
 
 
