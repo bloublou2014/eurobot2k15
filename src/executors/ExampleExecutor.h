@@ -30,20 +30,22 @@ namespace robot{
 class ExampleExecutor: public AbstractExecutor, public TimerCallback{
 public:
     static string NAME;
-    ExampleExecutor():AbstractExecutor(NAME),counter(0),totalCounter(0){}
+    ExampleExecutor():AbstractExecutor(NAME),totalCounter(0){}
 
     void init();
     void countdown(Command* command);
 
     void stop();
 
-    void onTimeout(const boost::system::error_code &e, void* obj);
+    void onTimeout(const boost::system::error_code &e, boost::asio::deadline_timer* t, void* obj, bool repeat);
+    void startMatch() const;
 protected:
 
     struct Instruction{
         enum Type{
             COMMAND,
-            STOP
+            STOP,
+            START
         };
 
         Instruction(Command* _command):command(_command),type(COMMAND){}
@@ -62,7 +64,6 @@ private:
     Instruction getNextInstruction();
 
     int totalCounter;
-    int counter;
 
     bool shouldStop;
 

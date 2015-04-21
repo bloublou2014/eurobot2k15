@@ -2,8 +2,8 @@
 
 namespace helper{
 
-SleepTimer::SleepTimer(TimerCallback *_callback, int _milliseconds, void *_obj):callback(_callback), thread(NULL),
-    finished(false){
+SleepTimer::SleepTimer(TimerCallback *_callback, int _milliseconds, void *_obj, bool _repeat):callback(_callback), thread(NULL),
+    finished(false), repeat(_repeat){
     start(_milliseconds, _obj);
 }
 
@@ -21,7 +21,7 @@ bool SleepTimer::start(int _milliseconds, void* _obj){
 void SleepTimer::countdown(){
     boost::asio::io_service io;
     boost::asio::deadline_timer t(io, boost::posix_time::milliseconds(milliseconds));
-    t.async_wait(boost::bind(&TimerCallback::onTimeout, callback, boost::asio::placeholders::error, obj));
+    t.async_wait(boost::bind(&TimerCallback::onTimeout, callback, boost::asio::placeholders::error, &t, obj, repeat));
     io.run();
     finished=true;
 }
