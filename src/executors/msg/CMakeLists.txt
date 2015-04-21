@@ -5,7 +5,7 @@ set(EXECUTORS_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/MotionCommand.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/GetMotionState.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MotionNotification.cpp
-    #${CMAKE_CURRENT_SOURCE_DIR}/GetLiftState.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/SideNotification.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/LIftNotification.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ActuatorCommand.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/EnemyDetectedNotification.cpp

@@ -112,9 +112,9 @@ int main(int argn, char** argc){
     taskMgr->start();
     execMgr->start();
 
-    getchar();
+    //getchar();
     //    boost::this_thread::sleep(boost::posix_time::milliseconds(500));
-    taskMgr->sendMessage(new StartMessage("Milan"));
+//    taskMgr->sendMessage(new StartMessage("Milan"));
 
     taskMgr->join();
     execMgr->join();

@@ -241,7 +241,7 @@ void MotionExecutor::rotateTo(MotionCommand* _motionCommand){
     RotateTo* command=(RotateTo*)_motionCommand;
     debug("Rotating to");
     currentMotionCommand=_motionCommand;
-    driver.rotateFor(command->getAbsoluteAngle());
+    driver.rotateTo(command->getAbsoluteAngle());
 }
 
 void MotionExecutor::moveArc(MotionCommand* _motionCommand){
