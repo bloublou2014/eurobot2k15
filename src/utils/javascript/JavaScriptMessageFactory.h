@@ -15,6 +15,7 @@
 #include "executors/msg/ActuatorCommand.h"
 #include "executors/msg/LIftNotification.h"
 #include "executors/msg/EnemyDetectedNotification.h"
+#include "executors/msg/SideNotification.h"
 
 using std::string;
 using std::map;

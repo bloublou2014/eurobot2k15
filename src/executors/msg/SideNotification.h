@@ -1,3 +1,6 @@
+#ifndef _SIDE_NOTIFICATION
+#define _SIDE_NOTIFICATION
+
 #include "messages/Notification.h"
 
 using namespace v8;
@@ -32,3 +35,6 @@ private:
 };
 
 }
+
+
+#endif

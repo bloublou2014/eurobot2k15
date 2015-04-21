@@ -16,6 +16,7 @@ namespace robot{
             void registerManager(AbstractMessageHandler* manager);
 
             virtual void startMatch() const;
+            void sendMessage(Message* msg);
         private:
             AbstractMessageHandler* handler;
     };

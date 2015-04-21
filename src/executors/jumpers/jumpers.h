@@ -1,7 +1,7 @@
 #ifndef _JUMPERS
 #define _JUMPERS
 
-//#define CROSS_COMPILING
+#define CROSS_COMPILING
 
 
 #ifdef CROSS_COMPILING

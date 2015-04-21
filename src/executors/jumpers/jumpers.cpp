@@ -1,6 +1,6 @@
 #include "jumpers.h"
 
-//#define CROSS_COMPILING
+#define CROSS_COMPILING
 
 namespace executor{
 #ifdef CROSS_COMPILING
@@ -36,11 +36,13 @@ void JumpersExecutor::main(){
             SideNotification* sideNotification=new SideNotification(side);
             sendNotification(sideNotification);
 
+              digitalWrite(led_workiing_RED, HIGH);
+
             // send Start mssg
             StartMessage* mssg = new StartMessage("Milan");
-            sendNotification((Notification*)mssg);
+            sendMessage(mssg);
 
-            digitalWrite(led_workiing_RED, HIGH);
+
             shouldStop = true;
 
         }else{

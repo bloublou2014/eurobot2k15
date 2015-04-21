@@ -26,6 +26,8 @@ void JavaScriptMessageFactory::init(Handle<Object> exportObject){
 
     executor::ActuatorCommandJS::Init(exportObject);
     executor::LIftNotification::Init(exportObject);
+    executor::SideNotification::Init(exportObject);
+
 
     //Enemy detection
     executor::EnemyDetectedNotification::Init(exportObject);

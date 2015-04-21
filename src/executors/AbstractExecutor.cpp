@@ -10,4 +10,8 @@ void AbstractExecutor::registerManager(AbstractMessageHandler* manager){
 void AbstractExecutor::startMatch() const{
 }
 
+void AbstractExecutor::sendMessage(Message* msg){
+    handler->receiveMessage(msg);
+}
+
 }
