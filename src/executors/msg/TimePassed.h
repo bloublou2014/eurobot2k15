@@ -14,6 +14,8 @@ namespace robot{
 
 class TimePassedNotification : public Notification{
 public:
+    static string NAME;
+
     /* Exports object */
     static void Init(Handle<Object> exports);
     /* Constructor */

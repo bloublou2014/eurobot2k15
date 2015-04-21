@@ -15,7 +15,7 @@
 #include "executors/popcorn/PopcornExecutor.h"
 #include "executors/flap/FlapExecutor.h"
 #include "executors/enemyDetector/EnemyDetector.h"
-#include "executors/jumpers/jumpers.h"
+//#include "executors/jumpers/jumpers.h"
 
 #include "executors/carpet/CarpetExecutor.h"
 
@@ -66,7 +66,7 @@ int main(int argn, char** argc){
 #ifdef CROSS_COMPILING
 
 #ifdef VELIKI
-    JumpersExecutor jumpExec;
+//    JumpersExecutor jumpExec;
     EnemyDetector enemyDetExec;
     MotionExecutor motionExec;
     LiftLeftExecutor liftLeftExec;
@@ -90,7 +90,7 @@ int main(int argn, char** argc){
 #ifdef CROSS_COMPILING
 
 #ifdef VELIKI
-    execMgr->addExecutor(&jumpExec);
+//    execMgr->addExecutor(&jumpExec);
     execMgr->addExecutor(&enemyDetExec);
     execMgr->addExecutor(&motionExec);
     execMgr->addExecutor(&liftLeftExec);
@@ -112,9 +112,12 @@ int main(int argn, char** argc){
     taskMgr->start();
     execMgr->start();
 
-    //getchar();
-    //    boost::this_thread::sleep(boost::posix_time::milliseconds(500));
+
+
+//    getchar();
+
 //    taskMgr->sendMessage(new StartMessage("Milan"));
+
 
     taskMgr->join();
     execMgr->join();

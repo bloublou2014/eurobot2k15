@@ -9,11 +9,25 @@ using namespace std;
 namespace motion {
 
 string MotionExecutor::NAME="MotionExecutor";
+string MotionExecutor::CONFIG_FILENAME="MotionConfig.xml";
 
 //Obavezno koristiti static_cast
 void MotionExecutor::init(){
+    using namespace boost::property_tree;
+    ptree pt;
+
+    read_xml(CONFIG_FILENAME, pt);
+    BOOST_FOREACH(ptree::value_type &v, pt.get_child("motionConfig"))
+    {
+        rBrkon=v.second.get<int>("rBrkon");
+        rSensor=v.second.get<int>("rSensor");
+        maxX=v.second.get<int>("maxX");
+        maxY=v.second.get<int>("maxY");
+    }
+
     this->registerCommand(MotionCommand::NAME,static_cast<commandCallback>(&MotionExecutor::processMotionCommand));
     this->registerCommand(GetMotionState::NAME,static_cast<commandCallback>(&MotionExecutor::processGetMotionState));
+//    this->registerCommand(SetEnemyDetector::NAME,static_cast<commandCallback>(&MotionExecutor::processSetEnemyDetector));
 
     //Subscribe to enemy detection notifications
     this->subscribe(EnemyDetectedNotification::NAME,static_cast<notificationCallback>(&MotionExecutor::processEnemyDetectedNotification));
@@ -34,14 +48,6 @@ void MotionExecutor::processEnemyDetectedNotification(Notification* notification
     EnemyDetectedNotification* ed=static_cast<EnemyDetectedNotification*>(notification);
 
     detectedSensor[ed->getType()]=ed->isDetected();
-
-//    boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
-//    boost::posix_time::time_duration diff = now - ed->getSentTime();
-
-//    std::stringstream ss;
-//    ss<<"DIFF: "<<diff.total_milliseconds()<<std::endl;
-//        std::cout<<"received "<<boost::posix_time::microsec_clock::local_time()<<endl;
-//    debug(ss.str());
 }
 
 void MotionExecutor::processMotionCommand(Command* command){
@@ -57,6 +63,27 @@ void MotionExecutor::processGetMotionState(Command* command){
     resp->setId(command->getId());
     stateLock.unlock();
     sendResponse(resp);
+}
+
+void MotionExecutor::processSetEnemyDetector(Command* command){
+    debug("Processing enemy detector");
+    SetEnemyDetector* cmd=static_cast<SetEnemyDetector*>(command);
+    switch (cmd->getType()) {
+    case SetEnemyDetector::Type::DETECT_ALL:
+        useEnemyDetector=true;
+        checkField=true;
+        break;
+    case SetEnemyDetector::Type::NO_FIELD_CHECK:
+        useEnemyDetector=true;
+        checkField=false;
+        break;
+    case SetEnemyDetector::Type::DONT_CHECK:
+        useEnemyDetector=false;
+        checkField=false;
+        break;
+    default:
+        break;
+    }
 }
 
 MotionCommand* MotionExecutor::getNextMotionCommand(){
@@ -92,29 +119,31 @@ void MotionExecutor::main(){
         }
 
         /* Proverim da li robot moze da ide tamo gde se uputio */
-        if (driver.getState()==MotionDriver::State::MOVING){
-            if (detectedSensor[EnemyDetectedNotification::LEFT] || detectedSensor[EnemyDetectedNotification::RIGHT]){
-                if (driver.getDirection()==MotionDriver::MovingDirection::FORWARD){
-                    if (currentMotionCommand!=NULL){
-                        MotionCommandError* errorMsg=new MotionCommandError(MotionCommandError::ENEMY,currentMotionCommand->getSource());
-                        errorMsg->setId(currentMotionCommand->getId());
-                        sendResponse(errorMsg);
-//                        delete currentMotionCommand;
-                        currentMotionCommand=NULL;
+        if (useEnemyDetector){
+            if (driver.getState()==MotionDriver::State::MOVING){
+                if (detectedSensor[EnemyDetectedNotification::LEFT] || detectedSensor[EnemyDetectedNotification::RIGHT]){
+                    if (driver.getDirection()==MotionDriver::MovingDirection::FORWARD && isInField(0,rSensor)){
+                        if (currentMotionCommand!=NULL){
+                            MotionCommandError* errorMsg=new MotionCommandError(MotionCommandError::ENEMY,currentMotionCommand->getSource());
+                            errorMsg->setId(currentMotionCommand->getId());
+                            sendResponse(errorMsg);
+    //                        delete currentMotionCommand;
+                            currentMotionCommand=NULL;
+                        }
+                        driver.stop();
                     }
-                    driver.stop();
                 }
-            }
-            if (detectedSensor[EnemyDetectedNotification::BACK]){
-                if (driver.getDirection()==MotionDriver::MovingDirection::BACKWARD){
-                    if (currentMotionCommand!=NULL){
-                        MotionCommandError* errorMsg=new MotionCommandError(MotionCommandError::ENEMY,currentMotionCommand->getSource());
-                        errorMsg->setId(currentMotionCommand->getId());
-                        sendResponse(errorMsg);
-//                        delete currentMotionCommand;
-                        currentMotionCommand=NULL;
+                if (detectedSensor[EnemyDetectedNotification::BACK]){
+                    if (driver.getDirection()==MotionDriver::MovingDirection::BACKWARD && isInField(180,rSensor)){
+                        if (currentMotionCommand!=NULL){
+                            MotionCommandError* errorMsg=new MotionCommandError(MotionCommandError::ENEMY,currentMotionCommand->getSource());
+                            errorMsg->setId(currentMotionCommand->getId());
+                            sendResponse(errorMsg);
+    //                        delete currentMotionCommand;
+                            currentMotionCommand=NULL;
+                        }
+                        driver.stop();
                     }
-                    driver.stop();
                 }
             }
         }
@@ -294,6 +323,21 @@ bool MotionExecutor::isStuck(MotionState& oldState, MotionState& newState){
             return true;
     }
     return false;
+}
+
+bool MotionExecutor::isInField(int angle, int r){
+    if (!checkField) return true;
+    Point2D robotPosition=driver.getPosition();
+    int rotation= driver.getOrientation()+angle;
+    Point2D enemyPosition(robotPosition.getX()+r*cos(rotation),robotPosition.getY()+r*sin(rotation));
+    if (maxX - abs(enemyPosition.getX())<0){
+        return false;
+    }
+    if ((enemyPosition.getY()<0) ||(enemyPosition.getY()>maxY)){
+        return false;
+    }
+
+    return true;
 }
 
 }

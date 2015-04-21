@@ -27,6 +27,8 @@ bool ExecutorManager::receiveMessage(Message* message){
         if (notification->getTopic()==EnemyDetectedNotification::NAME){
             return sendMessage(message);
         }
+    }else if (message->getMessageType()==MessageType::START_MESSAGE){
+        this->sendMessage(message->clone());
     }
 
     return taskManager->sendMessage(message);
@@ -103,6 +105,13 @@ void ExecutorManager::dispatcheMessage(){
             boost::shared_lock<shared_mutex> lock(executorsMapManipulation);
             if ((destIt=executorsMap.find(command->getDestination()))!=executorsMap.end()){
                 destIt->second->processCommand(command);
+            }
+        }
+        case START_MESSAGE:
+        {
+            boost::shared_lock<shared_mutex> lock(executorsMapManipulation);
+            for (map<string,AbstractExecutor*>::const_iterator it=executorsMap.cbegin();it!=executorsMap.cend();++it){
+                it->second->startMatch();
             }
         }
         break;

@@ -1,6 +1,6 @@
 #include "jumpers.h"
 
-#define CROSS_COMPILING
+//#define CROSS_COMPILING
 
 namespace executor{
 #ifdef CROSS_COMPILING

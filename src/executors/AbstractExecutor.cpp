@@ -7,4 +7,7 @@ void AbstractExecutor::registerManager(AbstractMessageHandler* manager){
     NotificationSource::setHandler(manager);
 }
 
+void AbstractExecutor::startMatch() const{
+}
+
 }

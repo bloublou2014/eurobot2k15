@@ -1,16 +1,18 @@
 #ifndef _JUMPERS
 #define _JUMPERS
 
-#define CROSS_COMPILING
+//#define CROSS_COMPILING
 
 
 #ifdef CROSS_COMPILING
 
 #include "executors/AbstractExecutor.h"
+
 #include <wiringPi.h>
 #include "messages/StartMatchMessage.h"
 #include "messages/Notification.h"
 #include "executors/msg/SideNotification.h"
+
 
 #endif
 

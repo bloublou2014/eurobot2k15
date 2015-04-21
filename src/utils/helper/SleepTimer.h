@@ -13,13 +13,13 @@ namespace helper{
 
 class TimerCallback{
 public:
-    virtual void onTimeout(const boost::system::error_code &e, void* obj)=0;
+    virtual void onTimeout(const boost::system::error_code &e, boost::asio::deadline_timer* t, void* obj, bool repeat)=0;
 };
 
 class SleepTimer
 {
 public:
-    SleepTimer(TimerCallback* _callback, int _milliseconds, void* _obj);
+    SleepTimer(TimerCallback* _callback, int _milliseconds, void* _obj, bool _repeat=false);
     bool start(int _milliseconds, void* _obj);
     bool isFinished();
 
@@ -29,10 +29,10 @@ private:
 
     TimerCallback* callback;
     int milliseconds;
-//    bool finished;
+
+    bool repeat;
     boost::atomic<bool> finished;
     void* obj;
-
     boost::thread* thread;
 };
 
