@@ -2,7 +2,7 @@
 #define _JUMPERS
 
 #include "executors/AbstractExecutor.h"
-#include <wiringPi.h>
+//#include <wiringPi.h>
 
 
 using namespace robot;

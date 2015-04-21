@@ -10,6 +10,11 @@
 #include <cmath>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/atomic.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "AbstractExecutor.h"
 #include "executors/msg/MotionCommand.h"
@@ -21,6 +26,8 @@
 using namespace robot;
 using boost::mutex;
 using std::queue;
+using std::pair;
+using std::max_element;
 
 using executor::EnemyDetectedNotification;
 
@@ -28,14 +35,17 @@ namespace motion{
 
 class MotionExecutor: public AbstractExecutor{
 public:
+    static string CONFIG_FILENAME;
     static string NAME;
-    MotionExecutor():AbstractExecutor(NAME),currentMotionCommand(NULL){}
+    MotionExecutor():AbstractExecutor(NAME),currentMotionCommand(NULL),
+        useEnemyDetector(true),checkField(true){}
 
     void init();
     void stop();
 
     void processMotionCommand(Command* command);
     void processGetMotionState(Command* command);
+    void processSetEnemyDetector(Command* command);
 
     void processEnemyDetectedNotification(Notification* notification);
 protected:
@@ -71,9 +81,16 @@ private:
     static double distance(double xFirst, double yFirst, double xSecond, double ySecond);
 
     /*Used for enemy detector*/
-    bool detectedSensor[5];
+    bool useEnemyDetector;
+    bool detectedSensor[10];
 
-
+    /* Ignoring outer field obsticles*/
+    int rBrkon;
+    int rSensor;
+    int maxX;
+    int maxY;
+    bool checkField;
+    bool isInField(int angle, int r);
 };
 
 }

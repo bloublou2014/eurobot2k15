@@ -23,6 +23,7 @@ public:
                      MOVE_ARC,
                      SET_SPEED,
                      SET_POSITION,
+                     SET_ENEMY_DETECTOR,
                      STOP};
 
     MotionCommand(MotionType _type):Command("MotionCommand", "MotionExecutor"),type(_type){}
@@ -176,6 +177,31 @@ public:
     }
 private:
     unsigned char speed;
+};
+
+class SetEnemyDetector : public MotionCommand{ // done
+public:
+    enum Type{
+        DETECT_ALL,
+        NO_FIELD_CHECK,
+        DONT_CHECK
+    };
+
+    static string NAME;
+    /* Exports object */
+    static void Init(Handle<Object> exports);
+    /* Constructor */
+    static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+    SetEnemyDetector(Type _type):MotionCommand(SET_ENEMY_DETECTOR), detectType(_type){}
+    SetEnemyDetector(const SetEnemyDetector& ed):MotionCommand(ed), detectType(ed.detectType){}
+    Type getType() const{return detectType; }
+
+    Message* clone(){
+        return new SetEnemyDetector(*this);
+    }
+private:
+    Type detectType;
 };
 
 class SetPosition : public MotionCommand{ // done

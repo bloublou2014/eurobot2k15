@@ -188,6 +188,54 @@ void MoveToPosition::New(const v8::FunctionCallbackInfo<v8::Value>& args) {
 }
 // 5
 
+string SetEnemyDetector::NAME="SetEnemyDetector";
+void SetEnemyDetector::Init(Handle<Object> exports){
+    Isolate* isolate = Isolate::GetCurrent();
+    // Prepare constructor template
+    Local<FunctionTemplate> tpl = FunctionTemplate::New(isolate, New);
+    tpl->SetClassName(String::NewFromUtf8(isolate, SetEnemyDetector::NAME.c_str()));
+    tpl->InstanceTemplate()->SetInternalFieldCount(1);
+
+    JavaScriptMessageProvider* provider=static_cast<JavaScriptMessageProvider*>(isolate->GetData(0));
+    provider->setObjectConstructor(SetEnemyDetector::NAME, tpl->GetFunction());
+    provider->setObjectTemplate(SetEnemyDetector::NAME, tpl->InstanceTemplate());
+    exports->Set(String::NewFromUtf8(isolate, SetEnemyDetector::NAME.c_str()), tpl->GetFunction());
+}
+
+void SetEnemyDetector::New(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    Isolate* isolate = Isolate::GetCurrent();
+    HandleScope scope(isolate);
+
+    if (args.Length()<1){
+        return isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Not enaugh params"));
+    }
+
+    if (args.IsConstructCall()){
+        // Invoked as constructor: `new MyObject(...)`
+        int type = args[0]->IsUndefined() ? 0 : args[0]->NumberValue();
+        SetEnemyDetector* obj;
+        switch (type){
+        case 2:
+            obj=new SetEnemyDetector(SetEnemyDetector::Type::DETECT_ALL);
+            break;
+        case 1:
+            obj=new SetEnemyDetector(SetEnemyDetector::Type::NO_FIELD_CHECK);
+            break;
+        case 0:
+            obj=new SetEnemyDetector(SetEnemyDetector::Type::DONT_CHECK);
+            break;
+        default:
+            return isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Invalid value"));
+            break;
+        }
+
+        obj->Wrap(args.This());
+        args.GetReturnValue().Set(args.This());
+    } else {
+        isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Cannot call constructor as function."));
+    }
+}
+
 string MoveArc::NAME="MoveArc";
 void MoveArc::Init(Handle<Object> exports){
     Isolate* isolate = Isolate::GetCurrent();
