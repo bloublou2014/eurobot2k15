@@ -78,7 +78,7 @@ protected:
     static void unsubscribeCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
     //Manager callbacks
     static void setStateCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
-    static void sleepCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void getCollorCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
 
     void createGlobalObjects();
     Handle<Script> compileScript(Handle<String> scriptSource);

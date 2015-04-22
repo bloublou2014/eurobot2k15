@@ -45,6 +45,14 @@ bool TaskManager::updateStatus(const string &taskName, TaskState newState){
     return true;
 }
 
+StartMessage::Color TaskManager::getMatchColor(){
+    return matchColor;
+}
+
+bool TaskManager::isMatchStarted() const{
+    return matchStarted;
+}
+
 bool TaskManager::addTask(RankedTask& rankedTask){
     availableTasks[rankedTask.task->getName()]=rankedTask;
     return true;
@@ -156,6 +164,8 @@ void TaskManager::dispatchMessage(){
             }
         break;
         case START_MESSAGE:{
+            StartMessage* sm=(StartMessage*)message;
+            matchColor=sm->getColor();
             matchStarted=true;
             runBestTask();
         }

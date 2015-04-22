@@ -145,9 +145,11 @@ void StopMovement::New(const v8::FunctionCallbackInfo<v8::Value>& args) {
     Isolate* isolate = Isolate::GetCurrent();
     HandleScope scope(isolate);
 
+    bool hardReset= args[0]->IsUndefined() ? true : args[0]->BooleanValue();
+
     if (args.IsConstructCall()) {
         // Invoked as constructor: `new MyObject(...)`
-        StopMovement* obj = new StopMovement();
+        StopMovement* obj = new StopMovement(hardReset);
         obj->Wrap(args.This());
         args.GetReturnValue().Set(args.This());
     } else {

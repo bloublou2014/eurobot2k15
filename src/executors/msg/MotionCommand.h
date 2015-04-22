@@ -151,13 +151,16 @@ public:
     /* Constructor */
     static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-    StopMovement():MotionCommand(STOP){}
-    StopMovement(const StopMovement& sm):MotionCommand(sm){}
+    StopMovement(bool _hard=true):MotionCommand(STOP), hard(_hard){}
+    StopMovement(const StopMovement& sm):MotionCommand(sm), hard(sm.hard){}
+
+    inline bool isHardReset() const{return hard;}
 
     Message* clone(){
         return new StopMovement(*this);
     }
 private:
+    bool hard;
 };
 
 class SetSpeedMotion : public MotionCommand{ // done

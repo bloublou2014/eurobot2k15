@@ -36,7 +36,7 @@ private:
     const int led_side_YELLOW = 27;
     const int led_side_GREEN = 23;
 
-    SideNotification::Side side;
+    StartMessage::Color color;
 
 };
 #endif

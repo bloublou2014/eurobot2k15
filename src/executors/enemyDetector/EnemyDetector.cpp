@@ -70,7 +70,6 @@ void EnemyDetector::ProcessSensorCallback(){
 void EnemyDetector::ProcessEnemySensorCallback1(){
     readingSensore = true;
     testBool = true;
-//    std::cout<<"sent "<<boost::posix_time::microsec_clock::local_time()<<endl;
     if (previousState.left!=true){
         EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::LEFT, 0);
         sendNotification(notification);

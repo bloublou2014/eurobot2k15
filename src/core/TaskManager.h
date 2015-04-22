@@ -71,6 +71,9 @@ public:
     void runBestTask();
 
     void setExecutorManager(AbstractMessageHandler* _executorManager);
+
+    StartMessage::Color getMatchColor();
+    bool isMatchStarted() const;
 protected:
     //thread task
     void main();
@@ -93,6 +96,8 @@ private:
     bool shouldStop;
     bool matchStarted;
     AbstractMessageHandler* executorManager;
+
+    StartMessage::Color matchColor;
 };
 
 }

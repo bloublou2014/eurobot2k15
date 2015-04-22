@@ -1,6 +1,8 @@
 #include <iostream>
 #include <csignal>
 
+
+
 #include "core/TaskManager.h"
 #include "messages/StartMatchMessage.h"
 #include "core/ExecutorManager.h"
@@ -119,6 +121,9 @@ int main(int argn, char** argc){
 
     taskMgr->start();
     execMgr->start();
+
+//    boost::this_thread::sleep(boost::posix_time::milliseconds(1500));
+//    execMgr->receiveMessage(new StartMessage("Milan"));
 
     taskMgr->join();
     execMgr->join();

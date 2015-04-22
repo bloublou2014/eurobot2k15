@@ -107,6 +107,7 @@ void ExecutorManager::dispatcheMessage(){
                 destIt->second->processCommand(command);
             }
         }
+        break;
         case START_MESSAGE:
         {
             boost::shared_lock<shared_mutex> lock(executorsMapManipulation);
