@@ -9,12 +9,22 @@ void EnemyDetector::suscribe(){
 
     this->registerCommand(ActuatorCommand::NAME, static_cast<commandCallback>(&EnemyDetector::processActuatorCommand));
     modbusClient = ModbusSensorClient::getModbusSensorInstance();
+#ifdef VELIKI_ROBOT
     modbusClient->registerToSensoreCallback(char(4), char(1),true,this);
     modbusClient->registerToSensoreCallback(char(4), char(2),true,this);
     modbusClient->registerToSensoreCallback(char(4), char(5),true,this);
     modbusClient->registerToSensoreCallback(char(4), char(7),true,this);
     modbusClient->registerToBeaconInterface(this);
     this->readingSensore = true;
+#endif
+
+#ifdef MALI_ROBOT
+    modbusClient->registerToSensoreCallback(char(4), char(1),true,this);
+    modbusClient->registerToSensoreCallback(char(4), char(1),true,this);
+    modbusClient->registerToSensoreCallback(char(4), char(1),true,this);
+    this->readingSensore = true;
+#endif
+
     //modbusClient->startBeacon();
     //modbusClient->startBrxon();
 
