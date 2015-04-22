@@ -15,8 +15,8 @@ namespace robot{
             AbstractExecutor(const string& _name):Node(_name){}
             void registerManager(AbstractMessageHandler* manager);
 
-            virtual void startMatch() const;
-            void sendMessage(Message* msg);
+            virtual void startMatch();
+            void sendRawMessage(Message* msg);
         private:
             AbstractMessageHandler* handler;
     };

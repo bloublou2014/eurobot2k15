@@ -1,6 +1,6 @@
 #include "jumpers.h"
 
-#define CROSS_COMPILING
+//#define CROSS_COMPILING
 
 namespace executor{
 #ifdef CROSS_COMPILING
@@ -40,7 +40,7 @@ void JumpersExecutor::main(){
 
             // send Start mssg
             StartMessage* mssg = new StartMessage("Milan");
-            sendMessage(mssg);
+            sendRawMessage(mssg);
 
 
             shouldStop = true;

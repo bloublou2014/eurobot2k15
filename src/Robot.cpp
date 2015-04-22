@@ -21,7 +21,7 @@
 
 #include "tasks/PipeTask.h"
 
-#define CROSS_COMPILING
+//#define CROSS_COMPILING
 #define VELIKI
 //#define MALI
 
@@ -116,7 +116,7 @@ int main(int argn, char** argc){
 
 //    getchar();
 
-//    taskMgr->sendMessage(new StartMessage("Milan"));
+//    execMgr->sendMessage(new StartMessage("Milan"));
 
 
     taskMgr->join();

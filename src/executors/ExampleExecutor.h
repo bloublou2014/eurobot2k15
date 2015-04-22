@@ -8,6 +8,7 @@
 #include <queue>
 #include <list>
 
+#include "messages/StartMatchMessage.h"
 #include "AbstractExecutor.h"
 #include "msg/TimePassed.h"
 #include "msg/CountdownCommand.h"
@@ -38,7 +39,7 @@ public:
     void stop();
 
     void onTimeout(const boost::system::error_code &e, boost::asio::deadline_timer* t, void* obj, bool repeat);
-    void startMatch() const;
+    void startMatch();
 protected:
 
     struct Instruction{

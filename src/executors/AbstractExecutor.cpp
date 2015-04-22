@@ -5,12 +5,13 @@ namespace robot{
 void AbstractExecutor::registerManager(AbstractMessageHandler* manager){
     CommandProcessor::setHandler(manager);
     NotificationSource::setHandler(manager);
+    handler=manager;
 }
 
-void AbstractExecutor::startMatch() const{
+void AbstractExecutor::startMatch(){
 }
 
-void AbstractExecutor::sendMessage(Message* msg){
+void AbstractExecutor::sendRawMessage(Message* msg){
     handler->receiveMessage(msg);
 }
 

@@ -29,7 +29,7 @@ void ExampleExecutor::stop(){
     queueNotEmpty.notify_one();
 }
 
-void ExampleExecutor::startMatch() const{
+void ExampleExecutor::startMatch(){
     commandQueueLock.lock();
     commandsToProcess.push(Instruction::START);
     commandQueueLock.unlock();
@@ -38,8 +38,12 @@ void ExampleExecutor::startMatch() const{
 
 void ExampleExecutor::main(){
     shouldStop=false;
+
+
     while (true){
         if (shouldStop) break;
+
+//        boost::thread::sleep(boost::posix_time::milliseconds(1500));
 
         Instruction instr=getNextInstruction();
         if (instr.type==Instruction::STOP){

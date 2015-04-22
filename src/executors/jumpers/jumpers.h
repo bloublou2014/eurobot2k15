@@ -1,7 +1,8 @@
+
 #ifndef _JUMPERS
 #define _JUMPERS
 
-#define CROSS_COMPILING
+//#define CROSS_COMPILING
 
 
 #ifdef CROSS_COMPILING
@@ -13,10 +14,9 @@
 #include "messages/Notification.h"
 #include "executors/msg/SideNotification.h"
 
-
+using namespace robot;
 #endif
 
-using namespace robot;
 namespace executor{
 #ifdef CROSS_COMPILING
 class JumpersExecutor : public AbstractExecutor {

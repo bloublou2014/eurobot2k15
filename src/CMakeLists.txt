@@ -12,8 +12,12 @@ if(CMAKE_CROSSCOMPILING)
 
     #v8 include
     include_directories(/home/milan/tools/v8)
+
     link_directories(/home/milan/tools/v8/out/arm.release/obj.target/tools/gyp)
     link_directories(/home/milan/tools/v8/out/arm.release/obj.target/third_party/icu)
+
+    include_directories(${RPI_ROOTFS}/usr/include)
+    link_directories(${RPI_ROOTFS}/lib)
 else()
     message("CONFIGURING FOR LINUX")
 
@@ -47,6 +51,9 @@ target_link_libraries(eurobot2k15 core executors messages tasks plugins)
 
 #link boost
 target_link_libraries(eurobot2k15 boost_chrono boost_filesystem boost_locale boost_serialization boost_signals boost_timer boost_thread boost_system boost_regex boost_log)
+if(CMAKE_CROSSCOMPILING)
+    target_link_libraries(eurobot2k15 wiringPi)
+endif()
 #link v8
 set(V8_LIB -Wl,--start-group libv8_base.a libv8_libbase.a libv8_snapshot.a libv8_libplatform.a libicuuc.a libicui18n.a libicudata.a -Wl,--end-group)
 target_link_libraries(eurobot2k15 rt ${V8_LIB})
