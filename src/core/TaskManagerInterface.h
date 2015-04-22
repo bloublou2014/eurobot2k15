@@ -2,6 +2,8 @@
 #define TASKMANAGERINTERFACE_H
 
 #include "core/AbstractMessageHandler.h"
+#include "messages/StartMatchMessage.h"
+
 #include <string>
 
 using std::string;
@@ -21,6 +23,8 @@ class TaskManagerInterface : public AbstractMessageHandler
 {
 public:
     virtual bool updateStatus(const string& taskName, TaskState newState)=0;
+    virtual StartMessage::Color getMatchColor()=0;
+    virtual bool isMatchStarted() const=0;
 };
 
 }

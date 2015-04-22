@@ -179,6 +179,8 @@ Handle<ObjectTemplate> JavaScriptTask::createManagerTemplate(Isolate* isolate){
 
     result->Set(String::NewFromUtf8(isolate, "updateState", String::kInternalizedString),
                 FunctionTemplate::New(isolate, setStateCallback));
+    result->Set(String::NewFromUtf8(isolate, "getColor", String::kInternalizedString),
+                FunctionTemplate::New(isolate, getCollorCallback));
 
     return scope.Escape(result);
 }
@@ -491,6 +493,21 @@ void JavaScriptTask::setStateCallback(const v8::FunctionCallbackInfo<v8::Value>&
         }
     }
     isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Unrecognized state"));
+}
+
+void JavaScriptTask::getCollorCallback(const v8::FunctionCallbackInfo<v8::Value>& args){
+    Isolate* isolate=Isolate::GetCurrent();
+    JavaScriptTask* task=UnwrapJavascriptTask(args.Holder());
+
+    StartMessage::Color matchColor;
+    if (task->getColor(matchColor)){
+        if (matchColor==StartMessage::Color::GREEN)
+            args.GetReturnValue().Set(v8::String::NewFromUtf8(args.GetIsolate(), "GREEN"));
+        else
+            args.GetReturnValue().Set(v8::String::NewFromUtf8(args.GetIsolate(), "YELLOW"));
+    }else{
+        isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Can't get color, match not started!"));
+    }
 }
 
 }

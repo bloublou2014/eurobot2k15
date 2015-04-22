@@ -302,9 +302,16 @@ void MotionExecutor::setPosition(MotionCommand* _motionCommand){
 
 
 void MotionExecutor::stopMovement(MotionCommand* _motionCommand){
-    debug("Stopping movemen");
-    currentMotionCommand=_motionCommand;
-    driver.stop();
+    StopMovement* sm=(StopMovement*)_motionCommand;
+    if (sm->isHardReset()){
+        debug("Stopping movemen HARD");
+        currentMotionCommand=_motionCommand;
+        driver.stop();
+    }else{
+        debug("Stopping movemen SOFT");
+        currentMotionCommand=_motionCommand;
+        driver.softStop();
+    }
 }
 
 double MotionExecutor::distance(double xFirst, double yFirst, double xSecond, double ySecond){

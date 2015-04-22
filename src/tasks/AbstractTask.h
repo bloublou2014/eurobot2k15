@@ -38,6 +38,7 @@ public:
     //ovo bi trebao samo manager da poziva. Potrebno je atomicno promenuti stanje i updateovati heap.
     void setState(TaskState _state);
     void updateState(TaskState _state);
+    bool getColor(StartMessage::Color& color);
 
     void registerManager(TaskManagerInterface* manager);
 protected:

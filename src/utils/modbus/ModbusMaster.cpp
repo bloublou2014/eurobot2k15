@@ -95,7 +95,7 @@ bool ModbusMaster::ModbusGetStartChar()
 	signed char c;
 
     //usleep(1*1000);
-    usleep(1*1000); // TOME EDIT
+    usleep(1*1500); // TOME EDIT
 
 	while(attempts > 0 && rs485.getChar((char*)&c) > 0)
 	{
@@ -105,8 +105,8 @@ bool ModbusMaster::ModbusGetStartChar()
 		}
 		else
 		{
-			if(c!=0) printf("wrong start char c=%c, hex=%x \n", c, c);
-			else printf("wrong start char c=NULL\n");
+            //if(c!=0) printf("wrong start char c=%c, hex=%x \n", c, c);  TOME
+//			else printf("wrong start char c=NULL\n");
 		}
 		attempts--;
 	}

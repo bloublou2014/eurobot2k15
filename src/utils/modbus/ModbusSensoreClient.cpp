@@ -36,7 +36,7 @@ ModbusSensorClient* ModbusSensorClient::instance = 0;
 ModbusSensorClient::ModbusSensorClient(): Node("ModbusServoClient"),m_mutex(new boost::mutex()){
     modbus = ModbusClient::getMobusClientInstance();
     start();
-    std::cout << "ModbusSensoreClient is runnging" << std::endl;
+    //std::cout << "ModbusSensoreClient is runnging" << std::endl;
     ModbusSensoreClientNotifier = modbus->getModbusSensorNotifier();
     ModbusSensorClientPanic = modbus->getModbusSensorPanic();
     respinNumber = int(2000/ delayTime);

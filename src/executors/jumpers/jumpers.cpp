@@ -23,23 +23,23 @@ void JumpersExecutor::main(){
         if( digitalRead(side_jumper)){
             digitalWrite(led_side_GREEN, LOW);
             digitalWrite(led_side_YELLOW, HIGH);
-            side = SideNotification::Side::GREEN;
+            color = StartMessage::Color::GREEN;
         }else{
             digitalWrite(led_side_GREEN, HIGH);
             digitalWrite(led_side_YELLOW, LOW);
-            side = SideNotification::Side::YELLOW;
+            color = StartMessage::Color::YELLOW;
         }
 
         if(!digitalRead(start_jumper)){
 
             // send notification
-            SideNotification* sideNotification=new SideNotification(side);
-            sendNotification(sideNotification);
+//            SideNotification* sideNotification=new SideNotification(side);
+//            sendNotification(sideNotification);
 
               digitalWrite(led_workiing_RED, HIGH);
 
             // send Start mssg
-            StartMessage* mssg = new StartMessage("Milan");
+            StartMessage* mssg = new StartMessage(color, "Milan");
             sendRawMessage(mssg);
 
 

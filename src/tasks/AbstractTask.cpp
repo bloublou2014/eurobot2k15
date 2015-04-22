@@ -67,6 +67,15 @@ void AbstractTask::updateState(TaskState _state){
     handler->updateStatus(getName(),_state);
 }
 
+bool AbstractTask::getColor(StartMessage::Color &color){
+    if (handler->isMatchStarted()){
+        color=handler->getMatchColor();
+        return true;
+    }else{
+        return false;
+    }
+}
+
 void AbstractTask::setState(TaskState _state){
     state=_state;
 }

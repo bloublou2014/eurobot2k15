@@ -7,8 +7,16 @@ namespace robot {
 
 class StartMessage:public Message{
 public:
-    StartMessage(const string& _sender):Message(START_MESSAGE,_sender){}
-    StartMessage(const StartMessage& msg):Message(msg){}
+    enum Color{
+        YELLOW=1,
+        GREEN=2
+    };
+
+    StartMessage(Color _color, const string& _sender):Message(START_MESSAGE,_sender),
+        color(_color){}
+    StartMessage(const StartMessage& msg):Message(msg), color(msg.color){}
+    inline Color getColor() const { return color; }
+
     string getName() const{
         return "StartMessage";
     }
@@ -16,6 +24,9 @@ public:
     Message* clone(){
         return new StartMessage(*this);
     }
+
+private:
+    Color color;
 };
 
 }
