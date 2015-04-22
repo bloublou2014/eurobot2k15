@@ -5,19 +5,19 @@ if(CMAKE_CROSSCOMPILING)
 
     include_directories(${TOOLCHAIN_INCLUDE})
     link_directories(${TOOLCHAIN_LIB})
+    #include wiringPi
+    include_directories(/home/project/RPI/rootfs/usr/local/include)
+    link_directories(/home/project/RPI/rootfs/usr/local/lib)
+
 
     #boost include
     include_directories(${PROJECT_SOURCE_DIR}/libs/boost_arm)
     link_directories(${PROJECT_SOURCE_DIR}/libs/boost_arm/stage/lib)
 
     #v8 include
-    include_directories(/home/milan/tools/v8)
-
-    link_directories(/home/milan/tools/v8/out/arm.release/obj.target/tools/gyp)
-    link_directories(/home/milan/tools/v8/out/arm.release/obj.target/third_party/icu)
-
-    include_directories(${RPI_ROOTFS}/usr/include)
-    link_directories(${RPI_ROOTFS}/lib)
+    include_directories(/home/project/libs/v8)
+    link_directories(/home/project/libs/v8/out/arm.release/obj.target/tools/gyp)
+    link_directories(/home/project/libs/v8/out/arm.release/obj.target/third_party/icu)
 else()
     message("CONFIGURING FOR LINUX")
 
@@ -26,11 +26,10 @@ else()
     link_directories(${PROJECT_SOURCE_DIR}/libs/boost/stage/lib)
 
     #v8 include
-    include_directories(/home/milan/tools/v8)
-    link_directories(/home/milan/tools/v8/out/x64.debug/obj.target/tools/gyp)
-    link_directories(/home/milan/tools/v8/out/x64.debug/obj.target/third_party/icu)
+    include_directories(/home/project/libs/v8)
+    link_directories(/home/project/libs/v8/out/x64.debug/obj.target/tools/gyp)
+    link_directories(/home/project/libs/v8/out/x64.debug/obj.target/third_party/icu)
 endif()
-
 
 if(${ROBOT} MATCHES VECI)
     add_definitions(-DVELIKI_ROBOT)
@@ -40,6 +39,7 @@ elseif(${ROBOT} MATCHES MANJI)
     message("Configuring for MALI")
 else()
     message("ERROR robot must be VECI or MANJI")
+endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
