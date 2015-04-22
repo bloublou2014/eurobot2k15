@@ -22,7 +22,7 @@
 #include "tasks/PipeTask.h"
 
 //#define CROSS_COMPILING
-#define VELIKI
+//#define VELIKI
 //#define MALI
 
 using namespace std;
@@ -65,8 +65,7 @@ int main(int argn, char** argc){
 
 #ifdef CROSS_COMPILING
 
-#ifdef VELIKI
-    JumpersExecutor jumpExec;
+#ifdef VELIKI_ROBOT
     EnemyDetector enemyDetExec;
     MotionExecutor motionExec;
     LiftLeftExecutor liftLeftExec;
@@ -74,10 +73,15 @@ int main(int argn, char** argc){
     LiftRightExecutor liftRightExec;
     PopcornExecutor popcornExec;
     FlapExecutor flapExec;
+    JumpersExecutor jumpExec;
 #endif
 
-#ifdef MALI
+#ifdef MALI_ROBOT
+    JumpersExecutor jumpExec;
+    EnemyDetector enemyDetExec;
+     MotionExecutor motionExec;
     CarpetExecutor carpetExec;
+
 #endif
 
 #endif
@@ -89,8 +93,7 @@ int main(int argn, char** argc){
 
 #ifdef CROSS_COMPILING
 
-#ifdef VELIKI
-    execMgr->addExecutor(&jumpExec);
+#ifdef VELIKI_ROBOT
     execMgr->addExecutor(&enemyDetExec);
     execMgr->addExecutor(&motionExec);
     execMgr->addExecutor(&liftLeftExec);
@@ -98,10 +101,15 @@ int main(int argn, char** argc){
     execMgr->addExecutor(&liftRightExec);
     execMgr->addExecutor(&popcornExec);
     execMgr->addExecutor(&flapExec);
+    execMgr->addExecutor(&jumpExec);
 #endif
 
-#ifdef MALI
+#ifdef MALI_ROBOT
+    execMgr->addExecutor(&jumpExec);
     execMgr->addExecutor(&carpetExec);
+    execMgr->addExecutor(&enemyDetExec);
+    execMgr->addExecutor(&motionExec);
+
 #endif
 
 #endif
