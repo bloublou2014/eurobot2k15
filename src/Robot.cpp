@@ -112,13 +112,6 @@ int main(int argn, char** argc){
     taskMgr->start();
     execMgr->start();
 
-
-
-//    getchar();
-
-//    execMgr->sendMessage(new StartMessage("Milan"));
-
-
     taskMgr->join();
     execMgr->join();
 

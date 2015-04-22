@@ -31,6 +31,16 @@ else()
     link_directories(/home/milan/tools/v8/out/x64.debug/obj.target/third_party/icu)
 endif()
 
+
+if(${ROBOT} MATCHES VECI)
+    add_definitions(-DVELIKI_ROBOT)
+    message("Configuring for VELIKI")
+elseif(${ROBOT} MATCHES MANJI)
+    add_definitions(-DMALI_ROBOT)
+    message("Configuring for MALI")
+else()
+    message("ERROR robot must be VECI or MANJI")
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 set(SRC_FILES Robot.cpp)
@@ -51,9 +61,10 @@ target_link_libraries(eurobot2k15 core executors messages tasks plugins)
 
 #link boost
 target_link_libraries(eurobot2k15 boost_chrono boost_filesystem boost_locale boost_serialization boost_signals boost_timer boost_thread boost_system boost_regex boost_log)
-if(CMAKE_CROSSCOMPILING)
-    target_link_libraries(eurobot2k15 wiringPi)
-endif()
 #link v8
 set(V8_LIB -Wl,--start-group libv8_base.a libv8_libbase.a libv8_snapshot.a libv8_libplatform.a libicuuc.a libicui18n.a libicudata.a -Wl,--end-group)
 target_link_libraries(eurobot2k15 rt ${V8_LIB})
+#link blinki library
+if(CMAKE_CROSSCOMPILING)
+    target_link_libraries(eurobot2k15 wiringPi)
+endif()
