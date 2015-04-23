@@ -132,7 +132,7 @@ public:
     void registerToSensoreCallback(unsigned char _slave_address, unsigned short _coil_address, bool on_bool_callback,
                                    ModbusSensorClientInterface2 *obj);
 
-    short readBrxon();
+    unsigned short readBrxon();
     bool startBrxon();
     bool stopBrxon();
 

@@ -115,7 +115,8 @@ int main(int argn, char** argc){
     execMgr->start();
 
 //    boost::this_thread::sleep(boost::posix_time::milliseconds(1500));
-//    execMgr->receiveMessage(new StartMessage("Milan"));
+//getchar();
+//        execMgr->receiveMessage(new StartMessage(StartMessage::Color::YELLOW, "Milan"));
 
     taskMgr->join();
     execMgr->join();

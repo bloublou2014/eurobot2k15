@@ -167,8 +167,8 @@ void ModbusSensorClient::stopModbusSensorClient(){
     shouldStop = true;
 }
 
-short ModbusSensorClient::readBrxon(){
-    short data;
+unsigned short ModbusSensorClient::readBrxon(){
+    unsigned short data;
     bool success;
     success = modbus->readRegister(&data, brxonID.slaveAddress, brxonID.functionAddress);
     return data;

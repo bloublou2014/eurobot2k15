@@ -17,6 +17,8 @@ public:
                     }
 private:
     enemyDetectedStruct previousState;
+    char previousFrontBrkon;
+    char previousBackBrkon;
 
     static std::string NAME;
     void suscribe();

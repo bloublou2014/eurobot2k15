@@ -32,6 +32,8 @@ void EnemyDetector::suscribe(){
     previousState.brkon=false;
     previousState.left=false;
     previousState.right=false;
+    previousBackBrkon=0xFF;     //Empty
+    previousFrontBrkon=0xFF;    //Empty
 }
 
 bool EnemyDetector::StartBeaconFunction(){
@@ -101,16 +103,45 @@ void EnemyDetector::ProcessEnemySensorCallback3(){
 
 void EnemyDetector::ProcessEnemySensorCallback4(){
     readingSensore = true;
-
-    //short data;
-    int angle;
     testBool = true;
-    if (previousState.brkon!=true){
-        angle = modbusClient->readBrxon()-85;   //85 zato sto je tako
-        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON,angle);
-        sendNotification(notification);
-        previousState.brkon=true;
+
+    using namespace std;
+
+
+    unsigned short data=modbusClient->readBrxon();
+//        printf("/nreceived brkon notification: %x %d\n",data, sizeof(data));
+    unsigned char back=(char)data&0x00FF;
+    unsigned char front=(char)(data>>2)&0x00FF;
+
+    //Provera zadnjeg
+    if (!(back^0xFF)){  //Ako nije detektovano nista nazad
+        if (previousBackBrkon!=back){   //Ako je nesto bilo detektovano u prethodnoj iteraciji posalji da ga vise nema
+            cout<<"Sending back brkon"<<endl;
+            EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON_BACK, previousBackBrkon, false);
+            sendNotification(notification);
+        }
+    }else{  //Ako je nesto detektovano
+        if (previousBackBrkon==0xFF){   //a malopre nije nista, posalji notifikaciju da se nesto pojavilo
+            cout<<"Sending front brkon"<<endl;
+            EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON_BACK,back);
+            sendNotification(notification);
+        }
     }
+    previousBackBrkon=back;
+
+    //Provera prednjeg
+    if (!(front^0xFF)){  //Ako nije detektovano nista nazad
+        if (previousFrontBrkon!=front){   //Ako je nesto bilo detektovano u prethodnoj iteraciji posalji da ga vise nema
+            EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON_FRONT, previousFrontBrkon, false);
+            sendNotification(notification);
+        }
+    }else{  //Ako je nesto detektovano
+        if (previousFrontBrkon==0xFF){   //a malopre nije nista, posalji notifikaciju da se nesto pojavilo
+            EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON_FRONT,front);
+            sendNotification(notification);
+        }
+    }
+    previousFrontBrkon=front;
 }
 
 void EnemyDetector::ProcessBeaconCallback(){
@@ -149,10 +180,15 @@ void EnemyDetector::ProcessNotEnemySensorCallback3(){
 }
 
 void EnemyDetector::ProcessNotEnemySensorCallback4(){
-    if (previousState.brkon){
-        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON, 0, false);
+    if (previousBackBrkon^0xFF){ //Ako je nesto bilo setovano za zadnji
+        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON_BACK, previousBackBrkon, false);
         sendNotification(notification);
-        previousState.brkon=false;
+        previousBackBrkon=0xFF;
+    }
+    if (previousFrontBrkon^0xFF){ //Ako je nesto bilo setovano za zadnji
+        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON_FRONT, previousFrontBrkon, false);
+        sendNotification(notification);
+        previousFrontBrkon=0xFF;
     }
 }
 
