@@ -19,9 +19,9 @@ void EnemyDetector::suscribe(){
 #endif
 
 #ifdef MALI_ROBOT
-    modbusClient->registerToSensoreCallback(char(4), char(1),true,this);
-    modbusClient->registerToSensoreCallback(char(4), char(1),true,this);
-    modbusClient->registerToSensoreCallback(char(4), char(1),true,this);
+    modbusClient->registerToSensoreCallback(char(1), char(1),true,this);
+    modbusClient->registerToSensoreCallback(char(1), char(2),true,this);
+    modbusClient->registerToSensoreCallback(char(1), char(3),true,this);
     this->readingSensore = true;
 #endif
 

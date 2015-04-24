@@ -18,18 +18,18 @@ void CarpetExecutor::mapping(){
     armRight.setServoPositionAddress(char(1));
 
     el_switchLeft.setCoilSlaveAddress(char(1));
-    el_switchLeft.setCoilAddress(char(8));
+    el_switchLeft.setCoilAddress(char(7));
 
-    el_switchRight.setCoilSlaveAddress(char(1));
-    el_switchRight.setCoilAddress(char(9));
+    //el_switchRight.setCoilSlaveAddress(char(1));
+    //el_switchRight.setCoilAddress(char(9));
 
      reload(&value,this->NAME );
 
-     armLeft.rotateToPosition(value.CarpetConfig.armLeft.close);
-     armRight.rotateToPosition(value.CarpetConfig.armRight.close);
+     //armLeft.rotateToPosition(value.CarpetConfig.armLeft.close);
+     //armRight.rotateToPosition(value.CarpetConfig.armRight.close);
 
-     el_switchLeft.setCoilState(false);
-     el_switchRight.setCoilState(false);
+     //el_switchLeft.setCoilState(false);
+     //el_switchRight.setCoilState(false);
 
 }
 
@@ -41,7 +41,7 @@ bool CarpetExecutor::LeaveCarpetFunction(){
     boost::this_thread::sleep(boost::posix_time::milliseconds(value.CarpetConfig.armOpenCloseTime));
 
     el_switchLeft.setCoilState(true);
-    el_switchRight.setCoilState(true);
+    //el_switchRight.setCoilState(true);
 
     boost::this_thread::sleep(boost::posix_time::milliseconds(value.CarpetConfig.leaveCarpetTime));
 

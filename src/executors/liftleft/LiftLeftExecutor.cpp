@@ -47,6 +47,7 @@ void LiftLeftExecutor::mapping(){
 bool LiftLeftExecutor::GetObjectFunction(){
     debug("LiftLeft Get");
     shoulGetObject = true;
+    readingSensore = true;
 
     return true;
 

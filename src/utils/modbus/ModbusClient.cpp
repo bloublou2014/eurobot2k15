@@ -130,12 +130,12 @@ bool ModbusClient::writeToRegister(setSingleRegisterData data){
 bool ModbusClient::writeToCoil(setSingleRegisterData data){
     bool success;
     int counter = 0;
-    /*
+
         std::cout << "writeing to coil: "
                   << int(data.ID.slaveAddress) << ":"
                   << data.ID.functionAddress << ":"
                   << data.data << std::endl;
-    */
+
         boost::lock_guard<boost::mutex> lock(*m_mutex);
 
         success = modbus->ModbusForceSingleCoil(data.ID.slaveAddress, data.ID.functionAddress, data.data);
