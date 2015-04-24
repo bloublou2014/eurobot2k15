@@ -16,6 +16,7 @@
 #include "executors/msg/LIftNotification.h"
 #include "executors/msg/EnemyDetectedNotification.h"
 #include "executors/msg/SideNotification.h"
+#include "core/TaskStateChangeNotification.h"
 
 using std::string;
 using std::map;

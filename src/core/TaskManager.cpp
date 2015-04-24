@@ -1,18 +1,21 @@
 #include "TaskManager.h"
 
+const int TaskManager::matchDuration=90;
+
 namespace robot{
 
 TaskManager::TaskManager(const string& strategy, const string& directory):Node("TaskManager"),shouldStop(false),
-    matchStarted(false), currentlyRunningTask(NULL){
+    matchStarted(false), currentlyRunningTask(NULL), matchFinished(false){
     using namespace boost::property_tree;
     ptree pt;
 
     read_xml(strategy, pt);
     BOOST_FOREACH(ptree::value_type &v, pt.get_child("tasks"))
-            createTask(v.second.get<std::string>("name"),v.second.get<std::string>("filename"),v.second.get<int>("rank"),v.second.get<int>("time"), directory);
+            createTask(v.second.get<std::string>("name"),v.second.get<std::string>("filename"),
+                       v.second.get<int>("rank",0),v.second.get<int>("time"), directory, v.second.get<int>("finalize",0));
 }
 
-void TaskManager::createTask(const string& name, const string& filename, int rank, int duration, const string& directory){
+void TaskManager::createTask(const string& name, const string& filename, int rank, int duration, const string& directory, bool finalize){
     debug(directory+boost::filesystem::path::preferred_separator+filename);
     JavaScriptTask* task=new JavaScriptTask(name,directory+boost::filesystem::path::preferred_separator+filename,directory);
     task->registerManager(this);
@@ -20,10 +23,15 @@ void TaskManager::createTask(const string& name, const string& filename, int ran
     rt.task=task;
     rt.rank=rank;
     rt.estimatedRunningTime=duration;
+    rt.finalize=finalize;
+    if (finalize){
+        finalizeTask=rt;
+    }
     addTask(rt);
 }
 
 bool TaskManager::updateStatus(const string &taskName, TaskState newState){
+    if (matchFinished) return false;
     std::stringstream ss;
     ss<<"Updating status "<<taskName<<" State: "<<newState;
     debug(ss.str());
@@ -69,11 +77,34 @@ bool TaskManager::setWorldProperty(){
 }
 
 bool TaskManager::sendMessage(Message* message){
+    if (message->getMessageType()==MessageType::NOTIFICATION){
+        if (message->getName()==TimePassedNotification::NAME)
+            checkTime(message);
+    }
     messageQueueLock.lock();
     messageQueue.push(message);
     messageQueueLock.unlock();
     messageQueueNotEmpty.notify_one();
     return true;
+}
+
+void TaskManager::checkTime(TimePassedNotification* tp){
+    if (tp->getPassedTime()==matchDuration){
+        debug("****** Stopping match FINISH! **********");
+        finalizeMatch();
+    }
+}
+
+void TaskManager::finalizeMatch(){
+    debug("Finalizing task");
+    boost::mutex::scoped_lock lock(tasksLock);
+    matchFinished=true;
+    if (currentlyRunningTask!=NULL){
+        currentlyRunningTask->pauseTask();
+        AbstractTask* fin=finalizeTask.task;
+        if (fin!=NULL)
+            fin->runTask();
+    }
 }
 
 bool TaskManager::receiveMessage(Message* message){
@@ -184,12 +215,12 @@ bool TaskManager::larger(const RankedTask& t1, const RankedTask& t2){
 
 //Finds the best task and runs it, if it is already running than it ignores it
 void TaskManager::runBestTask(){
-    debug("Running best task");
     if (!matchStarted) return;
     map<string, RankedTask>::iterator it=availableTasks.begin();
     map<string, RankedTask>::iterator maxElement=availableTasks.end();
     //Find the best ranked ready or running task
     for (;it!=availableTasks.end();++it){
+        if (it->second.finalize) continue;  //Don't use finalize task here
         if (it->second.task->getTaskState()==TaskState::READY
                 || it->second.task->getTaskState()==TaskState::RUNNING){
             if (maxElement!=availableTasks.end()){
@@ -210,6 +241,9 @@ void TaskManager::runBestTask(){
             }
             currentlyRunningTask=maxElement->second.task;
             currentlyRunningTask->runTask();
+            std::stringstream ss;
+            ss<<"Running best task: "<<currentlyRunningTask->getName();
+            debug(ss.str());
         }
     }else if (maxElement!=availableTasks.end() && currentlyRunningTask!=NULL){
         if (currentlyRunningTask->getTaskState()!=TaskState::RUNNING){

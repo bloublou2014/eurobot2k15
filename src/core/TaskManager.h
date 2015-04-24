@@ -23,6 +23,8 @@
 #include "core/AbstractMessageHandler.h"
 #include "messages/StopMessage.h"
 #include "core/TaskManagerInterface.h"
+#include "executors/msg/TimePassed.h"
+#include "core/TaskStateChangeNotification.h"
 
 using boost::heap::fibonacci_heap;
 using std::map;
@@ -39,9 +41,12 @@ namespace robot{
 
 //Every task has its priority
 struct RankedTask{
+    RankedTask():task(NULL),rank(0),estimatedRunningTime(0), finalize(false){}
+
     AbstractTask* task;
     int rank;
     int estimatedRunningTime;
+    bool finalize;
 };
 
 class TaskManager: public Node, public TaskManagerInterface{
@@ -82,12 +87,16 @@ protected:
     //when new message is received in queue it needs to be forwarded to tasks
     void dispatchMessage();
 private:
-    void createTask(const string& name, const string& filename, int rank, int duration, const string &directory);
+    void createTask(const string& name, const string& filename, int rank, int duration, const string &directory, bool finalize);
 
 //    typedef pair<RankedTask,TaskQueue::handle_type> CachedRankedTask;
     mutex tasksLock;
     map<string, RankedTask> availableTasks;
     AbstractTask* currentlyRunningTask;
+    RankedTask finalizeTask;
+    void checkTime(TimePassedNotification* tp);
+    void finalizeMatch();
+
     Message* popNextMessage();
     mutex messageQueueLock;
     condition_variable messageQueueNotEmpty;
@@ -95,7 +104,10 @@ private:
 
     bool shouldStop;
     bool matchStarted;
+    bool matchFinished;
     AbstractMessageHandler* executorManager;
+
+    static const int matchDuration;
 
     StartMessage::Color matchColor;
 };

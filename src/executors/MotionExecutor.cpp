@@ -48,6 +48,15 @@ void MotionExecutor::processEnemyDetectedNotification(Notification* notification
     EnemyDetectedNotification* ed=static_cast<EnemyDetectedNotification*>(notification);
 
     detectedSensor[ed->getType()]=ed->isDetected();
+
+    std::stringstream ss;
+    if (ed->getType()==EnemyDetectedNotification::Type::BRKON_BACK){
+        ss<<"BACK BRKON @ "<<ed->getAngle()<<" detected: "<<ed->isDetected();
+    }
+
+    if (ed->getType()==EnemyDetectedNotification::Type::BRKON_FRONT){
+        ss<<"FRONT BRKON @ "<<ed->getAngle()<<" detected: "<<ed->isDetected();
+    }
 }
 
 void MotionExecutor::processMotionCommand(Command* command){

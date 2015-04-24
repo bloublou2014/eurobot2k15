@@ -28,6 +28,7 @@ void JavaScriptMessageFactory::init(Handle<Object> exportObject){
     executor::LIftNotification::Init(exportObject);
     executor::SideNotification::Init(exportObject);
 
+    robot::TaskStateChangeNotification::Init(exportObject);
 
     //Enemy detection
     executor::EnemyDetectedNotification::Init(exportObject);

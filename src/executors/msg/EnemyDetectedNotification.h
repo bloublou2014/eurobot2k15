@@ -14,11 +14,12 @@ class EnemyDetectedNotification : public Notification
 {
 public:
     enum Type{
-        BRKON=0,
-        BEACON=1,
-        LEFT=2,
-        RIGHT=3,
-        BACK=4
+        BRKON_FRONT=0,
+        BRKON_BACK=1,
+        BEACON=2,
+        LEFT=3,
+        RIGHT=4,
+        BACK=5
     };
 
     static string NAME;
