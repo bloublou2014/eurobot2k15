@@ -136,10 +136,11 @@ void MotionExecutor::stop(){
 }
 
 const int MotionInstruction::MaxRetryCount=500;
-bool MotionExecutor::isEnemyDetected(MotionDriver::MovingDirection movingDirection){
+bool MotionExecutor::isEnemyDetected(MotionState& ms){
+    if (ms.State==MotionDriver::State::ROTATING) return false;  //Fix zbog malog
     for(int i=0;i<enemySensorCount;++i){
         //If we are moving in direction of detected obsticle
-        if (enemySensors[i].Direction==movingDirection && enemySensors[i].Detected){
+        if (enemySensors[i].Direction==ms.Direction && enemySensors[i].Detected){
             if (isInField(enemySensors[i].Angle,enemySensors[i].Distance)){
                 //than enemy is detected in moving direction
                 std::stringstream ss;
@@ -178,7 +179,7 @@ void MotionExecutor::main(){
 
         /* Proverim da li robot moze da ide tamo gde se uputio */
         if (currentMotionInstruction.isSet()){
-            if (isEnemyDetected(newState.Direction)){
+            if (isEnemyDetected(newState)){
                 if (currentMotionInstruction.isSuspended()){
                     if (!currentMotionInstruction.canRetry(waitOnEnemyCountCheck)){  //If we can't wait any more, send error
                         debug("****** Sending error, timeout *******");
