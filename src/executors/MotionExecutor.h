@@ -165,7 +165,7 @@ private:
     /*Used for enemy detector and path finder*/
     static int MaxRetryCount;
 
-    bool isEnemyDetected(MotionDriver::MovingDirection movingDirection);
+    bool isEnemyDetected(MotionState& ms);
     //void handleEnemyDetection();
     bool useEnemyDetector;
     struct Enemy{
