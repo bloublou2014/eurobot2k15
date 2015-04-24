@@ -33,11 +33,79 @@ using executor::EnemyDetectedNotification;
 
 namespace motion{
 
+class MotionInstruction{
+public:
+    static const int MaxRetryCount;
+
+    MotionInstruction():command(NULL),retryCount(0),suspended(false){}
+
+    void reset(){
+        suspended=false;
+        retryCount=0;
+        delete command;
+        command=NULL;
+    }
+
+    void Set(MotionCommand* _motionCommand, MotionState& _destination){
+        destination=_destination;
+        suspended=false;
+        command=_motionCommand;
+        retryCount=0;
+    }
+
+    void pause(MotionDriver& driver){
+        suspended=true;
+        driver.stop();
+    }
+
+    void resume(MotionDriver& driver){
+        suspended=false;
+        retryCount=0;
+        driver.moveToPosition(destination.Position,destination.Direction);
+    }
+
+    inline MotionCommand* getCommand(){
+        return command;
+    }
+
+    inline bool isSuspended(){
+        return suspended;
+    }
+
+    inline bool isSet(){
+        return command!=NULL;
+    }
+
+    inline bool canRetry(bool increment=true){
+        if (increment)
+            return ++retryCount<MaxRetryCount;
+        else
+            return true;
+    }
+
+    MotionCommandError* getErrorMessage(MotionCommandError::ErrorType errorType){
+        MotionCommandError* errorMsg=new MotionCommandError(errorType,command->getSource());
+        errorMsg->setId(command->getId());
+        return errorMsg;
+    }
+
+    inline MotionDriver::MovingDirection getDirection(){
+        return direction;
+    }
+
+private:
+    MotionDriver::MovingDirection direction;
+    MotionCommand* command;
+    MotionState destination;
+    int retryCount;
+    bool suspended;
+};
+
 class MotionExecutor: public AbstractExecutor{
 public:
     static string CONFIG_FILENAME;
     static string NAME;
-    MotionExecutor():AbstractExecutor(NAME),currentMotionCommand(NULL),
+    MotionExecutor():AbstractExecutor(NAME),
         useEnemyDetector(true),checkField(true){}
 
     void init();
@@ -60,7 +128,8 @@ private:
     MotionState lastState;
     MotionState lastNotificationState;
 
-    MotionCommand* currentMotionCommand;
+    MotionInstruction currentMotionInstruction;
+
     MotionDriver driver;
     typedef void (MotionExecutor::*motionCommandHandle)(MotionCommand* _motionCommand);
     typedef map<MotionCommand::MotionType,motionCommandHandle> MotionCommandsHandleMap;
@@ -75,18 +144,23 @@ private:
     void setSpeed(MotionCommand* _motionCommand);
     void setPosition(MotionCommand* _motionCommand);
 
-    //Used for stuck detection
-    MotionState previousState;
-    static bool isStuck(MotionState& oldState, MotionState& newState);
-    static double distance(double xFirst, double yFirst, double xSecond, double ySecond);
+    /*Used for enemy detector and path finder*/
+    static int MaxRetryCount;
 
-    /*Used for enemy detector*/
+    bool isEnemyDetected(MotionDriver::MovingDirection movingDirection);
+    //void handleEnemyDetection();
     bool useEnemyDetector;
-    bool detectedSensor[10];
+    struct Enemy{
+        Enemy():Detected(false){}
+        bool Detected;
+        int Angle;
+        MotionDriver::MovingDirection Direction;
+        int Distance;
+    };
+    Enemy enemySensors[10];
+    int enemySensorCount;
 
     /* Ignoring outer field obsticles*/
-    int rBrkon;
-    int rSensor;
     int maxX;
     int maxY;
     bool checkField;

@@ -16,6 +16,8 @@ void MotionExecutor::init(){
     using namespace boost::property_tree;
     ptree pt;
 
+    int rBrkon;
+    int rSensor;
     read_xml(CONFIG_FILENAME, pt);
     BOOST_FOREACH(ptree::value_type &v, pt.get_child("motionConfig"))
     {
@@ -41,15 +43,28 @@ void MotionExecutor::init(){
     motionHandles[MotionCommand::MotionType::SET_SPEED]=static_cast<motionCommandHandle>(&MotionExecutor::setSpeed);
     motionHandles[MotionCommand::MotionType::SET_POSITION]=static_cast<motionCommandHandle>(&MotionExecutor::setPosition);
 
-    memset(detectedSensor,0,sizeof(detectedSensor));    //Set whole array to false
+    //Initialize sensor distances
+    enemySensors[EnemyDetectedNotification::Type::BRKON_FRONT].Distance=rBrkon;
+    enemySensors[EnemyDetectedNotification::Type::BRKON_BACK].Distance=rBrkon;
+    enemySensors[EnemyDetectedNotification::Type::LEFT].Distance=rSensor;
+    enemySensors[EnemyDetectedNotification::Type::RIGHT].Distance=rSensor;
+    enemySensors[EnemyDetectedNotification::Type::BACK].Distance=rSensor;
+
+    enemySensors[EnemyDetectedNotification::Type::BRKON_FRONT].Direction=MotionDriver::MovingDirection::FORWARD;
+    enemySensors[EnemyDetectedNotification::Type::BRKON_BACK].Direction=MotionDriver::MovingDirection::BACKWARD;
+    enemySensors[EnemyDetectedNotification::Type::LEFT].Direction=MotionDriver::MovingDirection::FORWARD;
+    enemySensors[EnemyDetectedNotification::Type::RIGHT].Direction=MotionDriver::MovingDirection::FORWARD;
+    enemySensors[EnemyDetectedNotification::Type::BACK].Direction=MotionDriver::MovingDirection::BACKWARD;
+    enemySensorCount=5;
+
 }
 
 void MotionExecutor::processEnemyDetectedNotification(Notification* notification){
     EnemyDetectedNotification* ed=static_cast<EnemyDetectedNotification*>(notification);
-
-    detectedSensor[ed->getType()]=ed->isDetected();
-
+    enemySensors[ed->getType()].Detected=ed->isDetected();
     std::stringstream ss;
+
+    ss<<"Type: "<<ed->getType()<<" detected: "<<ed->isDetected();
     if (ed->getType()==EnemyDetectedNotification::Type::BRKON_BACK){
         ss<<"BACK BRKON @ "<<ed->getAngle()<<" detected: "<<ed->isDetected();
     }
@@ -57,6 +72,8 @@ void MotionExecutor::processEnemyDetectedNotification(Notification* notification
     if (ed->getType()==EnemyDetectedNotification::Type::BRKON_FRONT){
         ss<<"FRONT BRKON @ "<<ed->getAngle()<<" detected: "<<ed->isDetected();
     }
+
+    debug(ss.str());
 }
 
 void MotionExecutor::processMotionCommand(Command* command){
@@ -75,7 +92,6 @@ void MotionExecutor::processGetMotionState(Command* command){
 }
 
 void MotionExecutor::processSetEnemyDetector(Command* command){
-    debug("Processing enemy detector");
     SetEnemyDetector* cmd=static_cast<SetEnemyDetector*>(command);
     switch (cmd->getType()) {
     case SetEnemyDetector::Type::DETECT_ALL:
@@ -117,10 +133,30 @@ void MotionExecutor::stop(){
     shouldStop=true;
 }
 
+const int MotionInstruction::MaxRetryCount=500;
+bool MotionExecutor::isEnemyDetected(MotionDriver::MovingDirection movingDirection){
+    for(int i=0;i<enemySensorCount;++i){
+        //If we are moving in direction of detected obsticle
+        if (enemySensors[i].Direction==movingDirection && enemySensors[i].Detected){
+            if (isInField(enemySensors[i].Angle,enemySensors[i].Distance)){
+                //than enemy is detected in moving direction
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 void MotionExecutor::main(){
     shouldStop=false;
     debug("Started main thread execution");
 
+    bool waitOnEnemyCountCheck=true;
+#ifdef MANIJ
+    waitOnEnemyCountCheck=true;
+#endif
+
+    MotionState newState;
     while (true){
         if (shouldStop){
             driver.stop();
@@ -128,47 +164,32 @@ void MotionExecutor::main(){
         }
 
         /* Proverim da li robot moze da ide tamo gde se uputio */
-        if (useEnemyDetector){
-            if (driver.getState()==MotionDriver::State::MOVING){
-                if (detectedSensor[EnemyDetectedNotification::LEFT] || detectedSensor[EnemyDetectedNotification::RIGHT]){
-                    if (driver.getDirection()==MotionDriver::MovingDirection::FORWARD && isInField(0,rSensor)){
-                        if (currentMotionCommand!=NULL){
-                            MotionCommandError* errorMsg=new MotionCommandError(MotionCommandError::ENEMY,currentMotionCommand->getSource());
-                            errorMsg->setId(currentMotionCommand->getId());
-                            sendResponse(errorMsg);
-    //                        delete currentMotionCommand;
-                            currentMotionCommand=NULL;
-                        }
+        if (currentMotionInstruction.isSet()){
+            if (isEnemyDetected(newState.Direction)){
+                if (currentMotionInstruction.isSuspended()){
+                    if (!currentMotionInstruction.canRetry(waitOnEnemyCountCheck)){  //If we can't wait any more, send error
+                        debug("Sending error, timeout");
+                        sendResponse(currentMotionInstruction.getErrorMessage(MotionCommandError::ENEMY));
+                        currentMotionInstruction.reset();
                         driver.stop();
                     }
+                }else{
+                    debug("Pausing execution");
+                    currentMotionInstruction.pause(driver);
                 }
-                if (detectedSensor[EnemyDetectedNotification::BACK]){
-                    if (driver.getDirection()==MotionDriver::MovingDirection::BACKWARD && isInField(180,rSensor)){
-                        if (currentMotionCommand!=NULL){
-                            MotionCommandError* errorMsg=new MotionCommandError(MotionCommandError::ENEMY,currentMotionCommand->getSource());
-                            errorMsg->setId(currentMotionCommand->getId());
-                            sendResponse(errorMsg);
-    //                        delete currentMotionCommand;
-                            currentMotionCommand=NULL;
-                        }
-                        driver.stop();
-                    }
-                }
+            }else if (currentMotionInstruction.isSuspended()){
+                debug("Resuming motion");
+                currentMotionInstruction.resume(driver);
             }
         }
 
         /*Dobavim sledecu komandu*/
         MotionCommand* newCommand=getNextMotionCommand();
-        if (newCommand!=NULL && currentMotionCommand!=NULL){
+        if (newCommand!=NULL && currentMotionInstruction.isSet()){
             debug("Newer command received, sending error to old");
-            MotionCommandError* errorMsg=new MotionCommandError(MotionCommandError::OLD_COMMAND,currentMotionCommand->getSource());
-            errorMsg->setId(currentMotionCommand->getId());
-            sendResponse(errorMsg);
-//            delete currentMotionCommand;
-            currentMotionCommand=NULL;
+            sendResponse(currentMotionInstruction.getErrorMessage(MotionCommandError::OLD_COMMAND));
+            currentMotionInstruction.reset();
         }
-
-
 
         //Process received command
         try{
@@ -178,12 +199,9 @@ void MotionExecutor::main(){
             }
         }catch(...){
             error("***** Error in UART communication! ****");
-            if (currentMotionCommand!=NULL){
-                MotionCommandError* errorMsg=new MotionCommandError(MotionCommandError::UART,currentMotionCommand->getSource());
-                errorMsg->setId(currentMotionCommand->getId());
-                sendResponse(errorMsg);
-//                delete currentMotionCommand;
-                currentMotionCommand=NULL;
+            if (currentMotionInstruction.isSet()){
+                sendResponse(currentMotionInstruction.getErrorMessage(MotionCommandError::UART));
+                currentMotionInstruction.reset();
             }
             return;
         }
@@ -193,16 +211,12 @@ void MotionExecutor::main(){
             driver.refreshData();
         }catch(...){
             error("***** Error in UART communication! ****");
-            if (currentMotionCommand!=NULL){
-                MotionCommandError* errorMsg=new MotionCommandError(MotionCommandError::UART,currentMotionCommand->getSource());
-                errorMsg->setId(currentMotionCommand->getId());
-                sendResponse(errorMsg);
-//                delete currentMotionCommand;
-                currentMotionCommand=NULL;
+            if (currentMotionInstruction.isSet()){
+                sendResponse(currentMotionInstruction.getErrorMessage(MotionCommandError::UART));
+                currentMotionInstruction.reset();
             }
             return;
         }
-        MotionState newState;
         newState.Direction=driver.getDirection();
         newState.Orientation=driver.getOrientation();
         newState.Position=driver.getPosition();
@@ -210,38 +224,38 @@ void MotionExecutor::main(){
         newState.State=driver.getState();
 
         //If robot finished movement, report it back
-        if (newState.State==MotionDriver::State::IDLE && currentMotionCommand!=NULL){
+        if (newState.State==MotionDriver::State::IDLE && currentMotionInstruction.isSet()
+                && !currentMotionInstruction.isSuspended()){
             debug("Robot finished executing command");
-            sendResponseFromCommand(currentMotionCommand);
-            currentMotionCommand=NULL;
+            sendResponseFromCommand(currentMotionInstruction.getCommand());
+            currentMotionInstruction.reset();
         }
 
         //If driver throws an error, report it
-        if ((newState.State==MotionDriver::State::ERROR || newState.State==MotionDriver::State::STUCK) && currentMotionCommand!=NULL){
+        if ((newState.State==MotionDriver::State::ERROR || newState.State==MotionDriver::State::STUCK)
+                && currentMotionInstruction.isSet()){
             error("Robot stuck, canceling movement");
-            MotionCommandError* errorMsg=new MotionCommandError(MotionCommandError::STUCK,currentMotionCommand->getSource());
-            errorMsg->setId(currentMotionCommand->getId());
-            sendResponse(errorMsg);
-//            delete currentMotionCommand;
-            currentMotionCommand=NULL;
+            sendResponse(currentMotionInstruction.getErrorMessage(MotionCommandError::STUCK));
+            currentMotionInstruction.reset();
             driver.stop();
         }
 
         //Send progress if there is a command for it
         if (lastState!=newState){
-            if((currentMotionCommand!=NULL) ){
-                GetMotionStateResponse* progress=new GetMotionStateResponse(currentMotionCommand->getSource(),
-                         currentMotionCommand->getDestination(),newState,ResponseStatus::PROGRESS_UPDATE);
-                progress->setId(currentMotionCommand->getId());
+            debug("Updating state");
+            if((currentMotionInstruction.isSet()) ){
+                MotionCommand* motionCommand=currentMotionInstruction.getCommand();
+                GetMotionStateResponse* progress=new GetMotionStateResponse(motionCommand->getSource(),
+                         motionCommand->getDestination(), newState, ResponseStatus::PROGRESS_UPDATE);
+                progress->setId(motionCommand->getId());
                 sendResponse(progress);
             }
-
-            int delta=newState.Position.euclidDist(lastNotificationState.Position);
 
             stateLock.lock();
             lastState=newState;
             stateLock.unlock();
 
+            int delta=newState.Position.euclidDist(lastNotificationState.Position);
             if (delta>MOTION_TRESHOLD){
                 MotionNotification* motionNotification=new MotionNotification(newState);
                 sendNotification(motionNotification);
@@ -257,43 +271,57 @@ void MotionExecutor::main(){
 void MotionExecutor::moveToPosition(MotionCommand* _motionCommand){
     MoveToPosition* command=(MoveToPosition*)_motionCommand;
     debug("Moving to position");
-    currentMotionCommand=_motionCommand;
-    driver.moveToPosition(command->getPosition(),command->getDirection());
+    MotionState destinationState=lastState;
+    destinationState.Position=command->getPosition();
+    destinationState.Direction=command->getDirection();
+    currentMotionInstruction.Set(_motionCommand,destinationState);
+    driver.moveToPosition(destinationState.Position,destinationState.Direction);
 }
 
 void MotionExecutor::moveForward(MotionCommand* _motionCommand){
     MoveForward* command=(MoveForward*)_motionCommand;
     debug("Moving forward");
-    currentMotionCommand=_motionCommand;
-    driver.moveStraight(command->getDistance());
+    MotionState destinationState=lastState;
+    int distance=command->getDistance();
+    destinationState.Position.setX(destinationState.Position.getX()+distance*cos(destinationState.Orientation));
+    destinationState.Position.setY(destinationState.Position.getY()+distance*sin(destinationState.Orientation));
+    if (distance<0)
+        destinationState.Direction=MotionDriver::MovingDirection::BACKWARD;
+    else
+        destinationState.Direction=MotionDriver::MovingDirection::FORWARD;
+    currentMotionInstruction.Set(_motionCommand, destinationState);
+    driver.moveStraight(distance);
 }
 
 void MotionExecutor::rotateFor(MotionCommand* _motionCommand){
     RotateFor* command=(RotateFor*)_motionCommand;
     debug("Rotating for");
-    currentMotionCommand=_motionCommand;
-    driver.rotateFor(command->getRelativeAngle());
+    MotionState destinationState=lastState;
+    destinationState.Orientation+=command->getRelativeAngle();
+    currentMotionInstruction.Set(_motionCommand,destinationState);
+    driver.rotateFor(destinationState.Orientation);
 }
 
 void MotionExecutor::rotateTo(MotionCommand* _motionCommand){
     RotateTo* command=(RotateTo*)_motionCommand;
     debug("Rotating to");
-    currentMotionCommand=_motionCommand;
-    driver.rotateTo(command->getAbsoluteAngle());
+    MotionState destinationState=lastState;
+    destinationState.Orientation=command->getAbsoluteAngle();
+    currentMotionInstruction.Set(_motionCommand, destinationState);
+    driver.rotateTo(destinationState.Orientation);
 }
 
 void MotionExecutor::moveArc(MotionCommand* _motionCommand){
     MoveArc* command=(MoveArc*)_motionCommand;
     debug("Moving arc");
-    currentMotionCommand=_motionCommand;
+    currentMotionInstruction.Set(_motionCommand, lastState);
     driver.moveArc(command->getCenter(),command->getAngle(),command->getDirection());
 }
 
 void MotionExecutor::setSpeed(MotionCommand* _motionCommand){
     debug("Setting speed");
-
     SetSpeedMotion* command=(SetSpeedMotion*)_motionCommand;
-    currentMotionCommand=_motionCommand;
+    currentMotionInstruction.Set(_motionCommand, lastState);
     std::stringstream ss;
     ss<<"Set speed @ "<<command->getSpeed();
     debug(ss.str());
@@ -303,7 +331,7 @@ void MotionExecutor::setSpeed(MotionCommand* _motionCommand){
 void MotionExecutor::setPosition(MotionCommand* _motionCommand){
     debug("Setting position");
     SetPosition* command=(SetPosition*)_motionCommand;
-    currentMotionCommand=_motionCommand;
+    currentMotionInstruction.Set(_motionCommand, lastState);
     std::stringstream ss;
     debug(ss.str());
     driver.setPositionAndOrientation(command->getPoint(),command->getOrientation());
@@ -314,31 +342,13 @@ void MotionExecutor::stopMovement(MotionCommand* _motionCommand){
     StopMovement* sm=(StopMovement*)_motionCommand;
     if (sm->isHardReset()){
         debug("Stopping movemen HARD");
-        currentMotionCommand=_motionCommand;
+        currentMotionInstruction.Set(_motionCommand, lastState);
         driver.stop();
     }else{
         debug("Stopping movemen SOFT");
-        currentMotionCommand=_motionCommand;
+        currentMotionInstruction.Set(_motionCommand, lastState);
         driver.softStop();
     }
-}
-
-double MotionExecutor::distance(double xFirst, double yFirst, double xSecond, double ySecond){
-    double x=xFirst-xSecond;
-    double y=yFirst-ySecond;
-    return sqrt(pow(x,2)+pow(y,2));
-}
-
-bool MotionExecutor::isStuck(MotionState& oldState, MotionState& newState){
-    if (oldState.State==MotionDriver::State::MOVING && newState.State==MotionDriver::State::MOVING){
-        if (distance(oldState.Position.getX(), oldState.Position.getY(),newState.Position.getX(), newState.Position.getY())<2.0)
-            return true;
-    }
-    if (oldState.State==MotionDriver::State::ROTATING && newState.State==MotionDriver::State::ROTATING){
-        if (abs(oldState.Orientation-newState.Orientation)<1)
-            return true;
-    }
-    return false;
 }
 
 bool MotionExecutor::isInField(int angle, int r){
@@ -352,7 +362,7 @@ bool MotionExecutor::isInField(int angle, int r){
     if ((enemyPosition.getY()<0) ||(enemyPosition.getY()>maxY)){
         return false;
     }
-
+//    debug("IN FIELD");
     return true;
 }
 

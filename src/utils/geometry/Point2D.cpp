@@ -5,7 +5,7 @@
  *      Author: PCX
  */
 
-#include "Point2D.h"
+#include "utils/geometry/Point2D.h"
 #include "math.h"
 
 namespace geometry {
@@ -53,6 +53,11 @@ Point2D& Point2D::operator=(const Point2D &rhs)
     x = rhs.getX();
     y = rhs.getY();
     return *this;
+}
+
+bool Point2D::operator<(const Point2D &rhs) const
+{
+    return (x < rhs.x) || ((x == rhs.x) && (y < rhs.y));
 }
 
 } /* namespace geometry */

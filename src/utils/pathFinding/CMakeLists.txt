@@ -1,0 +1,8 @@
+set(UTILS_SRC
+    ${UTILS_SRC}
+    ${CMAKE_CURRENT_SOURCE_DIR}/PathFinding.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/PfPoint2D.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Polygon.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/State.cpp
+    PARENT_SCOPE
+)

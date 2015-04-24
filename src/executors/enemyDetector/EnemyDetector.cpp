@@ -107,22 +107,18 @@ void EnemyDetector::ProcessEnemySensorCallback4(){
 
     using namespace std;
 
-
     unsigned short data=modbusClient->readBrxon();
-//        printf("/nreceived brkon notification: %x %d\n",data, sizeof(data));
     unsigned char back=(char)data&0x00FF;
-    unsigned char front=(char)(data>>2)&0x00FF;
+    unsigned char front=(char)(data>>8)&0x00FF;
 
     //Provera zadnjeg
-    if (!(back^0xFF)){  //Ako nije detektovano nista nazad
+    if (back==0xFF){  //Ako nije detektovano nista nazad
         if (previousBackBrkon!=back){   //Ako je nesto bilo detektovano u prethodnoj iteraciji posalji da ga vise nema
-            cout<<"Sending back brkon"<<endl;
             EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON_BACK, previousBackBrkon, false);
             sendNotification(notification);
         }
     }else{  //Ako je nesto detektovano
         if (previousBackBrkon==0xFF){   //a malopre nije nista, posalji notifikaciju da se nesto pojavilo
-            cout<<"Sending front brkon"<<endl;
             EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON_BACK,back);
             sendNotification(notification);
         }
@@ -130,7 +126,7 @@ void EnemyDetector::ProcessEnemySensorCallback4(){
     previousBackBrkon=back;
 
     //Provera prednjeg
-    if (!(front^0xFF)){  //Ako nije detektovano nista nazad
+    if (front==0xFF){  //Ako nije detektovano nista nazad
         if (previousFrontBrkon!=front){   //Ako je nesto bilo detektovano u prethodnoj iteraciji posalji da ga vise nema
             EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON_FRONT, previousFrontBrkon, false);
             sendNotification(notification);
@@ -180,12 +176,12 @@ void EnemyDetector::ProcessNotEnemySensorCallback3(){
 }
 
 void EnemyDetector::ProcessNotEnemySensorCallback4(){
-    if (previousBackBrkon^0xFF){ //Ako je nesto bilo setovano za zadnji
+    if (previousBackBrkon!=0xFF){ //Ako je nesto bilo setovano za zadnji
         EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON_BACK, previousBackBrkon, false);
         sendNotification(notification);
         previousBackBrkon=0xFF;
     }
-    if (previousFrontBrkon^0xFF){ //Ako je nesto bilo setovano za zadnji
+    if (previousFrontBrkon!=0xFF){ //Ako je nesto bilo setovano za zadnji
         EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON_FRONT, previousFrontBrkon, false);
         sendNotification(notification);
         previousFrontBrkon=0xFF;

@@ -5,7 +5,7 @@
  *      Author: PCX
  */
 
-#include "GeometryUtil.h"
+#include "utils/geometry/GeometryUtil.h"
 
 namespace geometry {
 

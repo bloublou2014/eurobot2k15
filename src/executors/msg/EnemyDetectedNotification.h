@@ -16,10 +16,9 @@ public:
     enum Type{
         BRKON_FRONT=0,
         BRKON_BACK=1,
-        BEACON=2,
-        LEFT=3,
-        RIGHT=4,
-        BACK=5
+        LEFT=2,
+        RIGHT=3,
+        BACK=4
     };
 
     static string NAME;
