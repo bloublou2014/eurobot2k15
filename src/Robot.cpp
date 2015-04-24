@@ -22,7 +22,7 @@
 #include "executors/carpet/CarpetExecutor.h"
 
 #include "tasks/PipeTask.h"
-
+#include "messages/StartMatchMessage.h"
 //#define CROSS_COMPILING
 //#define VELIKI
 //#define MALI
@@ -115,6 +115,8 @@ int main(int argn, char** argc){
 #endif
 
 #endif
+    StartMessage::Color collor;
+    collor = StartMessage::Color::YELLOW;
 
     taskMgr->init();
     execMgr->init();
@@ -122,8 +124,8 @@ int main(int argn, char** argc){
     taskMgr->start();
     execMgr->start();
 
-//    boost::this_thread::sleep(boost::posix_time::milliseconds(1500));
-//    execMgr->receiveMessage(new StartMessage("Milan"));
+    boost::this_thread::sleep(boost::posix_time::milliseconds(1500));
+    execMgr->sendMessage(new StartMessage(collor, "Milan"));
 
     taskMgr->join();
     execMgr->join();

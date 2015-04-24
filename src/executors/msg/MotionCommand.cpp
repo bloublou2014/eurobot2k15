@@ -180,8 +180,15 @@ void MoveToPosition::New(const v8::FunctionCallbackInfo<v8::Value>& args) {
         // Invoked as constructor: `new MyObject(...)`
         int valueXcord = args[0]->IsUndefined() ? 0 : args[0]->NumberValue();
         int valueYcord = args[1]->IsUndefined() ? 0 : args[1]->NumberValue();
+        int valueDirection = args[2]->IsUndefined()  ? 1 : args[2]->NumberValue();
 
-        MoveToPosition* obj = new MoveToPosition(Point2D(valueXcord,valueYcord));
+        MoveToPosition* obj;
+        if (valueDirection==1){
+            obj = new MoveToPosition(Point2D(valueXcord,valueYcord), MotionDriver::MovingDirection::FORWARD);
+        }else{
+            obj = new MoveToPosition(Point2D(valueXcord,valueYcord), MotionDriver::MovingDirection::BACKWARD);
+        }
+
         obj->Wrap(args.This());
         args.GetReturnValue().Set(args.This());
     } else {
