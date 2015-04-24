@@ -39,7 +39,11 @@ public:
 
     MotionInstruction():command(NULL),retryCount(0),suspended(false){}
 
-    void reset(){
+    void reset(MotionDriver& driver){
+        if (slowSpeed)
+            driver.setSpeed(previousSpeed);
+        slowSpeed=false;
+        previousSpeed=0;
         suspended=false;
         retryCount=0;
         delete command;
@@ -50,6 +54,8 @@ public:
         destination=_destination;
         suspended=false;
         command=_motionCommand;
+        slowSpeed=false;
+        previousSpeed=0;
         retryCount=0;
     }
 
@@ -93,12 +99,24 @@ public:
         return direction;
     }
 
+    void saveSpeed(int speed){
+        slowSpeed=true;
+        previousSpeed=speed;
+    }
+
+    MotionState getDestination(){
+        return destination;
+    }
+
 private:
     MotionDriver::MovingDirection direction;
     MotionCommand* command;
     MotionState destination;
     int retryCount;
     bool suspended;
+
+    bool slowSpeed;
+    int previousSpeed;
 };
 
 class MotionExecutor: public AbstractExecutor{
@@ -165,6 +183,9 @@ private:
     int maxY;
     bool checkField;
     bool isInField(int angle, int r);
+
+    bool shouldUseSlow(int distance);
+    bool shouldUseSlow(geometry::Point2D _position);
 };
 
 }

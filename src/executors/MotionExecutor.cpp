@@ -3,6 +3,8 @@
 #include <iostream>
 
 #define MOTION_TRESHOLD 10
+#define SLOW_DISTANCE 100
+#define SLOW_SPEED 50
 
 using namespace std;
 
@@ -64,13 +66,13 @@ void MotionExecutor::processEnemyDetectedNotification(Notification* notification
     enemySensors[ed->getType()].Detected=ed->isDetected();
     std::stringstream ss;
 
-    ss<<"Type: "<<ed->getType()<<" detected: "<<ed->isDetected();
+    ss<<"Enemy detected type: "<<ed->getType()<<" detected: "<<ed->isDetected()<<" ";
     if (ed->getType()==EnemyDetectedNotification::Type::BRKON_BACK){
-        ss<<"BACK BRKON @ "<<ed->getAngle()<<" detected: "<<ed->isDetected();
+        ss<<"BACK BRKON @ "<<ed->getAngle();
     }
 
     if (ed->getType()==EnemyDetectedNotification::Type::BRKON_FRONT){
-        ss<<"FRONT BRKON @ "<<ed->getAngle()<<" detected: "<<ed->isDetected();
+        ss<<"FRONT BRKON @ "<<ed->getAngle();
     }
 
     debug(ss.str());
@@ -140,6 +142,9 @@ bool MotionExecutor::isEnemyDetected(MotionDriver::MovingDirection movingDirecti
         if (enemySensors[i].Direction==movingDirection && enemySensors[i].Detected){
             if (isInField(enemySensors[i].Angle,enemySensors[i].Distance)){
                 //than enemy is detected in moving direction
+                std::stringstream ss;
+                ss<<"Enemy detected: "<<i;
+//                debug(ss.str());
                 return true;
             }
         }
@@ -147,13 +152,21 @@ bool MotionExecutor::isEnemyDetected(MotionDriver::MovingDirection movingDirecti
     return false;
 }
 
+bool MotionExecutor::shouldUseSlow(int distance){
+    return distance<SLOW_DISTANCE;  //if it's smaller than slow hould be used
+}
+
+bool MotionExecutor::shouldUseSlow(Point2D second){
+    return lastState.Position.euclidDist(second)<SLOW_DISTANCE;
+}
+
 void MotionExecutor::main(){
     shouldStop=false;
     debug("Started main thread execution");
 
     bool waitOnEnemyCountCheck=true;
-#ifdef MANIJ
-    waitOnEnemyCountCheck=true;
+#ifdef MALI_ROBOT
+    waitOnEnemyCountCheck=false;
 #endif
 
     MotionState newState;
@@ -168,17 +181,21 @@ void MotionExecutor::main(){
             if (isEnemyDetected(newState.Direction)){
                 if (currentMotionInstruction.isSuspended()){
                     if (!currentMotionInstruction.canRetry(waitOnEnemyCountCheck)){  //If we can't wait any more, send error
-                        debug("Sending error, timeout");
+                        debug("****** Sending error, timeout *******");
                         sendResponse(currentMotionInstruction.getErrorMessage(MotionCommandError::ENEMY));
-                        currentMotionInstruction.reset();
+                        currentMotionInstruction.reset(driver);
                         driver.stop();
                     }
                 }else{
-                    debug("Pausing execution");
+                    debug("******* Pausing execution *******");
                     currentMotionInstruction.pause(driver);
                 }
             }else if (currentMotionInstruction.isSuspended()){
                 debug("Resuming motion");
+                if (shouldUseSlow(currentMotionInstruction.getDestination().Position)){
+                    currentMotionInstruction.saveSpeed(driver.getSpeed());
+                    driver.setSpeed(SLOW_SPEED);
+                }
                 currentMotionInstruction.resume(driver);
             }
         }
@@ -188,7 +205,7 @@ void MotionExecutor::main(){
         if (newCommand!=NULL && currentMotionInstruction.isSet()){
             debug("Newer command received, sending error to old");
             sendResponse(currentMotionInstruction.getErrorMessage(MotionCommandError::OLD_COMMAND));
-            currentMotionInstruction.reset();
+            currentMotionInstruction.reset(driver);
         }
 
         //Process received command
@@ -201,7 +218,7 @@ void MotionExecutor::main(){
             error("***** Error in UART communication! ****");
             if (currentMotionInstruction.isSet()){
                 sendResponse(currentMotionInstruction.getErrorMessage(MotionCommandError::UART));
-                currentMotionInstruction.reset();
+                currentMotionInstruction.reset(driver);
             }
             return;
         }
@@ -213,7 +230,7 @@ void MotionExecutor::main(){
             error("***** Error in UART communication! ****");
             if (currentMotionInstruction.isSet()){
                 sendResponse(currentMotionInstruction.getErrorMessage(MotionCommandError::UART));
-                currentMotionInstruction.reset();
+                currentMotionInstruction.reset(driver);
             }
             return;
         }
@@ -228,7 +245,7 @@ void MotionExecutor::main(){
                 && !currentMotionInstruction.isSuspended()){
             debug("Robot finished executing command");
             sendResponseFromCommand(currentMotionInstruction.getCommand());
-            currentMotionInstruction.reset();
+            currentMotionInstruction.reset(driver);
         }
 
         //If driver throws an error, report it
@@ -236,13 +253,12 @@ void MotionExecutor::main(){
                 && currentMotionInstruction.isSet()){
             error("Robot stuck, canceling movement");
             sendResponse(currentMotionInstruction.getErrorMessage(MotionCommandError::STUCK));
-            currentMotionInstruction.reset();
             driver.stop();
+            currentMotionInstruction.reset(driver);
         }
 
         //Send progress if there is a command for it
         if (lastState!=newState){
-            debug("Updating state");
             if((currentMotionInstruction.isSet()) ){
                 MotionCommand* motionCommand=currentMotionInstruction.getCommand();
                 GetMotionStateResponse* progress=new GetMotionStateResponse(motionCommand->getSource(),
@@ -275,6 +291,12 @@ void MotionExecutor::moveToPosition(MotionCommand* _motionCommand){
     destinationState.Position=command->getPosition();
     destinationState.Direction=command->getDirection();
     currentMotionInstruction.Set(_motionCommand,destinationState);
+
+    if (shouldUseSlow(destinationState.Position)){
+        currentMotionInstruction.saveSpeed(driver.getSpeed());
+        driver.setSpeed(SLOW_SPEED);
+    }
+
     driver.moveToPosition(destinationState.Position,destinationState.Direction);
 }
 
@@ -290,6 +312,12 @@ void MotionExecutor::moveForward(MotionCommand* _motionCommand){
     else
         destinationState.Direction=MotionDriver::MovingDirection::FORWARD;
     currentMotionInstruction.Set(_motionCommand, destinationState);
+
+    if (shouldUseSlow(distance)){
+        currentMotionInstruction.saveSpeed(driver.getSpeed());
+        driver.setSpeed(SLOW_SPEED);
+    }
+
     driver.moveStraight(distance);
 }
 
@@ -362,7 +390,9 @@ bool MotionExecutor::isInField(int angle, int r){
     if ((enemyPosition.getY()<0) ||(enemyPosition.getY()>maxY)){
         return false;
     }
-//    debug("IN FIELD");
+//    std::stringstream ss;
+    //ss<<"Enemy detected in field: "<<robotPosition.getX()<<", "<<robotPosition.getY()<<" enemy: "<<enemyPosition.getX()<<", "<<enemyPosition.getY();
+    //debug(ss.str());
     return true;
 }
 

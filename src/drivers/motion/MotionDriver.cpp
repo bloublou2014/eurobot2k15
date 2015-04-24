@@ -69,7 +69,7 @@ void MotionDriver::rotateTo(int absoluteAngle)
 }
 
 void MotionDriver::moveToPosition(geometry::Point2D position, MovingDirection direction)
-{
+{   
 	boost::lock_guard<boost::mutex> lock(*io_mutex);
 	
 	char message[] = {
@@ -224,7 +224,7 @@ void MotionDriver::refreshData()
 
 int MotionDriver::convertToInt(char msb, char lsb)
 {
-	return (short)( (msb<<8) | (lsb & 0xFF) );
+    return (short)( (msb<<8) | (lsb & 0xFF) );
 }
 
 }
