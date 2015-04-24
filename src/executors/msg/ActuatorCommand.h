@@ -59,7 +59,9 @@ enum ActuatorType{SET_START_CONFIG,
                   LEAVE_CARPET,
                   NULL_ACTION,
                   CALLBACK_GET_RIGHT,
-                  CALLBACK_GET_LEFT
+                  CALLBACK_GET_LEFT,
+                  START_DETECTION,
+                  STOP_DETECTION
                  };
 
 typedef map<Executors, string> ExecutorsMap;
@@ -175,6 +177,15 @@ public:
     CallbackGetRight(Executors _executor):ActuatorCommand(CALLBACK_GET_RIGHT, _executor){}
 };
 
+class StopDetection: public ActuatorCommand{
+public:
+    StopDetection(Executors _executors):ActuatorCommand(STOP_DETECTION, _executors){}
+};
+
+class StartDetection: public ActuatorCommand{
+public:
+  StartDetection(Executors _executor):ActuatorCommand(START_DETECTION, _executor){}
+};
 
 class SetSpeed: public ActuatorCommand {
 public:

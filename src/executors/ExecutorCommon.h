@@ -95,6 +95,8 @@ protected:
     virtual bool LeaveCarpetFunction();
     virtual bool CallbackGetRightFunction(){}
     virtual bool CallbackGetLeftFunction(){}
+    virtual bool StartDetectionFunction(){}
+    virtual bool StopDetectionFunction(){}
 
 
 protected:
@@ -118,6 +120,9 @@ protected:
     void startBeacon(ActuatorCommand* _command);
 
     void leaveCarpet(ActuatorCommand* _command);
+
+    void startDetection(ActuatorCommand* _command);
+    void stopDetection(ActuatorCommand* _commnad);
 
     condition_variable queueNotEmpty;
 

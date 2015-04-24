@@ -76,9 +76,12 @@ Command* ActuatorAction::EnemyDetector(ActuatorType _type){
     case STOP_BEACON: return (Command*) new StopBeacon(ENEMY_DETECT);
     case START_BRXON: return ( Command*) new StartBrxon(ENEMY_DETECT);
     case STOP_BRXON: return (Command*) new StopBrxon(ENEMY_DETECT);
+    case STOP_DETECTION: return (Command*) new StopDetection(ENEMY_DETECT);
+    case START_DETECTION: return (Command*) new StartDetection(ENEMY_DETECT);
     default: return NULL;
     }
 }
+
 
 Command* ActuatorAction::Carpet(ActuatorType _type){
     switch(_type){
@@ -242,6 +245,8 @@ Command* ActuatorCommandJS::parseCreateCommand(string _executorString, string _a
         else if(_actionString.compare("StopBrkon") == 0) actionTmp = STOP_BRXON;
         else if(_actionString.compare("StartBeacon") == 0) actionTmp = START_BEACON;
         else if(_actionString.compare("StopBeacon") == 0) actionTmp = STOP_BEACON;
+        else if(_actionString.compare("StopSensor") == 0 ) actionTmp = STOP_DETECTION;
+        else if(_actionString.compare("StartSensor") == 0) actionTmp = START_DETECTION;
         else{
             actionTmp = NULL_ACTION;
             *_success = false;
