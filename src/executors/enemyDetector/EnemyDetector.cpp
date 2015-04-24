@@ -64,6 +64,18 @@ bool EnemyDetector::StopBrxonFunction(){
     return success;
 }
 
+bool EnemyDetector::StopDetectionFunction(){
+    debug("STOPING SENSORES");
+    readingSensore = false;
+    return true;
+}
+
+bool EnemyDetector::StartDetectionFunction(){
+    debug("START DETECTION");
+    readingSensore = true;
+    return  true;
+}
+
 void EnemyDetector::ProcessSensorCallback(){
     testBool = true;
     std::cout << "EMENY" << std::endl;

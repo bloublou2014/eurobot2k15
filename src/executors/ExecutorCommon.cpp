@@ -22,6 +22,9 @@ void ExecutorCommon::init(){
     actuatorHandles[ActuatorType::LEAVE_CARPET]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::leaveCarpet);
     actuatorHandles[ActuatorType::CALLBACK_GET_LEFT]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::callbackGetLeft);
     actuatorHandles[ActuatorType::CALLBACK_GET_RIGHT]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::callbackGetRight);
+    actuatorHandles[ActuatorType::START_DETECTION]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::startDetection);
+    actuatorHandles[ActuatorType::STOP_DETECTION]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::stopDetection);
+
 
 
     suscribeToSensore();
@@ -352,6 +355,34 @@ void ExecutorCommon::callbackGetLeft(ActuatorCommand * _command){
         currentActuatorCommand = NULL;
     }else{
         //sendResponseFromCommand(currentActuatorCommand, ERROR);
+        currentActuatorCommand = NULL;
+    }
+}
+
+void ExecutorCommon::startDetection(ActuatorCommand * _command){
+    bool success;
+    StartDetection* command = (StartDetection*) _command;
+    currentActuatorCommand = command;
+    success =  StartDetectionFunction();
+    if (success){
+        sendResponseFromCommand(currentActuatorCommand, SUCCESS);
+        currentActuatorCommand = NULL;
+    }else{
+        sendResponseFromCommand(currentActuatorCommand, ERROR);
+        currentActuatorCommand = NULL;
+    }
+}
+
+void ExecutorCommon::stopDetection(ActuatorCommand * _command){
+    bool success;
+    StopDetection* command = (StopDetection*) _command;
+    currentActuatorCommand = command;
+    success =  StopDetectionFunction();
+    if (success){
+        sendResponseFromCommand(currentActuatorCommand, SUCCESS);
+        currentActuatorCommand = NULL;
+    }else{
+        sendResponseFromCommand(currentActuatorCommand, ERROR);
         currentActuatorCommand = NULL;
     }
 }

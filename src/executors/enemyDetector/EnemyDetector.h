@@ -39,6 +39,9 @@ private:
     bool StopBeaconFunction();
     bool StartBrxonFunction();
     bool StopBrxonFunction();
+    bool StopDetectionFunction();
+    bool StartDetectionFunction();
+
 
     bool testBool = false;
     void testProcess();
