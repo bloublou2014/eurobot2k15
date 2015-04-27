@@ -1,0 +1,30 @@
+<tasks>
+	<task>
+		<name>init</name>
+		<filename>init.js</filename>
+		<rank>1000</rank>
+		<time>100</time>
+	</task>
+	<task>
+		<name>monitor</name>
+		<filename>monitor.js</filename>
+		<rank>2000</rank>
+		<time>20</time>
+	</task>
+	
+	<task>
+		<name>homologacija</name>
+		<filename>homologacija.js</filename>
+		<rank>100</rank>
+		<time>20</time>
+	</task>
+	
+	<task>
+		<name>finalize_task</name>
+		<filename>finalize_task.js</filename>
+		<rank>0</rank>
+		<time>20</time>
+		<finalize>1</finalize>
+	</task>
+	
+</tasks>

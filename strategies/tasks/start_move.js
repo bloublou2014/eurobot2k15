@@ -4,9 +4,21 @@
 
 function onRun(){
 	Logger.debug('running task: start move');
-	Command.send(new MoveForward(1000),function(){
-	Manager.updateState("Finished");
-	}, function(){Logger.error('start move nije stigo de treba');});
+	
+	Logger.debug(Manager.getColor());
+	/*
+	CommandChain(new SleepCommand(5000))
+	.then(new ActuatorCommand('LiftRight','StartGetting'))
+	.then(new ActuatorCommand('LiftLeft','StartGetting'))
+	.execute();*/
+	
+	CommandChain(new MoveForward(200)) // TO_EDIT
+	.success(function()
+	{
+		Manager.updateState("Finished");
+	})
+	.ignore_failure()
+	.execute();
 }
 
 function onPause(){}

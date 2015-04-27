@@ -2,11 +2,13 @@
 	Inicijalna podesavanja.
 */
 
-var color = 'GREEN';
-var init_positions = {'YELLOW':{'x':-1090, 'y':1000, 'o':0}, 
-					  'GREEN' :{'x':1090, 'y':1000 , 'o':180}};
-var init_position = init_positions[color];
-var init_speed = 100;
+function setup()
+{
+	var init_positions = {'YELLOW':{'x':-1100, 'y':1000, 'o':0}, 
+						  'GREEN' :{'x':1100, 'y':1000 , 'o':180}};
+	Config['init_position'] = init_positions[Config.color];
+	Config['init_speed'] = Config.default_speed;
+}
 
 function internal_error()
 {
@@ -14,16 +16,22 @@ function internal_error()
 }
 
 function onRun(){
+
+	CommandChain(new ActuatorCommand('EnemyDetector','StopBrkon'))
+	.execute(); 
+
+	Config.do_setup(setup);
+
 	Logger.debug('running task: init task');
-	Command.send(new SetSpeedMotion(init_speed), function(){
-	Command.send(new SetPosition(init_position.x, init_position.y, init_position.o), function(){
-	Manager.updateState("Finished");
-	Logger.debug('initialization: speed='+init_speed+
-	', x='+init_position.x+
-	', y='+init_position.y+
-	', o='+init_position.o);
+	Command.send(new SetSpeedMotion(Config.init_speed), function(){
+	Command.send(new SetPosition(Config.init_position.x, Config.init_position.y, Config.init_position.o), function(){
 	Command.send(new ActuatorCommand("EnemyDetector", "StartBrkon"), function(){
 	Logger.debug('brkon started');
+	Logger.debug('initialization: speed='+Config.init_speed+
+	', x='+Config.init_position.x+
+	', y='+Config.init_position.y+
+	', o='+Config.init_position.o);
+	Manager.updateState("Finished");
 	}, function(){Logger.error('brkon nije started');});
 	}, internal_error);
 	}, internal_error);
