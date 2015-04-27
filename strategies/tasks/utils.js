@@ -38,17 +38,14 @@ var Geometry =
 	}
 }
 
+function Point2D(x,y)
+{
+	this.x = x;
+	this.y = y;
+}
+
 var Motion = 
 {
-	'current_status':
-	{
-		'x':0,
-		'y':0,
-		'orientation':0,
-		'direction':'',
-		'speed':'',
-		'state':'',
-	},
 	'invert_x':function(points)
 	{
 		var ret = {};
@@ -58,15 +55,6 @@ var Motion =
 		}
 		return ret;
 	},
-	'update_current_status':function(success)
-	{
-		return CommandChain(new GetMotionState())
-		.success(function(msg)
-		{
-			Motion.current_status = msg;
-			success();
-		}).execute();
-	}
 }
 
 /**
@@ -95,7 +83,6 @@ function CommandChainNode(new_command)
 	this._command = new_command; // komanda koja treba da se posalje
 	this._next = null; // sledeci cvor u lancu
 	this._previous = null; // prethodni cvor u lancu
-	this._success_callbacks = []; // pozivaju se ako komanda uspe, ako su definisani
 	this._failure_callback = null; // poziva se ako komanda ne uspe, ako je definisan
 	this._progress_callback = null; // poziva se kao progres za komandu, ako je definisan
 	this._ignore_failure = false;
@@ -105,22 +92,25 @@ function CommandChainNode(new_command)
 		{
 			return this._chain(next_object);
 		}
-		else // dobili smo komandu
+		else // dobili smo komandu (funkciju ili objekat)
 		{
 			return this._chain(new CommandChainNode(next_object));
 		}
 	};
-	this._chain = function(next_node) // ulancava novi cvor u lanac i vraca novi cvor
+	this._chain = function(new_node) // ulancava novi cvor u lanac i vraca novi cvor
 	{
-		next_node._first = this._first;
-		this._next = next_node;
-		next_node._previous = this;
-		return next_node;
-	};
-	this.success = function(success_callback) // podesava success_callback za trenutni cvor i vraca trenutni cvor
-	{
-		this._success_callbacks.push(success_callback);
-		return this;
+		new_node._first = this._first;
+		
+		if(this._next) // ako vec postoji _next umetni new_node u lanac
+		{
+			this._next._previous = new_node;
+			new_node._next = this._next;
+			new_node._failure_callback = this._failure_callback; // nasledjuje failure callback
+		}
+		
+		this._next = new_node;
+		new_node._previous = this;
+		return new_node;
 	};
 	this.failure = function(failure_callback) // podesava failure_callback za trenutni cvor i vraca trenutni cvor
 	{
@@ -148,37 +138,36 @@ function CommandChainNode(new_command)
 	{
 		this._first._execute_self();
 	};
-	this._execute_self = function() // izvrsava trenutni cvor
+	this._execute_self = function(prev_result) // izvrsava trenutni cvor
 	{
-		var success_fun = function(msg) // success
+		// success_fun
+		var success_fun = function(_prev_result) // success
 		{
-			for(var i=0;i<this._success_callbacks.length;i++) // pozovi sve success callbacke ako ih ima redom kako su zadati
-			{
-				if(this._success_callbacks[i].length > 0)
-				{
-					this._success_callbacks[i](msg);
-				}
-				else
-				{
-					this._success_callbacks[i]();
-				}
-			}
-			if(this._next) this._next._execute_self(); // ako postoji sledeci cvor izvrsava se
+			if(this._next) this._next._execute_self(_prev_result); // ako postoji sledeci cvor izvrsava se
 		}.bind(this);
 		
-		if(this._ignore_failure)
+		// failure_fun
+		if(this._ignore_failure) // ako ignorisemo failure pozovi success
 		{
 			var failure_fun = success_fun;
 		}
-		else if(this._failure_callback)
+		else if(this._failure_callback) // ako ne i definisan je callback pozovi callback
 		{
-			var failure_fun = this._failure_callback;
+			var failure_fun = function()
+			{
+				this._failure_callback.bind(this)();
+				if(this._ignore_failure) // ako callback oce da ignorise gresku pozovi success
+				{
+					success_fun();
+				}
+			}.bind(this);
 		}
-		else
+		else // ako nije definisano ne radi nista
 		{
 			var failure_fun = function(){};
 		}
 		
+		// progress_fun
 		if(this._progress_callback)
 		{
 			var progress_fun = this._progress_callback;
@@ -188,17 +177,47 @@ function CommandChainNode(new_command)
 			var progress_fun = function(){};
 		}
 		
-		Command.send(this._command, success_fun, failure_fun, progress_fun);
+		// execute
+		if(typeof(this._command) === "function") // function command
+		{
+			try
+			{
+				var result = this._command.bind(this)(prev_result);
+				success_fun(result);
+			}
+			catch(err)
+			{
+				if(err === 'command_error') failure_fun(); // ako baci 'command_error' tretiraj kao fail
+				else throw err;
+			}
+		}
+		else // async command
+		{
+			Command.send(this._command, success_fun, failure_fun, progress_fun);
+		}
 	};
-	this.ignore_failure = function()
+	this.ignore_failure = function() // ignorisi fail na ovom cvoru, pozovi success u svakom slucaju
 	{
 		this._ignore_failure = true;
+	};
+	this.ignore_all_failure = function() // ignorisi fail u ovom i svim prethodnim
+	{
+		this.ignore_failure();
 		if(this._previous)
 		{
-			this._previous.ignore_failure();
+			this._previous.ignore_all_failure();
 		}
 		return this;
-	}
+	};
+	this.abort = function() // prekini dalje izvrsavanje ovog lanca
+	{
+		this._next = null;
+	};
+	this.alter = function(next_object) // izmeni lanac, ostatak lanca se odbacuje i nadovezuje se nova komanda/lanac komandi
+	{
+		this.abort();
+		return this.then(next_object);
+	};
 }
 
 function CommandChain(first_command)
@@ -208,7 +227,9 @@ function CommandChain(first_command)
 
 var Commands = 
 {
-	'do_nothing':function(){}
+	'do_nothing':function(){},
+	'finish_task':function(){Manager.updateState("Finished");},
+	'suspend_task':function(){Manager.updateState("Suspended");},
 }
 
 //////////////////////////
@@ -220,19 +241,24 @@ var Commands =
 var Task = 
 {
 	'suspended':false,
-	'suspend_for':function(timeout, wake_up)
+	'wake_up_after':function(timeout, wake_up)
 	{
 		Task.suspended = true;
-		Manager.updateState("Suspended");
-		setTimeout(function()
+		CommandChain(new SleepCommand(timeout))
+		.then(function()
 		{
 			Task.suspended = false;
 			wake_up();
-		}, timeout);
+		})
+		.execute();
+		Manager.updateState("Suspended");
 	},
 	'ready_after':function(timeout)
 	{
-		Task.suspend_for(timeout, function(){Manager.updateState("Ready");});
+		this.wake_up_after(timeout, function()
+		{
+			Manager.updateState("Ready");
+		});
 	}
 }
 
