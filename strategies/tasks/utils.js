@@ -80,12 +80,11 @@ Command chaining utils.
 function CommandChainNode(new_command)
 {
 	this._first = this; // prvi cvor u lancu komandi
-	this._command = new_command; // komanda koja treba da se posalje
 	this._next = null; // sledeci cvor u lancu
 	this._previous = null; // prethodni cvor u lancu
+	this._command = new_command; // komanda koja treba da se posalje
 	this._failure_callback = null; // poziva se ako komanda ne uspe, ako je definisan
 	this._progress_callback = null; // poziva se kao progres za komandu, ako je definisan
-	this._ignore_failure = false;
 	this.then = function(next_object) // ubacuje novu komandu ili lanac komandi u ovaj lanac i vraca novi cvor (next_object moze biti komanda ili CommandChainNode)
 	{
 		if(next_object instanceof CommandChainNode) // dobili smo novi lanac
@@ -147,24 +146,20 @@ function CommandChainNode(new_command)
 		}.bind(this);
 		
 		// failure_fun
-		if(this._ignore_failure) // ako ignorisemo failure pozovi success
-		{
-			var failure_fun = success_fun;
-		}
-		else if(this._failure_callback) // ako ne i definisan je callback pozovi callback
+		if(this._failure_callback && this._failure_callback != 'ignore') // ako je definisan callback pozovi callback
 		{
 			var failure_fun = function()
 			{
-				this._failure_callback.bind(this)();
-				if(this._ignore_failure) // ako callback oce da ignorise gresku pozovi success
+				var fail_result = this._failure_callback.bind(this)();
+				if(fail_result == 'continue') // ako callback oce da ignorise gresku pozovi success
 				{
 					success_fun();
 				}
 			}.bind(this);
 		}
-		else // ako nije definisano ne radi nista
+		else // ako nije definisano ignorisemo failure i pozivamo success
 		{
-			var failure_fun = function(){};
+			var failure_fun = success_fun;
 		}
 		
 		// progress_fun
@@ -198,15 +193,7 @@ function CommandChainNode(new_command)
 	};
 	this.ignore_failure = function() // ignorisi fail na ovom cvoru, pozovi success u svakom slucaju
 	{
-		this._ignore_failure = true;
-	};
-	this.ignore_all_failure = function() // ignorisi fail u ovom i svim prethodnim
-	{
-		this.ignore_failure();
-		if(this._previous)
-		{
-			this._previous.ignore_all_failure();
-		}
+		this._failure_callback = 'ignore';
 		return this;
 	};
 	this.abort = function() // prekini dalje izvrsavanje ovog lanca
@@ -225,11 +212,19 @@ function CommandChain(first_command)
 	return new CommandChainNode(first_command);
 }
 
-var Commands = 
+var Commands = // convinience helper objekat sa funkcijama koje mogu da se proslede u .then()
 {
 	'do_nothing':function(){},
 	'finish_task':function(){Manager.updateState("Finished");},
 	'suspend_task':function(){Manager.updateState("Suspended");},
+	'wake_up_after':function(timeout, wake_up)
+	{
+		return function(){Task.wake_up_after(timeout, wake_up);};
+	},
+	'ready_after':function(timeout)
+	{
+		return function(){Task.ready_after(timeout);};
+	},
 }
 
 //////////////////////////
@@ -240,14 +235,14 @@ var Commands =
 
 var Task = 
 {
-	'suspended':false,
+	'sleeping':false,
 	'wake_up_after':function(timeout, wake_up)
 	{
-		Task.suspended = true;
+		Task.sleeping = true;
 		CommandChain(new SleepCommand(timeout))
 		.then(function()
 		{
-			Task.suspended = false;
+			Task.sleeping = false;
 			wake_up();
 		})
 		.execute();
