@@ -1,5 +1,6 @@
 /**
 	Istovara sve na nasu startnu poziciju.
+	DEPRECATED NERADI KORISTITI UNLOAD ALL
 */
 
 var pos_y = 1000; // TO_EDIT
@@ -32,33 +33,19 @@ function onRun(){
 	CommandChain(new MoveToPosition(Config.prilazna.x, Config.prilazna.y))
 	.then(new RotateTo(Config.orientation))
 	.then(new MoveForward(distance))
-	.success(function()
+	.catch(Commands.ready_after(7000))
+	.then(new ActuatorCommand('LiftCenter','Unload'))
+	.then(new SetSpeedMotion(70))
+	.then(new MoveForward(-100))
+	.then(function()
 	{
-		CommandChain(new ActuatorCommand('LiftCenter','Unload'))
-		.then(new SetSpeedMotion(70))
-		.then(new MoveForward(-100))
-		.success(function()
-		{
-			CommandChain(new ActuatorCommand('LiftLeft','Unload')).execute();
-			CommandChain(new ActuatorCommand('LiftRight','Unload')).execute();
-			
-			CommandChain(new SleepCommand(1000))
-			.then(new MoveForward(-200))
-			.then(new SetSpeedMotion(Config.default_speed))
-			.success(function()
-			{
-				Manager.updateState("Finished");
-			})
-			.ignore_failure()
-			.execute();
-		})
-		.ignore_failure()
-		.execute();
+		CommandChain(new ActuatorCommand('LiftLeft','Unload')).execute();
+		CommandChain(new ActuatorCommand('LiftRight','Unload')).execute();
 	})
-	.catch(function()
-	{
-		Manager.updateState("Suspended");
-	})
+	.then(new SleepCommand(1000))
+	.then(new MoveForward(-200))
+	.then(new SetSpeedMotion(Config.default_speed))
+	.then(Commands.finish_task)
 	.execute();
 }
 

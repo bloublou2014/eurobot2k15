@@ -38,17 +38,18 @@ function setup()
 	Config['orientations'] = orientations_colored[Config.color];
 	
 	if(Config.color == 'YELLOW') Config['lift'] = 'LiftRight';
-	else Config['lift'] = 'LiftLeft';
+	else Config['lift'] = 'LiftLeft'; // zakucan levi
 }
 
 var succeeded = false;
 
-function onRun(){
-	
+function onRun()
+{
 	Logger.debug('running task: valjak gore ugao');
 	
 	Config.do_setup(setup);
 	
+	// podesi prilazne tacke
 	if(Config.color == 'YELLOW')
 	{
 		if(Config.lift == 'LiftRight')
@@ -76,39 +77,30 @@ function onRun(){
 		}
 	}
 	
-	CommandChain(new MoveToPosition(prilazna.x, prilazna.y))
+	CommandChain(new MoveToPosition(prilazna.x, prilazna.y)) // pridji
 	.then(new RotateTo(orientation))
-	.then(new ActuatorCommand(Config.lift,'StartGetting'))
+	.catch(Commands.wake_up_after(7000, check_ready)) // ako se desi nesto suspenduj se na 7s
+	.then(new ActuatorCommand(Config.lift,'StartGetting')) // pokupi
 	.then(new SetSpeedMotion(50))
 	.then(new MoveForward(distance))
-	.success(function()
-	{
-		succeeded = true;
-	})
 	.then(new SleepCommand(700))
 	.then(new ActuatorCommand(Config.lift,'StopGetting'))
-	.then(new MoveForward(-distance))
+	.then(new MoveForward(-distance)) // odmakni se
 	.then(new SetSpeedMotion(Config.default_speed))
-	.success(function()
-	{
-		if(succeeded)
-		{
-			Manager.updateState("Finished");
-		}
-		else
-		{
-			Logger.debug('catch!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
-			CommandChain(new SetSpeedMotion(Config.default_speed))
-			.success(function()
-			{
-				Manager.updateState("Suspended");
-			})
-			.ignore_failure()
-			.execute();
-		}
-	})
-	.ignore_failure()
+	.then(Commands.finish_task)
 	.execute();
+}
+
+function check_ready()
+{
+	if(!Task.sleeping /*&& Lift.has_room()*/)
+	{
+		Manager.updateState("Ready");
+	}
+	else
+	{
+		Manager.updateState("Suspended");
+	}
 }
 
 function onPause(){}

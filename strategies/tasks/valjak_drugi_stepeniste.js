@@ -29,8 +29,6 @@ function setup()
 	else Config['lift'] = 'LiftRight';
 }
 
-var succeeded = false;
-
 function onRun(){
 	
 	Config.do_setup(setup);
@@ -41,33 +39,20 @@ function onRun(){
 	.then(new MoveForward(distance_prilaz))
 	.then(new RotateTo(270))
 	.then(new ActuatorCommand(Config.lift,'StartGetting'))
+	.catch(error)
 	.then(new MoveForward(distance_kupljenje))
-	.success(function()
-	{
-		succeeded = true;
-	})
 	.then(new SetSpeedMotion(Config.default_speed))
 	.then(new SleepCommand(2000))
 	.then(new ActuatorCommand(Config.lift,'StopGetting'))
-	.success(function()
-	{
-		if(succeeded)
-		{
-			Manager.updateState("Finished");
-		}
-		else
-		{
-			Logger.debug('catch!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
-			CommandChain(new SetSpeedMotion(Config.default_speed))
-			.success(function()
-			{
-				Manager.updateState("Suspended");
-			})
-			.ignore_failure()
-			.execute();
-		}
-	})
-	.ignore_failure()
+	.then(Commands.finish_task)
+	.execute();
+}
+
+function error()
+{
+	Logger.debug('drugi valjak stepeniste error');
+	CommandChain(new SetSpeedMotion(Config.default_speed))
+	.then(Commands.suspend_task)
 	.execute();
 }
 

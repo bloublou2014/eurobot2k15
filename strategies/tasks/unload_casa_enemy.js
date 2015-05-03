@@ -25,28 +25,17 @@ function setup()
 
 var distance = 100;
 
-function onRun(){
-	
+function onRun()
+{	
 	Config.do_setup(setup);
 	
 	CommandChain(new MoveToPosition(Config.prilazna.x, Config.prilazna.y))
 	.then(new RotateTo(Config.orientation))
 	.then(new MoveForward(distance))
-	.success(function()
-	{
-		CommandChain(new ActuatorCommand('LiftCenter','Unload'))
-		.then(new MoveForward(-distance))
-		.success(function()
-		{
-			Manager.updateState("Finished");
-		})
-		.ignore_failure()
-		.execute();
-	})
-	.catch(function()
-	{
-		Manager.updateState("Suspended");
-	})
+	.catch(Commands.ready_after(7000))
+	.then(new ActuatorCommand('LiftCenter','Unload'))
+	.then(new MoveForward(-distance))
+	.then(Commands.finish_task)
 	.execute();
 }
 

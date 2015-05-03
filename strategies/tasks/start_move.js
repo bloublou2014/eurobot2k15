@@ -13,11 +13,7 @@ function onRun(){
 	.execute();*/
 	
 	CommandChain(new MoveForward(200)) // TO_EDIT
-	.success(function()
-	{
-		Manager.updateState("Finished");
-	})
-	.ignore_failure()
+	.then(Commands.finish_task)
 	.execute();
 }
 

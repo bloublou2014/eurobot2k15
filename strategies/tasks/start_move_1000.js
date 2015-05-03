@@ -15,11 +15,7 @@ function onRun(){
 	.execute()
 	*/
 	CommandChain(new MoveForward(1000))
-	.success(function()
-	{
-		Manager.updateState("Finished");
-	})
-	.ignore_failure()
+	.then(Commands.finish_task)
 	.execute();
 }
 

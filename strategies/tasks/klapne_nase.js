@@ -34,8 +34,8 @@ function setup()
 	Config['lift'] = lift_colored[Config.color]; 
 }
 
-function onRun(){
-
+function onRun()
+{
 	Config.do_setup(setup);
 
 	Logger.debug('running task: klapne');
@@ -49,52 +49,45 @@ function onRun(){
 	if(!udarena.prva) // idi na prvu
 	{
 		CommandChain(new SetSpeedMotion(50))
-		.then(new MoveToPosition(Config.positions.prilazna_prva.x,Config.positions.prilazna_prva.y))
-		//.then(new MoveToPosition(Config.positions.prilazna_prva.x,Config.positions.prilazna_prva.y))
+		.then(new MoveToPosition(Config.positions.prilazna_prva.x,Config.positions.prilazna_prva.y)) // pridji
 		.then(new SetSpeedMotion(Config.default_speed))
-		.then(new RotateTo(90))
+		.then(new RotateTo(90)) // uvuci se u rikverc
 		.then(new SetSpeedMotion(50))
 		.then(new MoveForward(-distance))
 		.then(new SetSpeedMotion(Config.default_speed))
 		.then(new RotateTo(Config.orientation))
-		.success(function()
+		.then(set_flap_otvoren(true))
+		.then(function()
 		{
-			set_flap_otvoren(true, function()
+			if(!udarena.druga) // idi skroz do kraja, udari obe
 			{
-				if(!udarena.druga) // idi skroz do kraja, udari obe
+				this
+				.then(new MoveForward(750)) // kolko da ide napred // TO_EDIT
+				.progress(function(msg)
 				{
-					CommandChain(new MoveForward(750)) // kolko da ide napred // TO_EDIT
-					.progress(function(msg){
-						if(should_close(msg.x))
-						{
-							set_flap_otvoren(false);
-							set_udarena('prva');
-						}
-						else
-						{
-							set_flap_otvoren(true);
-						}
-					})
-					.success(function(){
-						// ako je stigo do kraja druge
-						set_flap_otvoren(false);
-						set_udarena('druga');
-					})
-					.catch(error)
-					.execute();
-				}
-				else // udarena druga, udari samo prvu
-				{
-					CommandChain(new MoveForward(200)) // kolko da ide napred // TO_EDIT
-					.success(function(){
-						// ako je stigo do kraja prve
-						set_flap_otvoren(false);
-						set_udarena('prva');
-					})
-					.catch(error)
-					.execute();
-				}
-			});
+					if(should_close(msg.x))
+					{
+						CommandChain(set_flap_otvoren(false)) // zatvori dok ides pored protivmicke
+						.then(set_udarena('prva'))
+						.execute();
+					}
+					else
+					{
+						CommandChain(set_flap_otvoren(true)).execute(); // kad prodjes otvori
+					}
+				})
+				.then(set_flap_otvoren(false)) // zatvori
+				.then(set_udarena('druga'))
+				.then(unload_lights); // istovari valjke
+			}
+			else // udarena druga, udari samo prvu
+			{
+				this
+				.then(new MoveForward(200)) // kolko da ide napred // TO_EDIT
+				.then(set_flap_otvoren(false))
+				.then(set_udarena('prva'))
+				.then(Commands.suspend_task);
+			}
 		})
 		.catch(error)
 		.execute();
@@ -103,21 +96,12 @@ function onRun(){
 	{
 		CommandChain(new MoveToPosition(Config.positions.prilazna_druga.x,Config.positions.prilazna_druga.y+100))
 		.then(new MoveToPosition(Config.positions.prilazna_druga.x,Config.positions.prilazna_druga.y))
-		.success(function()
-		{
-			set_flap_otvoren(true);
-		})
+		.then(set_flap_otvoren(true))
 		.then(new RotateTo(Config.orientation))
-		.success(function(){
-			CommandChain(new MoveForward(200)) // kolko da ide napred // TO_EDIT
-			.success(function(){
-				// ako je stigo do kraja druge
-				set_flap_otvoren(false);
-				set_udarena('druga');
-			})
-			.catch(error)
-			.execute();
-		})
+		.then(new MoveForward(200))
+		.then(set_flap_otvoren(false))
+		.then(set_udarena('druga'))
+		.then(unload_lights) // istovari valjke
 		.catch(error)
 		.execute();
 	}
@@ -129,67 +113,56 @@ function error()
 {
 	Logger.error('error in klapne nase');
 	CommandChain(new SetSpeedMotion(Config.default_speed))
-	.success(function()
-	{
-		set_flap_otvoren(false, function()
-		{
-			/*Task.suspend_for(7000, function() //10s
-			{
-				// TODO da proveri dal je uradjen casa nasa dole
-				Manager.updateState("Ready");
-			});*/
-			//Task.ready_after(7000);
-			Manager.updateState("Suspended");
-		});
-	})
-	.execute()
+	.then(set_flap_otvoren(false))
+	.then(Commands.suspend_task)
+	.execute();
 }
 
 function set_udarena(klapna)
 {
-	//Logger.debug('udarena klapna: '+klapna);
-	udarena[klapna] = true;
-	if(udarena.prva && udarena.druga)
+	return function()
 	{
-		CommandChain(new SetSpeedMotion(20))
-		.then(new MoveForward(5))
-		.then(new ActuatorCommand(Config.lift,'Unload'))
-		.then(new MoveForward(-100))
-		.then(new SetSpeedMotion(Config.default_speed))
-		.success(function(){
-			Manager.updateState("Finished");
-		})
-		.catch(error)
-		.execute();
-	}
+		udarena[klapna] = true;
+	};
+}
+
+function unload_lights()
+{
+	this
+	.then(new SetSpeedMotion(20))
+	.then(new MoveForward(5))
+	.then(new ActuatorCommand(Config.lift,'Unload'))
+	.then(new MoveForward(-100))
+	.then(new SetSpeedMotion(Config.default_speed))
+	.then(function()
+	{
+		if(udarena.prva && udarena.druga)
+		{
+			this.then(Commands.finish_task);
+		}
+		else
+		{
+			this.then(Commands.suspend_task);
+		}
+	});
 }
 
 var flap_otvoren = false;
-function set_flap_otvoren(otvori, success)
+function set_flap_otvoren(otvori)
 {
-	if (success === undefined)
+	return function()
 	{
-		success = function(){};
-	}
-	
-	if(flap_otvoren)
-	{
-		if(otvori) success(); // vec otvoren
-		else // zatvori
+		if(flap_otvoren && !otvori)
 		{
-			Command.send(new ActuatorCommand("Flap","Unkick"+Config.flap), success, function(){Logger.error('error pri zatvaranju flapa');});
+			this.then(new ActuatorCommand("Flap","Unkick"+Config.flap));
 			flap_otvoren = false;
 		}
-	}
-	else // zatvoren je
-	{
-		if(otvori) 
+		else if(!flap_otvoren && otvori)
 		{
-			Command.send(new ActuatorCommand("Flap","Kick"+Config.flap), success, function(){Logger.error('error pri otvaranju flapa');}); // otvori
+			this.then(new ActuatorCommand("Flap","Kick"+Config.flap));
 			flap_otvoren = true;
 		}
-		else success(); // vec zatvoren
-	}
+	};
 }
 
 function should_close(x)

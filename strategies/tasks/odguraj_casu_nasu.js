@@ -1,5 +1,5 @@
 /**
-	Odgura casu ispred naseg startnog polja.
+	Odgura/obidje casu ispred naseg startnog polja.
 */
 
 var distance = 150;  // TO_EDIT
@@ -41,11 +41,7 @@ function onRun(){
 	var prilazna = Config.positions[side];
 	
 	CommandChain(new MoveToPosition(prilazna.x, prilazna.y))
-	.success(function()
-	{
-		Manager.updateState("Finished");
-	})
-	.ignore_failure()
+	.then(Commands.finish_task)
 	.execute();
 }
 

@@ -1,5 +1,6 @@
 /**
 	Istovara valjke na nasu startnu poziciju.
+	DEPRECATED NERADI KORISTITI UNLOAD ALL
 */
 
 var pos_y = 1000; // TO_EDIT

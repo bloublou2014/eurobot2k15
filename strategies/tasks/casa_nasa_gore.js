@@ -32,8 +32,8 @@ function setup()
 	Config['orientations'] = orientations_colored[Config.color];
 }
 
-function onRun(){
-	
+function onRun()
+{	
 	Config.do_setup(setup);
 	
 	Motion.update_current_status(function()
@@ -57,14 +57,8 @@ function onRun(){
 		.then(new MoveForward(distance))
 		.then(new SetSpeedMotion(Config.default_speed))
 		.then(new ActuatorCommand('LiftCenter','Get'))
-		.success(function()
-		{
-			Manager.updateState("Finished");
-		})
-		.catch(function()
-		{
-			Manager.updateState("Suspended");
-		})
+		.then(Commands.finish_task)
+		.catch(Commands.suspend_task)
 		.execute();
 	});
 }

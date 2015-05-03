@@ -25,40 +25,26 @@ function setup()
 
 var distance = 300;
 
-function onRun(){
-	
+function onRun()
+{
 	Config.do_setup(setup);
 	
-	CommandChain(new MoveToPosition(Config.prilazna.x, Config.prilazna.y))
+	CommandChain(new MoveToPosition(Config.prilazna.x, Config.prilazna.y)) // pridji
 	.then(new RotateTo(Config.orientation))
-	.then(new MoveForward(distance))
-	.success(function()
+	.then(new MoveForward(distance)) // udji u centar
+	.catch(Commands.suspend_task)
+	.then(new ActuatorCommand('LiftCenter','Unload')) // istovari casu
+	.then(new SetSpeedMotion(70))
+	.then(new MoveForward(-100)) // odmakni se
+	.then(function() // istovari valjke
 	{
-		CommandChain(new ActuatorCommand('LiftCenter','Unload'))
-		.then(new SetSpeedMotion(70))
-		.then(new MoveForward(-100))
-		.success(function()
-		{
-			CommandChain(new ActuatorCommand('LiftLeft','Unload')).execute();
-			CommandChain(new ActuatorCommand('LiftRight','Unload')).execute();
-			
-			CommandChain(new SleepCommand(1000))
-			.then(new MoveForward(-200))
-			.then(new SetSpeedMotion(Config.default_speed))
-			.success(function()
-			{
-				Manager.updateState("Finished");
-			})
-			.ignore_failure()
-			.execute();
-		})
-		.ignore_failure()
-		.execute();
+		CommandChain(new ActuatorCommand('LiftLeft','Unload')).execute();
+		CommandChain(new ActuatorCommand('LiftRight','Unload')).execute();
 	})
-	.catch(function()
-	{
-		Manager.updateState("Suspended");
-	})
+	.then(new SleepCommand(1000))
+	.then(new MoveForward(-200)) // odmakni se
+	.then(new SetSpeedMotion(Config.default_speed))
+	.then(Commands.finish_task)
 	.execute();
 }
 

@@ -98,17 +98,25 @@ function CommandChainNode(new_command)
 	};
 	this._chain = function(new_node) // ulancava novi cvor u lanac i vraca novi cvor
 	{
-		new_node._first = this._first;
+		var new_node_first = new_node._first;
+		
+		new_node._first = this._first; // zameni _first ovom
+		var current = new_node;
+		while(current._previous) // i svim prethodnim
+		{
+			current = current._previous;
+			current._first = this._first;
+		}
 		
 		if(this._next) // ako vec postoji _next umetni new_node u lanac
 		{
 			this._next._previous = new_node;
 			new_node._next = this._next;
-			new_node._failure_callback = this._failure_callback; // nasledjuje failure callback
+			if(!new_node._previous) new_node._failure_callback = this._failure_callback; // nasledjuje failure callback (sem ako je u pitanju lanac)
 		}
 		
-		this._next = new_node;
-		new_node._previous = this;
+		this._next = new_node_first;
+		new_node_first._previous = this;
 		return new_node;
 	};
 	this.failure = function(failure_callback) // podesava failure_callback za trenutni cvor i vraca trenutni cvor
@@ -215,13 +223,13 @@ function CommandChain(first_command)
 var Commands = // convinience helper objekat sa funkcijama koje mogu da se proslede u .then()
 {
 	'do_nothing':function(){},
-	'finish_task':function(){Manager.updateState("Finished");},
-	'suspend_task':function(){Manager.updateState("Suspended");},
-	'wake_up_after':function(timeout, wake_up)
+	'finish_task':function(){Manager.updateState("Finished");}, // Commands.finish_task
+	'suspend_task':function(){Manager.updateState("Suspended");}, // Commands.suspend_task
+	'wake_up_after':function(timeout, wake_up) // Commands.wake_up_after(timeout, wake_up)
 	{
 		return function(){Task.wake_up_after(timeout, wake_up);};
 	},
-	'ready_after':function(timeout)
+	'ready_after':function(timeout) // Commands.ready_after(timeout)
 	{
 		return function(){Task.ready_after(timeout);};
 	},
@@ -250,7 +258,7 @@ var Task =
 	},
 	'ready_after':function(timeout)
 	{
-		this.wake_up_after(timeout, function()
+		Task.wake_up_after(timeout, function()
 		{
 			Manager.updateState("Ready");
 		});

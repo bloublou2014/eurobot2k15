@@ -26,8 +26,8 @@ function setup()
 	Config['flap'] = flap_colored[Config.color];
 }
 
-function onRun(){
-
+function onRun()
+{
 	Config.do_setup(setup);
 
 	CommandChain(new MoveToPosition(Config.positions.prilazna.x, Config.positions.prilazna.y, -1))
@@ -35,16 +35,13 @@ function onRun(){
 	.then(new ActuatorCommand("Flap","Kick"+Config.flap))
 	.then(new MoveForward(200)) // TO_EDIT
 	.then(new ActuatorCommand("Flap","Unkick"+Config.flap))
-	.success(function()
-	{
-		Manager.updateState("Finished");
-	})
+	.then(Commands.finish_task)
 	.catch(function()
 	{
 		Logger.error('error in klapna njihova');
 		CommandChain(new ActuatorCommand("Flap","Unkick"+Config.flap)).execute();
-		//Task.ready_after(7000);
-		Manager.updateState("Suspended");
+		Task.ready_after(7000);
+		//Manager.updateState("Suspended");
 	})
 	.execute();
 }
