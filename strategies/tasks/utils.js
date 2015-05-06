@@ -270,7 +270,7 @@ var Task =
 /**
 	Lift utils.
 */
-/*
+
 var Lift = 
 {
 	'item_count':
@@ -285,47 +285,84 @@ var Lift =
 		'LiftRight':0,
 		'LiftCenter':0,
 	},
+	'unloading_items':
+	{
+		'LiftLeft':false,
+		'LiftRight':false,
+		'LiftCenter':false,
+	},
 	'max_items':
 	{
 		'LiftLeft':4,
 		'LiftRight':4,
 		'LiftCenter':1,
 	},
-	'collecting':function(number, lift, on_update)
+	'_subscribed':false,
+	'subscribe':function()
 	{
-		Lift.collecting_items[lift] = number;
-		Notification.subscribe("", function(msg)
+		if(!this._subscribed) // ako nisi vec subscribuj se
 		{
-			Lift.item_count[lift] = msg.;
-			on_update();
-		});
+			Notification.subscribe("LiftNotification", function(side, count)
+			{
+				switch(side) 
+				{
+					case 1: Lift.item_count['LiftRight'] = count; break;
+					case 2: Lift.item_count['LiftLeft'] = count; break;
+					case 3: Lift.item_count['LiftCenter'] = count; break; // 3??
+				}
+				
+				if(Lift._update_callback) Lift._update_callback(); // ako je definisan callback pozovi ga
+			});
+			this._subscribed = true;
+		}
 	},
-	'has_room':function()
+	'_update_callback':null,
+	'on_update':function(update_callback)
 	{
-		return Lift.has_room_in('LiftLeft') && Lift.has_room_in('LiftRight') && Lift.has_room_in('LiftCenter');
+		this._update_callback = update_callback;
+		subscribe();
 	},
-	'has_items_to_unload':function()
+	'collecting':function(number, lift)
 	{
-		return Lift.has_items_to_unload_with('LiftLeft') || Lift.has_items_to_unload_with('LiftRight') || Lift.has_items_to_unload_with('LiftCenter');
+		this.collecting_items[lift] = number;
+		subscribe();
 	},
-	'has_items_in':function(lift)
+	'unloading':function(lift)
 	{
-		return Lift.item_count[lift] > 0;
+		this.unloading_items[lift] = true;
+		subscribe();
 	},
-	'collects_items_with':function(lift)
+	'has_room_for_all':function()
 	{
-		return Lift.collecting_items[lift] > 0;
+		return this.has_room_in('LiftLeft') && this.has_room_in('LiftRight') && this.has_room_in('LiftCenter');
 	},
-	'has_items_to_unload_with':function(lift)
+	'has_room_for_any':function()
 	{
-		return Lift.collects_items_with(lift) && Lift.has_items_in(lift);
+		return this.has_room_in('LiftLeft') || this.has_room_in('LiftRight') || this.has_room_in('LiftCenter');
 	},
 	'has_room_in':function(lift)
 	{
-		return Lift.item_count[lift] + Lift.collecting_items[lift] <= Lift.max_items[lift];
+		return this.item_count[lift] + this.collecting_items[lift] <= this.max_items[lift];
+	},
+	
+	'has_items_to_unload':function()
+	{
+		return this.has_items_to_unload_with('LiftLeft') || this.has_items_to_unload_with('LiftRight') || this.has_items_to_unload_with('LiftCenter');
+	},
+	'has_items_to_unload_with':function(lift)
+	{
+		return this.unloading_items[lift] && this.has_items_in(lift);
+	},
+	'has_items_in':function(lift)
+	{
+		return this.item_count[lift] > 0;
+	},
+	'collects_items_with':function(lift)
+	{
+		return this.collecting_items[lift] > 0;
 	},
 }
-*/
+
 
 /**
 	Dumb path finding.
