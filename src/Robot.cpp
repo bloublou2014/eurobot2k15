@@ -113,8 +113,8 @@ int main(int argn, char** argc){
 #endif
 
 #endif
-    StartMessage::Color collor;
-    collor = StartMessage::Color::YELLOW;
+//    StartMessage::Color collor;
+//    collor = StartMessage::Color::YELLOW;
 
     taskMgr->init();
     execMgr->init();
@@ -122,6 +122,8 @@ int main(int argn, char** argc){
     taskMgr->start();
     execMgr->start();
 
+    getchar();
+    execMgr->receiveMessage(new StartMessage(StartMessage::Color::YELLOW, "Milan"));
 
     taskMgr->join();
     execMgr->join();
@@ -129,160 +131,3 @@ int main(int argn, char** argc){
     return 0;
 }
 
-
-
-
-
-//#include <iostream>
-//#include "utils/pathFinding/PathFinding.h"
-
-//using namespace std;
-//using namespace path_finding;
-//using namespace geometry;
-
-//void test_visual(PathFinding &pf);
-//void test(PathFinding &pf);
-
-//string OBSTACLE = "OBSTACLE";
-//string POINT = "POINT";
-
-//int main()
-//{
-//    cout << "Hello world!" << endl;
-
-//    PathFinding pf(1000, -1000, 1000, -1000);
-
-//    test(pf);
-
-////    test_visual(pf);
-
-//    return 0;
-//}
-
-//void test_visual(PathFinding &pf)
-//{
-//    int startX, startY, goalX, goalY;
-//    char input[255];
-//    vector<int> obstacleIds;
-
-//    while(1)
-//    {
-//        // read data
-//        cin >> startX;
-//        cin >> startY;
-//        cin >> goalX;
-//        cin >> goalY;
-
-//        vector<Point2D> removedObstaclePoints;
-//        removedObstaclePoints.push_back(Point2D(400,200));
-//        removedObstaclePoints.push_back(Point2D(200 + 370, 200 + 29));
-//        removedObstaclePoints.push_back(Point2D(200 + 370, 400 + 29));
-//        removedObstaclePoints.push_back(Point2D(400,400));
-
-//        int removedId = pf.addObstacle(removedObstaclePoints);
-
-//        while(1)
-//        {
-//            cin >> input;
-//            if(OBSTACLE.compare(input)==0)
-//            {
-//                vector<Point2D> obstaclePoints;
-
-//                // add all points
-//                while(1)
-//                {
-//                    cin >> input;
-//                    if(POINT.compare(input)==0)
-//                    {
-//                        int x,y;
-//                        cin >> x;
-//                        cin >> y;
-
-//                        Point2D point(x,y);
-//                        obstaclePoints.push_back(point);
-//                    }
-//                    else // END_OBSTACLE
-//                    {
-//                        break;
-//                    }
-//                }
-
-//                // add obstacle
-//                int id = pf.addObstacle(obstaclePoints);
-//                obstacleIds.push_back(id);
-//            }
-//            else
-//            {
-//                break;
-//            }
-//        }
-
-//        pf.removeObstacle(removedId);
-
-//        Point2D start(startX,startY);
-//        Point2D goal(goalX,goalY);
-//        deque<Point2D> path;
-
-//        if(pf.search(start, goal, path))
-//        {
-//            for(deque<Point2D>::iterator pointIter = path.begin(); pointIter != path.end(); pointIter++)
-//            {
-//                int x = pointIter->getX();
-//                int y = pointIter->getY();
-
-//                cout << "x" << endl << x << endl << "y" << endl << y << endl;
-//            }
-//        }
-
-//        cout << "end" << endl;
-
-//        for(vector<int>::iterator idIter = obstacleIds.begin(); idIter != obstacleIds.end(); idIter++)
-//        {
-//            try
-//            {
-//                pf.removeObstacle(*idIter);
-//            }
-//            catch(...){}
-//        }
-
-//        obstacleIds.clear();
-//    }
-//}
-
-//void test(PathFinding &pf)
-//{
-//    int id;
-
-//    Point2D start(0,0);
-//    Point2D goal(100,100);
-
-//    deque<Point2D> path;
-
-//    vector<Point2D> obstaclePoints;
-//    obstaclePoints.push_back(Point2D(0,0));
-//    obstaclePoints.push_back(Point2D(0,10));
-//    obstaclePoints.push_back(Point2D(10,10));
-//    obstaclePoints.push_back(Point2D(10,0));
-//    id = pf.addObstacle(obstaclePoints);
-
-//    //pf.removeObstacle(id);
-
-//    cout<<"obstacles count: "<<pf.getAllObstacles().size()<<endl;
-
-//    if(pf.search(start, goal, path))
-//    {
-//        cout << "Found path:"<< endl;
-
-//        for(deque<Point2D>::iterator pointIter = path.begin(); pointIter != path.end(); pointIter++)
-//        {
-//            int x = pointIter->getX();
-//            int y = pointIter->getY();
-
-//            cout << "	point: X: "<<x<<", Y: "<<y<<endl;
-//        }
-//    }
-//    else
-//    {
-//        cout << "Can't find path."<<endl;
-//    }
-//}

@@ -13,6 +13,7 @@
 #include "AbstractTask.h"
 #include "utils/javascript/JavaScriptMessageFactory.h"
 #include "executors/msg/CountdownCommand.h"
+#include "core/JavaScriptVM.h"
 
 using namespace v8;
 using javascript::JavaScriptMessageFactory;
@@ -28,14 +29,12 @@ struct CommandResponseCallback{
     Persistent<Function> progress;
 };
 
-class JavaScriptTask : public AbstractTask{
+class JavaScriptTask : public AbstractTask, public JavaScriptVM{
 public:
     static string UTILS_SCRIPT;
 
     JavaScriptTask(const string& _name, string _scriptName, const string& _directory):
         AbstractTask(_name), scriptName(_scriptName), directoryName(_directory){}
-
-    static void InitV8Platform();
 
     //Notification received callbacks
     void notificationReceived(Notification* testNotification);
@@ -51,20 +50,11 @@ protected:
     void onPause();
     void onDestroy();
 
-    static void ReportException(v8::Isolate* isolate, v8::TryCatch* try_catch);
-    static const char* ToCString(const v8::String::Utf8Value& value);
-    static Handle<String> ReadScript(Isolate* isolate, const string& fileName);
-
     //Helper functions for exposing objects in javascript
-    typedef Handle<ObjectTemplate> (*ObjectTemplateBuilder)(Isolate* isolate);
     static Handle<ObjectTemplate> createLogTemplate(Isolate* isolate);
     static Handle<ObjectTemplate> createCommandTemplate(Isolate* isolate);
     static Handle<ObjectTemplate> createNotificationTemplate(Isolate* isolate);
     static Handle<ObjectTemplate> createManagerTemplate(Isolate* isolate);
-
-    Handle<Object> createObjectFromTemplate(ObjectTemplateBuilder builder, Persistent<ObjectTemplate>& objTemplate, void* internalField);
-
-    static JavaScriptTask* UnwrapJavascriptTask(Handle<Object> object);
 
     //Logger callback functions
     static void debugCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
@@ -80,14 +70,10 @@ protected:
     static void setStateCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
     static void getCollorCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-    void createGlobalObjects();
-    Handle<Script> compileScript(Handle<String> scriptSource);
-    Handle<Script> compileScript(Handle<Script> script, Handle<String> scriptSource);
-    void runScript(Handle<Script> compiledScript);
+    void createGlobalObjects(Handle<Object> global);
+    void getScriptNames(std::vector<string>& scripts);
 
-    bool executeGlobalFunction(Handle<Function> function, const int argc, Handle<Value> argv[]);
-
-    inline Isolate* getIsolate() const;
+    static JavaScriptTask* UnwrapJavascriptTask(Handle<Object> object);
 private:
     std::string scriptName;
     std::string directoryName;
@@ -101,12 +87,8 @@ private:
     Persistent<ObjectTemplate> notificationTemplate;
     Persistent<ObjectTemplate> managerTemplate;
 
-    Isolate* isolate;
-    Persistent<Context> taskContext;
     map<string, Persistent<Function>> subscribedFunctions;
     map<int, CommandResponseCallback*> commandResponseCallbacks;
-
-    JavaScriptMessageFactory* messageFactory;
 };
 
 }

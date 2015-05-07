@@ -128,6 +128,11 @@ void AbstractTask::main(){
             }
         }
     }
+    catch(JavaScriptVMException& e){
+        setState(IMPOSSIBLE);
+        error("Javascript error. Reason:");
+        error(e.what());
+    }
     catch(TaskExecutionException& e){
         setState(IMPOSSIBLE);
         error("Task error. Reason:");

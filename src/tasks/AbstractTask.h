@@ -12,6 +12,7 @@
 #include "core/NotificationSource.h"
 #include "core/AbstractMessageHandler.h"
 #include "core/TaskManagerInterface.h"
+#include "core/JavaScriptVM.h"
 
 using std::queue;
 using boost::mutex;
