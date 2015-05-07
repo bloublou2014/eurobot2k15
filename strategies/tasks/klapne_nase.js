@@ -3,40 +3,41 @@
 	Udara obe u cugu, ako je prva vec udarena udara odmah drugu, ako je druga vec udarena udara samo prvu.
 */
 
-function invert_x(points)
-{
-	var ret = {};
-	for(var point_name in points)
-	{
-		ret[point_name] = {'x':-(points[point_name].x), 'y':points[point_name].y};
-	}
-	return ret;
-}
-
 var udarena = {'prva':false, 'druga':false}
-var flap_otvoren = false;
 
-var color = 'GREEN';
-
-var pos_y = 400;
-var yellow_positions = 
+var pos_y = 370; // TO_EDIT // TOME EDIT 350 
+var yellow_positions = // TO_EDIT
 {
-	'prilazna_prva':{'x':-1275, 'y':pos_y},
-	'prilazna_druga':{'x':-740, 'y':pos_y},
-	'kraj_prva':{'x':-1050, 'y':pos_y},
-	'kraj_druga':{'x':-500, 'y':pos_y}
+	'prilazna_prva':{'x':-1280, 'y':pos_y}, // TOME EDIT 1278 // 1288
+	'prilazna_druga':{'x':-800, 'y':pos_y}, //zuta x:-752 // TOME EDIT 780  
+ 	'kraj_prva':{'x':-1162, 'y':pos_y}, // kad da zatvori kad udara obe (gleda se samo y, prebaci cu kasnije da bude samo obicna promenljiva)
 };
-var green_points = invert_x(yellow_positions);
+var green_points = Motion.invert_x(yellow_positions);
 var positions_colored={'YELLOW':yellow_positions, 'GREEN':green_points};
-var positions = positions_colored[color];
 
 var orientation_colored = {'YELLOW':0, 'GREEN':180};
-var orientation = orientation_colored[color];
 
 var flap_colored = {'YELLOW':'Right', 'GREEN':'Left'};
-var flap = flap_colored[color];
+
+var lift_colored = {
+	'YELLOW': 'LiftRight',
+	'GREEN' : 'LiftLeft'
+}; 
+
+var distance = 150;
+
+function setup()
+{
+	Config['positions'] = positions_colored[Config.color];
+	Config['orientation'] = orientation_colored[Config.color];
+	Config['flap'] = flap_colored[Config.color];
+	Config['lift'] = lift_colored[Config.color]; 
+}
 
 function onRun(){
+
+	Config.do_setup(setup);
+
 	Logger.debug('running task: klapne');
 	
 	if(udarena.prva && udarena.druga) // za svaki slucaj
@@ -47,58 +48,78 @@ function onRun(){
 	
 	if(!udarena.prva) // idi na prvu
 	{
-		Command.send(new MoveToPosition(positions.prilazna_prva.x,positions.prilazna_prva.y),function(){
-		Command.send(new RotateTo(orientation),function(){
-		set_flap_otvoren(true, function(){ // mozda ovde moze da se otvara i rotira u isto vreme TODO
-		if(!udarena.druga) // idi skroz do kraja, udari obe
+		CommandChain(new SetSpeedMotion(50))
+		.then(new MoveToPosition(Config.positions.prilazna_prva.x,Config.positions.prilazna_prva.y))
+		//.then(new MoveToPosition(Config.positions.prilazna_prva.x,Config.positions.prilazna_prva.y))
+		.then(new SetSpeedMotion(Config.default_speed))
+		.then(new RotateTo(90))
+		.then(new SetSpeedMotion(50))
+		.then(new MoveForward(-distance))
+		.then(new SetSpeedMotion(Config.default_speed))
+		.then(new RotateTo(Config.orientation))
+		.success(function()
 		{
-			Logger.debug('positions.prilazna_druga='+positions.prilazna_druga);
-			Logger.debug('positions.kraj_prva='+positions.kraj_prva);
-			Logger.debug('should_close(x)='+should_close(800));
-			
-			Command.send(new MoveToPosition(positions.kraj_druga.x,positions.kraj_druga.y),function(){
-			// ako je stigo do kraja druge
-			set_flap_otvoren(false);
-			set_udarena('druga');
-			}, error,function(msg){
-				// move to kraj_druga: progress notification
-				Logger.debug('x='+msg.x);
-				if(should_close(msg.x))
+			set_flap_otvoren(true, function()
+			{
+				if(!udarena.druga) // idi skroz do kraja, udari obe
 				{
-					set_flap_otvoren(false);
-					set_udarena('prva');
+					CommandChain(new MoveForward(750)) // kolko da ide napred // TO_EDIT
+					.progress(function(msg){
+						if(should_close(msg.x))
+						{
+							set_flap_otvoren(false);
+							set_udarena('prva');
+						}
+						else
+						{
+							set_flap_otvoren(true);
+						}
+					})
+					.success(function(){
+						// ako je stigo do kraja druge
+						set_flap_otvoren(false);
+						set_udarena('druga');
+					})
+					.catch(error)
+					.execute();
 				}
-				else
+				else // udarena druga, udari samo prvu
 				{
-					set_flap_otvoren(true);
+					CommandChain(new MoveForward(200)) // kolko da ide napred // TO_EDIT
+					.success(function(){
+						// ako je stigo do kraja prve
+						set_flap_otvoren(false);
+						set_udarena('prva');
+					})
+					.catch(error)
+					.execute();
 				}
 			});
-		}
-		else // udarena druga, udari samo prvu
-		{
-			Command.send(new MoveToPosition(positions.kraj_prva.x,positions.kraj_prva.y),function(){
-			// ako je stigo do kraja prve
-			set_flap_otvoren(false);
-			set_udarena('prva');
-			}, error);
-		}
-		});
-		}, error);
-		}, error);
+		})
+		.catch(error)
+		.execute();
 	}
 	else // udarena prva, idi odma na drugu
 	{
-		Command.send(new MoveToPosition(positions.prilazna_druga.x,positions.prilazna_druga.y),function(){
-		Command.send(new RotateTo(orientation),function(){
-		set_flap_otvoren(true, function(){ // mozda ovde moze da se otvara i rotira u isto vreme TODO
-		Command.send(new MoveToPosition(positions.kraj_druga.x,positions.kraj_druga.y),function(){
-		// ako je stigo do kraja druge
-		set_flap_otvoren(false);
-		set_udarena('druga');
-		}, error);
-		});
-		}, error);
-		}, error);
+		CommandChain(new MoveToPosition(Config.positions.prilazna_druga.x,Config.positions.prilazna_druga.y+100))
+		.then(new MoveToPosition(Config.positions.prilazna_druga.x,Config.positions.prilazna_druga.y))
+		.success(function()
+		{
+			set_flap_otvoren(true);
+		})
+		.then(new RotateTo(Config.orientation))
+		.success(function(){
+			CommandChain(new MoveForward(200)) // kolko da ide napred // TO_EDIT
+			.success(function(){
+				// ako je stigo do kraja druge
+				set_flap_otvoren(false);
+				set_udarena('druga');
+			})
+			.catch(error)
+			.execute();
+		})
+		.catch(error)
+		.execute();
 	}
 }
 
@@ -106,20 +127,44 @@ function onPause(){}
 
 function error()
 {
-	Logger.error('error in klapne');
-	set_flap_otvoren(false);
-	Manager.updateState("Suspended");
+	Logger.error('error in klapne nase');
+	CommandChain(new SetSpeedMotion(Config.default_speed))
+	.success(function()
+	{
+		set_flap_otvoren(false, function()
+		{
+			/*Task.suspend_for(7000, function() //10s
+			{
+				// TODO da proveri dal je uradjen casa nasa dole
+				Manager.updateState("Ready");
+			});*/
+			//Task.ready_after(7000);
+			Manager.updateState("Suspended");
+		});
+	})
+	.execute()
 }
 
 function set_udarena(klapna)
 {
+	//Logger.debug('udarena klapna: '+klapna);
 	udarena[klapna] = true;
 	if(udarena.prva && udarena.druga)
 	{
-		Manager.updateState("Finished");
+		CommandChain(new SetSpeedMotion(20))
+		.then(new MoveForward(5))
+		.then(new ActuatorCommand(Config.lift,'Unload'))
+		.then(new MoveForward(-100))
+		.then(new SetSpeedMotion(Config.default_speed))
+		.success(function(){
+			Manager.updateState("Finished");
+		})
+		.catch(error)
+		.execute();
 	}
 }
 
+var flap_otvoren = false;
 function set_flap_otvoren(otvori, success)
 {
 	if (success === undefined)
@@ -132,7 +177,7 @@ function set_flap_otvoren(otvori, success)
 		if(otvori) success(); // vec otvoren
 		else // zatvori
 		{
-			Command.send(new ActuatorCommand("Flap","Unkick"+flap), success, function(){Logger.error('error pri zatvaranju flapa');});
+			Command.send(new ActuatorCommand("Flap","Unkick"+Config.flap), success, function(){Logger.error('error pri zatvaranju flapa');});
 			flap_otvoren = false;
 		}
 	}
@@ -140,7 +185,7 @@ function set_flap_otvoren(otvori, success)
 	{
 		if(otvori) 
 		{
-			Command.send(new ActuatorCommand("Flap","Kick"+flap), success, function(){Logger.error('error pri otvaranju flapa');}); // otvori
+			Command.send(new ActuatorCommand("Flap","Kick"+Config.flap), success, function(){Logger.error('error pri otvaranju flapa');}); // otvori
 			flap_otvoren = true;
 		}
 		else success(); // vec zatvoren
@@ -149,13 +194,13 @@ function set_flap_otvoren(otvori, success)
 
 function should_close(x)
 {
-	if(color == 'YELLOW')
+	if(Config.color == 'YELLOW')
 	{
-		return x > positions.kraj_prva.x && x < positions.prilazna_druga.x;
+		return x > Config.positions.kraj_prva.x && x < Config.positions.prilazna_druga.x;
 	}
 	else // 'GREEN'
 	{
-		return x > positions.prilazna_druga.x && x < positions.kraj_prva.x;
+		return x > Config.positions.prilazna_druga.x && x < Config.positions.kraj_prva.x;
 	}
 }
 
