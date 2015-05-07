@@ -87,7 +87,7 @@ protected:
     //when new message is received in queue it needs to be forwarded to tasks
     void dispatchMessage();
 private:
-    void createTask(const string& name, const string& filename, int rank, int duration, const string &directory, bool finalize);
+    void createTask(const string& name, int rank, int duration, const string &directory, bool finalize);
 
 //    typedef pair<RankedTask,TaskQueue::handle_type> CachedRankedTask;
     mutex tasksLock;

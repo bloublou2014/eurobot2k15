@@ -11,11 +11,12 @@ TaskManager::TaskManager(const string& strategy, const string& directory):Node("
 
     read_xml(strategy, pt);
     BOOST_FOREACH(ptree::value_type &v, pt.get_child("tasks"))
-            createTask(v.second.get<std::string>("name"),v.second.get<std::string>("filename"),
+            createTask(v.second.get<std::string>("name"),
                        v.second.get<int>("rank",0),v.second.get<int>("time"), directory, v.second.get<int>("finalize",0));
 }
 
-void TaskManager::createTask(const string& name, const string& filename, int rank, int duration, const string& directory, bool finalize){
+void TaskManager::createTask(const string& name, int rank, int duration, const string& directory, bool finalize){
+    string filename=name+".js";
     debug(directory+boost::filesystem::path::preferred_separator+filename);
     JavaScriptTask* task=new JavaScriptTask(name,directory+boost::filesystem::path::preferred_separator+filename,directory);
     task->registerManager(this);
