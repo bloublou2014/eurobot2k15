@@ -10,6 +10,7 @@ NotificationSource.cpp
 Logger.cpp
 TaskManagerInterface.cpp
 TaskStateChangeNotification.cpp
-JavaScriptVM.cpp)
+JavaScriptVM.cpp
+JSScheduler.cpp)
 
 target_link_libraries(core executors messages tasks)
