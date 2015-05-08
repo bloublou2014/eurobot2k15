@@ -86,6 +86,25 @@ void AbstractTask::registerManager(TaskManagerInterface *manager){
     handler=manager;
 }
 
+int AbstractTask::getRank() const{
+    return rank;
+}
+
+string AbstractTask::getLocalState(const string &key){
+    boost::mutex::scoped_lock lock(localStateLock);
+    map<string,string>::iterator it;
+    if ((it=localState.find(key))!=localState.end()){
+        return it->second;
+    }else{
+        return "";
+    }
+}
+
+void AbstractTask::setLocalState(const string &key, const string &value){
+     boost::mutex::scoped_lock lock(localStateLock);
+     localState[key]=value;
+}
+
 void AbstractTask::main(){
     setState(SUSPENDED);
     try{

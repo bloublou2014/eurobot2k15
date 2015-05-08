@@ -12,10 +12,10 @@ TaskManager::TaskManager(const string& strategy, const string& directory):Node("
     read_xml(strategy, pt);
     BOOST_FOREACH(ptree::value_type &v, pt.get_child("tasks"))
             createTask(v.second.get<std::string>("name"),
-                       v.second.get<int>("rank",0),v.second.get<int>("time"), directory, v.second.get<int>("finalize",0));
+                       v.second.get<int>("rank",0), directory, v.second.get<int>("finalize",0));
 }
 
-void TaskManager::createTask(const string& name, int rank, int duration, const string& directory, bool finalize){
+void TaskManager::createTask(const string& name, int rank, const string& directory, bool finalize){
     string filename=name+".js";
     debug(directory+boost::filesystem::path::preferred_separator+filename);
     JavaScriptTask* task=new JavaScriptTask(name,directory+boost::filesystem::path::preferred_separator+filename,directory);
@@ -23,7 +23,6 @@ void TaskManager::createTask(const string& name, int rank, int duration, const s
     RankedTask rt;
     rt.task=task;
     rt.rank=rank;
-    rt.estimatedRunningTime=duration;
     rt.finalize=finalize;
     if (finalize){
         finalizeTask=rt;
@@ -67,14 +66,19 @@ bool TaskManager::addTask(RankedTask& rankedTask){
     return true;
 }
 
-bool TaskManager::getWorldProperty() const{
-    //TODO
-    return false;
+string TaskManager::getWorldProperty(const string& key){
+    boost::mutex::scoped_lock lock(worldStateLock);
+    map<string,string>::iterator it;
+    if ((it=worldState.find(key))!=worldState.end()){
+        return it->second;
+    }else{
+        return "";
+    }
 }
 
-bool TaskManager::setWorldProperty(){
-    //TODO
-    return false;
+void TaskManager::setWorldProperty(const string& key, const string& value){
+    boost::mutex::scoped_lock lock(worldStateLock);
+    worldState[key]=value;
 }
 
 bool TaskManager::sendMessage(Message* message){

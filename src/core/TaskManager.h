@@ -58,8 +58,8 @@ public:
     //task calls this to update its state
     bool updateStatus(const string& taskName, TaskState newState);
     //TODO: must implement world class first
-    bool getWorldProperty() const;
-    bool setWorldProperty();
+    string getWorldProperty(const string& key);
+    void setWorldProperty(const string& key, const string& value);
     //Executor manager will send messages to tasks using this method
     bool sendMessage(Message* message);
     //Executor manager will receive messages from tasks and send pass them to executor manager
@@ -87,7 +87,7 @@ protected:
     //when new message is received in queue it needs to be forwarded to tasks
     void dispatchMessage();
 private:
-    void createTask(const string& name, int rank, int duration, const string &directory, bool finalize);
+    void createTask(const string& name, int rank, const string &directory, bool finalize);
 
 //    typedef pair<RankedTask,TaskQueue::handle_type> CachedRankedTask;
     mutex tasksLock;
@@ -108,8 +108,10 @@ private:
     AbstractMessageHandler* executorManager;
 
     static const int matchDuration;
-
     StartMessage::Color matchColor;
+
+    mutex worldStateLock;
+    map<string,string> worldState;
 };
 
 }

@@ -2,7 +2,7 @@
 
 namespace robot{
 
-JSScheduler::JSScheduler():Logger("!Scheduler"){
+JSScheduler::JSScheduler(string _scriptName, const string &_directory):Logger("!Scheduler"){
 }
 
 }

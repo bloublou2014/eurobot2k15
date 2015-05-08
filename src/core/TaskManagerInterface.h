@@ -25,6 +25,9 @@ public:
     virtual bool updateStatus(const string& taskName, TaskState newState)=0;
     virtual StartMessage::Color getMatchColor()=0;
     virtual bool isMatchStarted() const=0;
+
+    virtual string getWorldProperty(const string& key)=0;
+    virtual void setWorldProperty(const string& key, const string& value)=0;
 };
 
 }
