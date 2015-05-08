@@ -7,10 +7,7 @@ function onRun()
 	CommandChain(new ActuatorCommand("Flap","KickLeft"))
 	.then(new ActuatorCommand("Flap",'KickRight'))
 	.then(new StopMovement(false))
-	.then(function()
-	{
-		print_position();
-	})
+	.then(print_position)
 	.execute();
 }
 
@@ -22,8 +19,8 @@ function print_position()
 	{
 		Logger.debug('x='+msg.x+', y='+msg.y+', o='+msg.orientation);
 		Logger.debug('count='+count++);
-		print_position();
 	})
+	.then(print_position)
 	.execute();
 }
 

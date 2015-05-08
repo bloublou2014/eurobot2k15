@@ -1,5 +1,5 @@
 /**
-	:D ROFLMAO
+	:D ROFLCOPTER
 */
 
 var yellow_positions = // TO_EDIT
@@ -20,11 +20,7 @@ function onRun(){
 	Config.do_setup(setup);
 
 	CommandChain(new SetSpeedMotion(60))
-	.success(function()
-	{
-		move1();
-	})
-	.ignore_failure()
+	.then(move1)
 	.execute();
 }
 
@@ -32,10 +28,7 @@ function move1()
 {
 	CommandChain(new SleepCommand(500))
 	.then(new MoveToPosition(Config.positions.prva.x, Config.positions.prva.y))
-	.success(function()
-	{
-		move2();
-	})
+	.then(move2)
 	.catch(move1)
 	.execute();
 }
@@ -44,10 +37,7 @@ function move2()
 {
 	CommandChain(new SleepCommand(2000))
 	.then(new MoveToPosition(Config.positions.druga.x, Config.positions.druga.y))
-	.success(function()
-	{
-		Manager.updateState("Finish");
-	})
+	.then(Commands.finish_task)
 	.catch(move2)
 	.execute();
 }

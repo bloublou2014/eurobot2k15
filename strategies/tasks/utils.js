@@ -191,7 +191,7 @@ function CommandChainNode(new_command)
 			catch(err)
 			{
 				if(err === 'command_error') failure_fun(); // ako baci 'command_error' tretiraj kao fail
-				else throw err;
+				else throw err; // TODO mozda da suspenduje da se nebi zapucao ceo robot
 			}
 		}
 		else // async command
@@ -279,12 +279,6 @@ var Lift =
 		'LiftRight':0,
 		'LiftCenter':0,	
 	},
-	'collecting_items':
-	{
-		'LiftLeft':0,
-		'LiftRight':0,
-		'LiftCenter':0,
-	},
 	'unloading_items':
 	{
 		'LiftLeft':false,
@@ -322,27 +316,24 @@ var Lift =
 		this._update_callback = update_callback;
 		subscribe();
 	},
-	'collecting':function(number, lift)
-	{
-		this.collecting_items[lift] = number;
-		subscribe();
-	},
 	'unloading':function(lift)
 	{
 		this.unloading_items[lift] = true;
 		subscribe();
 	},
-	'has_room_for_all':function()
+	
+	'has_room_for':function(number, lift)
 	{
-		return this.has_room_in('LiftLeft') && this.has_room_in('LiftRight') && this.has_room_in('LiftCenter');
-	},
-	'has_room_for_any':function()
-	{
-		return this.has_room_in('LiftLeft') || this.has_room_in('LiftRight') || this.has_room_in('LiftCenter');
-	},
-	'has_room_in':function(lift)
-	{
-		return this.item_count[lift] + this.collecting_items[lift] <= this.max_items[lift];
+		if(lift == 'LeftOrRight')
+		{
+			return (this.max_items['LiftLeft'] - this.item_count['LiftLeft']) + // kolko ima mesta u levom
+				   (this.max_items['LiftRight'] - this.item_count['LiftRight']) // kolko ima mesta u desnom
+				   								>= number; // ima mesta koliko nam treba ili vise
+		}
+		else
+		{
+			return this.max_items[lift] - this.item_count[lift] >= number;
+		}
 	},
 	
 	'has_items_to_unload':function()
@@ -356,10 +347,6 @@ var Lift =
 	'has_items_in':function(lift)
 	{
 		return this.item_count[lift] > 0;
-	},
-	'collects_items_with':function(lift)
-	{
-		return this.collecting_items[lift] > 0;
 	},
 }
 

@@ -7,17 +7,11 @@ var pos_y = 200; // TO_EDIT
 var yellow_positions = // TO_EDIT
 {
 	'prilazna':{'x':1050, 'y':pos_y},
-	'kraj':{'x':640, 'y':pos_y},
 };
 var green_points = Motion.invert_x(yellow_positions);
 var positions_colored={'YELLOW':yellow_positions, 'GREEN':green_points};
-
-
 var orientation_colored = {'YELLOW':180, 'GREEN':0};
-
-
 var flap_colored = {'YELLOW':'Left', 'GREEN':'Right'};
-
 
 function setup()
 {
@@ -41,7 +35,6 @@ function onRun()
 		Logger.error('error in klapna njihova');
 		CommandChain(new ActuatorCommand("Flap","Unkick"+Config.flap)).execute();
 		Task.ready_after(7000);
-		//Manager.updateState("Suspended");
 	})
 	.execute();
 }

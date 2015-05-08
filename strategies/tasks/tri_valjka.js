@@ -62,8 +62,8 @@ var distance = 70; // distanca za koju ide pravo kad kupi valjak  // TO_EDIT
 var redosled_kupljenja = [config_prvi, config_drugi, config_treci]; // default redosled
 var counter = 0;
 
-function onRun(){
-
+function onRun()
+{
 	Logger.debug('running task: tri valjka');
 
 	Config.do_setup();
@@ -191,6 +191,20 @@ function call_next()
 		.then(Commands.finish_task);
 	}
 }
+
+function check_ready()
+{
+	if(Lift.has_room_for(1, 'LeftOrRight'))
+	{
+		Manager.updateState("Ready");
+	}
+	else
+	{
+		Manager.updateState("Suspended");
+	}
+}
+
+Lift.on_update(check_ready);
 
 Manager.updateState("Ready");
 

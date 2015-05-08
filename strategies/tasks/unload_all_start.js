@@ -32,7 +32,7 @@ function onRun()
 	CommandChain(new MoveToPosition(Config.prilazna.x, Config.prilazna.y)) // pridji
 	.then(new RotateTo(Config.orientation))
 	.then(new MoveForward(distance)) // udji u centar
-	.catch(Commands.suspend_task)
+	.catch(Commands.wake_up_after(7000, check_ready))
 	.then(new ActuatorCommand('LiftCenter','Unload')) // istovari casu
 	.then(new SetSpeedMotion(70))
 	.then(new MoveForward(-100)) // odmakni se
@@ -49,5 +49,16 @@ function onRun()
 }
 
 function onPause(){}
+
+function check_ready()
+{
+	if(Lift.has_items_to_unload() && !Task.sleeping) Manager.updateState("Ready");
+	else Manager.updateState("Suspended");
+}
+
+Lift.unloading('LiftLeft');
+Lift.unloading('LiftRight');
+Lift.unloading('LiftCenter');
+Lift.on_update(check_ready);
 
 Manager.updateState("Ready");
