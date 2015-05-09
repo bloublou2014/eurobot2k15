@@ -21,9 +21,13 @@ using boost::mutex;
 using boost::condition_variable;
 using boost::unique_lock;
 
+using namespace v8;
+using javascript::JavaScriptMessageProvider;
+using javascript::ObjectWrap;
+
 namespace robot{
 
-class AbstractTask: public Node, protected CommandSource, protected NotificationHandler, public NotificationSource{
+class AbstractTask: public Node, protected CommandSource, protected NotificationHandler, public NotificationSource, public ObjectWrap{
 public:
     AbstractTask(const string& name, int _rank=0):Node(name), taskKilled(false), state(TaskState::SUSPENDED),rank(_rank){}
 
@@ -44,6 +48,7 @@ public:
     bool getColor(StartMessage::Color& color);
 
     void registerManager(TaskManagerInterface* manager);
+    TaskManagerInterface* getHandler() const;
 
     int getRank() const;
     string getLocalState(const string& key);

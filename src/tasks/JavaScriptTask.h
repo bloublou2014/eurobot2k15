@@ -33,8 +33,8 @@ class JavaScriptTask : public AbstractTask, public JavaScriptVM{
 public:
     static string UTILS_SCRIPT;
 
-    JavaScriptTask(const string& _name, string _scriptName, const string& _directory):
-        AbstractTask(_name), scriptName(_scriptName), directoryName(_directory){}
+    JavaScriptTask(const string& _name, string _scriptName, const string& _directory, int _rank):
+        AbstractTask(_name, _rank), scriptName(_scriptName), directoryName(_directory){}
 
     //Notification received callbacks
     void notificationReceived(Notification* testNotification);
@@ -60,7 +60,6 @@ protected:
     static void debugCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
     static void warningCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
     static void errorCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
-    void callJavascriptCommandCallback(Persistent<Function>& function, CommandResponse* resp);
     //Command callback functions
     static void sendCommandCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
     //Notification callback functions
@@ -69,6 +68,8 @@ protected:
     //Manager callbacks
     static void setStateCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
     static void getCollorCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void setWorldStateCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void getWorldStateCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
 
     void createGlobalObjects(Handle<Object> global);
     void getScriptNames(std::vector<string>& scripts);

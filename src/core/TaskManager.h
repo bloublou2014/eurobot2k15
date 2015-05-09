@@ -25,6 +25,7 @@
 #include "core/TaskManagerInterface.h"
 #include "executors/msg/TimePassed.h"
 #include "core/TaskStateChangeNotification.h"
+#include "core/JSScheduler.h"
 
 using boost::heap::fibonacci_heap;
 using std::map;
@@ -39,21 +40,9 @@ using std::max_element;
 
 namespace robot{
 
-//Every task has its priority
-struct RankedTask{
-    RankedTask():task(NULL),rank(0),estimatedRunningTime(0), finalize(false){}
-
-    AbstractTask* task;
-    int rank;
-    int estimatedRunningTime;
-    bool finalize;
-};
-
 class TaskManager: public Node, public TaskManagerInterface{
 public:
-    static bool larger(const RankedTask& t1, const RankedTask& t2);
-
-    TaskManager(const string& strategy, const string &directory);
+    TaskManager(const string& strategy, const string& scheduler, const string &directory);
 
     //task calls this to update its state
     bool updateStatus(const string& taskName, TaskState newState);
@@ -66,7 +55,7 @@ public:
     bool receiveMessage(Message* message);
 
     //Loading tasks
-    bool addTask(RankedTask &rankedTask);
+    bool addTask(AbstractTask* task);
 
     //caled before thread is created to initialize values, or load configuration
     void init();
@@ -89,13 +78,10 @@ protected:
 private:
     void createTask(const string& name, int rank, const string &directory, bool finalize);
 
-//    typedef pair<RankedTask,TaskQueue::handle_type> CachedRankedTask;
+    JSScheduler scheduler;
+
     mutex tasksLock;
-    map<string, RankedTask> availableTasks;
-    AbstractTask* currentlyRunningTask;
-    RankedTask finalizeTask;
-    void checkTime(TimePassedNotification* tp);
-    void finalizeMatch();
+    map<string, AbstractTask*> availableTasks;
 
     Message* popNextMessage();
     mutex messageQueueLock;

@@ -43,18 +43,19 @@ void signalHandler(int sigNum){
 
 int main(int argn, char** argc){
 
-    if (argn<3){
+    if (argn<4){
         std::cout<<"Wrong run parameters"<<std::endl;
         return -1;
     }
     string strategy(argc[1]);
-    string directory(argc[2]);
+    string scheduler(argc[2]);
+    string directory(argc[3]);
 
     signal(SIGINT,signalHandler);
 
     JavaScriptTask::InitV8Platform();
 
-    taskMgr=new TaskManager(strategy, directory);
+    taskMgr=new TaskManager(strategy, scheduler, directory);
     execMgr=new ExecutorManager();
 
     ExampleExecutor e1;
@@ -123,6 +124,7 @@ int main(int argn, char** argc){
     execMgr->start();
 
     getchar();
+//    boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
     execMgr->receiveMessage(new StartMessage(StartMessage::Color::YELLOW, "Milan"));
 
     taskMgr->join();

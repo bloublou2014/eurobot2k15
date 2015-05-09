@@ -71,6 +71,10 @@ Handle<ObjectTemplate> JavaScriptTask::createManagerTemplate(Isolate* isolate){
                 FunctionTemplate::New(isolate, setStateCallback));
     result->Set(String::NewFromUtf8(isolate, "getColor", String::kInternalizedString),
                 FunctionTemplate::New(isolate, getCollorCallback));
+    result->Set(String::NewFromUtf8(isolate, "getWorldState", String::kInternalizedString),
+                FunctionTemplate::New(isolate, getWorldStateCallback));
+    result->Set(String::NewFromUtf8(isolate, "setWorldState", String::kInternalizedString),
+                FunctionTemplate::New(isolate, setWorldStateCallback));
 
     return scope.Escape(result);
 }
@@ -153,32 +157,6 @@ void JavaScriptTask::commandError(CommandResponse* resp){
 void JavaScriptTask::commandProgress(CommandResponse* resp){
     if (commandResponseCallbacks.find(resp->getId())==commandResponseCallbacks.end()) return;
     callJavascriptCommandCallback(commandResponseCallbacks[resp->getId()]->progress,resp);
-}
-
-void JavaScriptTask::callJavascriptCommandCallback(Persistent<Function>& function, CommandResponse* resp){
-    HandleScope scope(getIsolate());
-    Local<Context> context =Local<Context>::New(getIsolate(), taskContext);
-    Context::Scope contextScope(context);
-
-    TryCatch tryCatch;
-
-    Handle<Object> obj;
-    int argc=1;
-    Handle<Value> argv[argc];
-    if (resp!=NULL){
-        obj=messageFactory->wrapObject(resp->getName(),getIsolate(),resp);
-        argc=1;
-        argv[0]=obj;
-    }else{
-        argc=0;
-    }
-
-    Local<Function> func=Local<Function>::New(getIsolate(), function);
-    Handle<Value> result= func->Call(context->Global(),argc, argv);
-    if (result.IsEmpty()){
-        ReportException(getIsolate(), &tryCatch);
-        throw TaskExecutionException("Running callback method function failed.");
-    }
 }
 
 void JavaScriptTask::notificationReceived(Notification* testNotification){
@@ -345,6 +323,36 @@ void JavaScriptTask::getCollorCallback(const v8::FunctionCallbackInfo<v8::Value>
     }else{
         isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Can't get color, match not started!"));
     }
+}
+
+void JavaScriptTask::setWorldStateCallback(const v8::FunctionCallbackInfo<Value> &args){
+    Isolate* isolate=Isolate::GetCurrent();
+    JavaScriptTask* task=UnwrapJavascriptTask(args.Holder());
+
+    if (args.Length()<2){
+        isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Not enaugh parameters!"));
+    }
+
+    v8::String::Utf8Value key(args[0]);
+    v8::String::Utf8Value value(args[1]);
+
+    task->getHandler()->setWorldProperty(ToCString(key),ToCString(value));
+    args.GetReturnValue().Set(true);
+}
+
+void JavaScriptTask::getWorldStateCallback(const v8::FunctionCallbackInfo<Value> &args){
+    Isolate* isolate=Isolate::GetCurrent();
+    JavaScriptTask* task=UnwrapJavascriptTask(args.Holder());
+
+    if (args.Length()<1){
+        isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Not enaugh parameters!"));
+    }
+
+    v8::String::Utf8Value key(args[0]);
+
+    string value= task->getHandler()->getWorldProperty(ToCString(key));
+
+    args.GetReturnValue().Set(v8::String::NewFromUtf8(args.GetIsolate(), value.c_str()));
 }
 
 }

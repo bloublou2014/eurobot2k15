@@ -94,6 +94,32 @@ Handle<Object> JavaScriptVM::createObjectFromTemplate(JavaScriptVM::ObjectTempla
     return scope.Escape(result);
 }
 
+void JavaScriptVM::callJavascriptCommandCallback(Persistent<Function>& function, CommandResponse* resp){
+    HandleScope scope(getIsolate());
+    Local<Context> context =Local<Context>::New(getIsolate(), taskContext);
+    Context::Scope contextScope(context);
+
+    TryCatch tryCatch;
+
+    Handle<Object> obj;
+    int argc=1;
+    Handle<Value> argv[argc];
+    if (resp!=NULL){
+        obj=messageFactory->wrapObject(resp->getName(),getIsolate(),resp);
+        argc=1;
+        argv[0]=obj;
+    }else{
+        argc=0;
+    }
+
+    Local<Function> func=Local<Function>::New(getIsolate(), function);
+    Handle<Value> result= func->Call(context->Global(),argc, argv);
+    if (result.IsEmpty()){
+        ReportException(getIsolate(), &tryCatch);
+        throw JavaScriptVMException("Running callback method function failed.");
+    }
+}
+
 Handle<Script> JavaScriptVM::compileScript(Handle<String> scriptSource){
     EscapableHandleScope scope(getIsolate());
 

@@ -46,7 +46,7 @@ protected:
     typedef Handle<ObjectTemplate> (*ObjectTemplateBuilder)(Isolate* isolate);
 
     Handle<Object> createObjectFromTemplate(ObjectTemplateBuilder builder, Persistent<ObjectTemplate>& objTemplate, void* internalField);
-
+    void callJavascriptCommandCallback(Persistent<Function>& function, CommandResponse* resp);
 //    template <class T>
 //    static T* UnwrapObject(Handle<Object> object){
 //        Handle<External> field = Handle<External>::Cast(object->GetInternalField(0));

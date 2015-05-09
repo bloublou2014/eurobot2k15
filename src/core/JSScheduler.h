@@ -1,55 +1,60 @@
 #ifndef JSSCHEDULER_H
 #define JSSCHEDULER_H
 
-#include <vector>
-
-#include "core/Logger.h"
-#include "core/NotificationHandler.h"
-#include "core/JavaScriptVM.h"
-
-#include "tasks/AbstractTask.h"
+#include "core/Scheduler.h"
 
 using std::vector;
 
 namespace robot{
 
-class JSScheduler:public NotificationHandler, public Logger, public JavaScriptVM{
+class JSScheduler: public Scheduler{
 public:
-    JSScheduler(string _scriptName, const string& _directory);
+    JSScheduler(const string& _scriptName, TaskManagerInterface *handler);
 
-    void addTask(AbstractTask* task);
-
-    bool passMessage(Message* message);
-    bool isSubscribed(Notification *message);
-
-
-    void init();
-    void start();
-    void stop();
+    void notificationReceived(Notification* testNotification);
 protected:
-    struct Instruction{
-        enum Type{
-            MESSAGE,
-            START,
-            STOP
-        };
+    void onCreate();
+    void onStart();
+    void onStop();
+    void onStateUpdate(AbstractTask *task, TaskState oldState, TaskState newState);
 
-        Instruction(Message* _message):message(_message),type(MESSAGE){}
-        Instruction(Type _type):type(_type){}
+    void createGlobalObjects(Handle<Object> global);
+    void getScriptNames(std::vector<string>& scripts);
+    static JSScheduler* UnwrapJSScheduler(Handle<Object> object, int i=0);
 
-        Message* message;
-        Type type;
-    };
+    static Handle<ObjectTemplate> createLogTemplate(Isolate* isolate);
+    static Handle<ObjectTemplate> createNotificationTemplate(Isolate* isolate);
+    static Handle<ObjectTemplate> createSchedulerTemplate(Isolate* isolate);
 
-    Instruction fetchInstruction();
+    static void debugCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void subscripbeCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
 private:
-    mutex queueLock;
-    condition_variable queueNotEmpty;
-    queue<Instruction> instructionQueue;
+    string scriptName;
 
-    vector<AbstractTask*> availableTasks;
+    void wrapTasks(Handle<Object> global);
 
-    AbstractTask* activeTask;
+    Persistent<Function> runCallback;
+    Persistent<Function> stopCallback;
+    Persistent<Function> stateUpdateCallback;
+
+    Persistent<ObjectTemplate> loggerTemplate;
+    Persistent<ObjectTemplate> notificationTemplate;
+    Persistent<ObjectTemplate> schedulerTemplate;
+
+    map<string, Persistent<Function>> subscribedFunctions;
+
+    static map<TaskState, Persistent<String>> taskStateConstants;
+
+    static string TASK_NAME;
+    Persistent<ObjectTemplate> taskTemplate;
+    static void StateGetter(Local<String> property, const PropertyCallbackInfo<Value>& info);
+    static void GetRunningTask(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void StartTask(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void PauseActiveTask(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+    static void setWorldStateCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void getWorldStateCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
+
 };
 
 }

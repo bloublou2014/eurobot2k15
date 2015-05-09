@@ -4,12 +4,12 @@ const int TaskManager::matchDuration=90;
 
 namespace robot{
 
-TaskManager::TaskManager(const string& strategy, const string& directory):Node("TaskManager"),shouldStop(false),
-    matchStarted(false), currentlyRunningTask(NULL), matchFinished(false){
+TaskManager::TaskManager(const string& strategy, const string &scheduler, const string& directory):Node("TaskManager"),shouldStop(false),
+    matchStarted(false), matchFinished(false), scheduler(scheduler,this){
     using namespace boost::property_tree;
     ptree pt;
 
-    read_xml(strategy, pt);
+    read_xml(strategy,pt, boost::property_tree::xml_parser::no_comments);
     BOOST_FOREACH(ptree::value_type &v, pt.get_child("tasks"))
             createTask(v.second.get<std::string>("name"),
                        v.second.get<int>("rank",0), directory, v.second.get<int>("finalize",0));
@@ -18,37 +18,16 @@ TaskManager::TaskManager(const string& strategy, const string& directory):Node("
 void TaskManager::createTask(const string& name, int rank, const string& directory, bool finalize){
     string filename=name+".js";
     debug(directory+boost::filesystem::path::preferred_separator+filename);
-    JavaScriptTask* task=new JavaScriptTask(name,directory+boost::filesystem::path::preferred_separator+filename,directory);
+    JavaScriptTask* task=new JavaScriptTask(name,directory+boost::filesystem::path::preferred_separator+filename,directory,rank);
     task->registerManager(this);
-    RankedTask rt;
-    rt.task=task;
-    rt.rank=rank;
-    rt.finalize=finalize;
-    if (finalize){
-        finalizeTask=rt;
-    }
-    addTask(rt);
+    addTask(task);
 }
 
 bool TaskManager::updateStatus(const string &taskName, TaskState newState){
-    if (matchFinished) return false;
-    std::stringstream ss;
-    ss<<"Updating status "<<taskName<<" State: "<<newState;
-    debug(ss.str());
-    boost::mutex::scoped_lock lock(tasksLock);
-    bool shouldUpdate=false;
-    // If running task is changing it's state from ready than a new task must be found
-    AbstractTask* task=availableTasks.at(taskName).task;
-    if (task->getTaskState()==TaskState::RUNNING && newState!=TaskState::READY){
-        shouldUpdate=true;
-    }
-    if (newState==TaskState::READY){
-        shouldUpdate=true;
-    }
-    task->setState(newState);
-
-    if (shouldUpdate){
-        runBestTask();
+    TaskState oldState=availableTasks[taskName]->getTaskState();
+    availableTasks[taskName]->setState(newState);   //Save state to task
+    if (matchStarted){  //Don't bother scheduler before match has started
+        scheduler.updateTaskState(availableTasks.at(taskName), oldState, newState);   //notify scheduler of event
     }
     return true;
 }
@@ -61,8 +40,9 @@ bool TaskManager::isMatchStarted() const{
     return matchStarted;
 }
 
-bool TaskManager::addTask(RankedTask& rankedTask){
-    availableTasks[rankedTask.task->getName()]=rankedTask;
+bool TaskManager::addTask(AbstractTask *task){
+    availableTasks[task->getName()]=task;
+    scheduler.addTask(task);
     return true;
 }
 
@@ -82,34 +62,11 @@ void TaskManager::setWorldProperty(const string& key, const string& value){
 }
 
 bool TaskManager::sendMessage(Message* message){
-    if (message->getMessageType()==MessageType::NOTIFICATION){
-        if (message->getName()==TimePassedNotification::NAME)
-            checkTime(message);
-    }
     messageQueueLock.lock();
     messageQueue.push(message);
     messageQueueLock.unlock();
     messageQueueNotEmpty.notify_one();
     return true;
-}
-
-void TaskManager::checkTime(TimePassedNotification* tp){
-    if (tp->getPassedTime()==matchDuration){
-        debug("****** Stopping match FINISH! **********");
-        finalizeMatch();
-    }
-}
-
-void TaskManager::finalizeMatch(){
-    debug("Finalizing task");
-    boost::mutex::scoped_lock lock(tasksLock);
-    matchFinished=true;
-    if (currentlyRunningTask!=NULL){
-        currentlyRunningTask->pauseTask();
-        AbstractTask* fin=finalizeTask.task;
-        if (fin!=NULL)
-            fin->runTask();
-    }
 }
 
 bool TaskManager::receiveMessage(Message* message){
@@ -119,10 +76,11 @@ bool TaskManager::receiveMessage(Message* message){
 }
 
 void TaskManager::init(){
-    map<string, RankedTask>::iterator it=availableTasks.begin();
+    map<string, AbstractTask*>::iterator it=availableTasks.begin();
     for (;it!=availableTasks.end();++it){
-        it->second.task->init();
+        it->second->init();
     }
+    scheduler.init();
 }
 
 void TaskManager::stop(){
@@ -133,23 +91,26 @@ void TaskManager::stop(){
 
 void TaskManager::startAllTasks(){
     debug("Starting all tasks");
-    map<string, RankedTask>::iterator it=availableTasks.begin();
+    map<string, AbstractTask*>::iterator it=availableTasks.begin();
     for (;it!=availableTasks.end();++it){
-        it->second.task->start();
+        it->second->start();
     }
+    scheduler.start();
 }
 
 void TaskManager::stopAllTasks(){
     debug("Stopping all tasks");
-    map<string, RankedTask>::iterator it=availableTasks.begin();
+    scheduler.stop();
+    map<string, AbstractTask*>::iterator it=availableTasks.begin();
     for (;it!=availableTasks.end();++it){
-        it->second.task->stop();
+        it->second->stop();
     }
 
     debug("Joingn on all tasks");
+    scheduler.join();
     it=availableTasks.begin();
     for (;it!=availableTasks.end();++it){
-        it->second.task->join();
+        it->second->join();
     }
 }
 
@@ -182,10 +143,13 @@ void TaskManager::dispatchMessage(){
         case NOTIFICATION:
             {
                 Notification* notification=(Notification*)message;
-                map<string, RankedTask>::iterator it=availableTasks.begin();
+                map<string, AbstractTask*>::iterator it=availableTasks.begin();
                 for (;it!=availableTasks.end();++it){
-                    if (it->second.task->isSubscribed(notification))
-                        it->second.task->passMessage(notification->clone());
+                    if (it->second->isSubscribed(notification))
+                        it->second->passMessage(notification->clone());
+                }
+                if (scheduler.isSubscribed(message)){
+                    scheduler.passMessage(message->clone());
                 }
                 delete message;
             }
@@ -195,7 +159,7 @@ void TaskManager::dispatchMessage(){
                 CommandResponse* resp=(CommandResponse*)message;
                 string destination=resp->getDestination();
                 {
-                    availableTasks.at(destination).task->passMessage(message);
+                    availableTasks.at(destination)->passMessage(message);
                 }
             }
         break;
@@ -203,7 +167,7 @@ void TaskManager::dispatchMessage(){
             StartMessage* sm=(StartMessage*)message;
             matchColor=sm->getColor();
             matchStarted=true;
-            runBestTask();
+            scheduler.startDispatching();
         }
         break;
         default:
@@ -212,52 +176,6 @@ void TaskManager::dispatchMessage(){
         }
     }
     stopAllTasks();
-}
-
-bool TaskManager::larger(const RankedTask& t1, const RankedTask& t2){
-    return t1.rank>t2.rank;
-}
-
-//Finds the best task and runs it, if it is already running than it ignores it
-void TaskManager::runBestTask(){
-    if (!matchStarted) return;
-    map<string, RankedTask>::iterator it=availableTasks.begin();
-    map<string, RankedTask>::iterator maxElement=availableTasks.end();
-    //Find the best ranked ready or running task
-    for (;it!=availableTasks.end();++it){
-        if (it->second.finalize) continue;  //Don't use finalize task here
-        if (it->second.task->getTaskState()==TaskState::READY
-                || it->second.task->getTaskState()==TaskState::RUNNING){
-            if (maxElement!=availableTasks.end()){
-                if (larger(it->second, maxElement->second)){
-                    maxElement=it;
-                }
-            }else{
-                maxElement=it;
-            }
-        }
-    }
-
-    //Stop the running task and start the best task
-    if (maxElement!=availableTasks.end()){
-        if ((maxElement->second.task->getTaskState()!=TaskState::RUNNING)){
-            if (currentlyRunningTask!=NULL){
-                currentlyRunningTask->pauseTask();
-            }
-            currentlyRunningTask=maxElement->second.task;
-            currentlyRunningTask->runTask();
-            std::stringstream ss;
-            ss<<"Running best task: "<<currentlyRunningTask->getName();
-            debug(ss.str());
-        }
-    }else if (maxElement!=availableTasks.end() && currentlyRunningTask!=NULL){
-        if (currentlyRunningTask->getTaskState()!=TaskState::RUNNING){
-            currentlyRunningTask->pauseTask();
-            currentlyRunningTask=NULL;
-        }
-    }
-
-
 }
 
 }
