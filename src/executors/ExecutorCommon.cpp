@@ -19,7 +19,12 @@ void ExecutorCommon::init(){
     actuatorHandles[ActuatorType::STOP_BRXON]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::stopBrxon);
     actuatorHandles[ActuatorType::START_BEACON]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::startBeacon);
     actuatorHandles[ActuatorType::STOP_BEACON]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::stopBeacon);
-    actuatorHandles[ActuatorType::LEAVE_CARPET]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::leaveCarpet);
+    actuatorHandles[ActuatorType::LEAVE_CARPET]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::leaveCarpet); 
+    actuatorHandles[ActuatorType::CARPET_LEAVE]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::carpetLeave);
+    actuatorHandles[ActuatorType::CARPET_POSITION_1]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::carpetPosition1);
+    actuatorHandles[ActuatorType::CARPET_POSITION_2]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::carpetPosition2);
+    actuatorHandles[ActuatorType::CARPET_POSITION_OPEN]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::carpetPositionOpen);
+    actuatorHandles[ActuatorType::CARPET_POSITION_CLOSE]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::carpetPositionClose);
     actuatorHandles[ActuatorType::CALLBACK_GET_LEFT]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::callbackGetLeft);
     actuatorHandles[ActuatorType::CALLBACK_GET_RIGHT]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::callbackGetRight);
     actuatorHandles[ActuatorType::START_DETECTION]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::startDetection);
@@ -386,6 +391,78 @@ void ExecutorCommon::stopDetection(ActuatorCommand * _command){
         currentActuatorCommand = NULL;
     }
 }
+
+void ExecutorCommon::carpetLeave(ActuatorCommand * _command){
+    bool success;
+    CarpetLeave* command = (CarpetLeave*) _command;
+    currentActuatorCommand = command;
+    success =  CarpetLeaveFunction();
+    if (success){
+        sendResponseFromCommand(currentActuatorCommand, SUCCESS);
+        currentActuatorCommand = NULL;
+    }else{
+        sendResponseFromCommand(currentActuatorCommand, ERROR);
+        currentActuatorCommand = NULL;
+    }
+}
+
+void ExecutorCommon::carpetPosition1(ActuatorCommand * _command){
+    bool success;
+    CarpetPosition1* command = (CarpetPosition1*) _command;
+    currentActuatorCommand = command;
+    success =  CarpetPosition1Function();
+    if (success){
+        sendResponseFromCommand(currentActuatorCommand, SUCCESS);
+        currentActuatorCommand = NULL;
+    }else{
+        sendResponseFromCommand(currentActuatorCommand, ERROR);
+        currentActuatorCommand = NULL;
+    }
+}
+
+void ExecutorCommon::carpetPosition2(ActuatorCommand * _command){
+    bool success;
+    CarpetPosition2* command = (CarpetPosition2*) _command;
+    currentActuatorCommand = command;
+    success =  CarpetPosition2Function();
+    if (success){
+        sendResponseFromCommand(currentActuatorCommand, SUCCESS);
+        currentActuatorCommand = NULL;
+    }else{
+        sendResponseFromCommand(currentActuatorCommand, ERROR);
+        currentActuatorCommand = NULL;
+    }
+}
+
+void ExecutorCommon::carpetPositionOpen(ActuatorCommand * _command){
+    bool success;
+    CarpetPositionOpen* command = (CarpetPositionOpen*) _command;
+    currentActuatorCommand = command;
+    success =  CarpetPositionOpenFunction();
+    if (success){
+        sendResponseFromCommand(currentActuatorCommand, SUCCESS);
+        currentActuatorCommand = NULL;
+    }else{
+        sendResponseFromCommand(currentActuatorCommand, ERROR);
+        currentActuatorCommand = NULL;
+    }
+}
+
+void ExecutorCommon::carpetPositionClose(ActuatorCommand * _command){
+    bool success;
+    CarpetPositionClose* command = (CarpetPositionClose*) _command;
+    currentActuatorCommand = command;
+    success =  CarpetPositionCloseFunction();
+    if (success){
+        sendResponseFromCommand(currentActuatorCommand, SUCCESS);
+        currentActuatorCommand = NULL;
+    }else{
+        sendResponseFromCommand(currentActuatorCommand, ERROR);
+        currentActuatorCommand = NULL;
+    }
+}
+
+
 
 bool ExecutorCommon::KickRightFunction(){
     debug("KICK RIGHT: REDEFINE PLEASE");

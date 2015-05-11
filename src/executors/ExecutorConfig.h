@@ -27,6 +27,7 @@ private:
         short level0; // kada smo tek iznad podloge da nosimo sve sto imamo
         short level1;
         short level2;
+        short levelBall;
     };
 
     struct OpenCloseConfig{
@@ -62,6 +63,12 @@ private:
         int getPopcorn;
         int unloadPopcorn;
     };
+    struct CarpetArmConfig{
+        short positionClose;
+        short positionOpen;
+        short position1;
+        short position2;
+    };
 
     ptree pt;
 
@@ -87,8 +94,8 @@ protected:
     };
 
     struct CarpetExecutorConfigs{
-        OpenCloseConfig armLeft;
-        OpenCloseConfig armRight;
+        CarpetArmConfig armLeft;
+        CarpetArmConfig armRight;
         int armOpenCloseTime;
         int leaveCarpetTime;
     };
@@ -98,7 +105,6 @@ protected:
         PopcornExecutorConfigs PopcornConfigs;
         FlapExecutorConfigs FlapConfigs;
         CarpetExecutorConfigs CarpetConfig;
-
     };
 
 

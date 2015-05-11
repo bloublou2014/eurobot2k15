@@ -13,33 +13,6 @@
 using boost::mutex;
 using namespace robot;
 namespace modbus {
-/*
-class ModbusSensorClientInterface{
-
-public:
-
-    ModbusSensorClientInterface(){
-        std::cout<<"Created interface" << std::endl;
-    }
-
-    virtual void ProcessLiftLeftSensoreCallback();
-    virtual void ProcessLiftRightSensoreCallback();
-    virtual void ProcessSensorCallback();
-    virtual void ProcessEnemySensorCallback1();
-    virtual void ProcessEnemySensorCallback2();
-    virtual void ProcessEnemySensorCallback3();
-    virtual void ProcessEnemySensorCallback4();
-    virtual void ProcessBeaconCallback();
-    bool readingSensore = false ;
-    bool readingBeckon = false;
-
-    enemyDetectedStruct enemyDetected;
-
-    //int brxonValue;
-    beaconDataStruct beaconData;
-
-};
-*/
 
 class ModbusSensorClientInterface2{
 public:
@@ -101,7 +74,7 @@ private:
     callbackRegisterMapType callbackRegisterMap;
 
 
-    mutex* m_mutex; // TODO u destruktor ubaciti hoce struha kill kill
+    mutex* m_mutex; // TODO u destruktor ubaciti hoce struja kill kill
     bool shouldStop = false;
     bool* ModbusSensoreClientNotifier;
     bool* ModbusSensorClientPanic;
@@ -141,7 +114,6 @@ public:
     bool readBeacon();
     void registerToBeaconInterface(ModbusSensorClientInterface2 *_interface);
 
-    //void registerToModbusRegisterCallback()
 };
 
 } // end namespace modbus

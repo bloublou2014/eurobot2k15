@@ -54,7 +54,6 @@ private:
 
     struct Instruction{
 
-
         Instruction(){}
         Instruction(InstructionType _type, setSingleRegisterData _id_data): instruction(_type),id_data(_id_data){}
 
@@ -96,7 +95,12 @@ private:
     bool ModbusSensorClientPanic;
 
 
+    bool writeToRegister(setSingleRegisterData data);
+    bool writeToCoil(setSingleRegisterData data);
+
+
     friend bool operator< (const idData &id1, const idData &id2);
+
 public:
     static ModbusClient* getMobusClientInstance();
     static ModbusClient* instance;
@@ -104,11 +108,9 @@ public:
     bool readCoil(bool* _callFunction, idData _id);
     bool readRegister(short* _data, unsigned char _slaveAddress, short _functionAddress);
 
-    bool writeToRegister(setSingleRegisterData data);
-    bool writeToCoil(setSingleRegisterData data);
+    bool setCoil(unsigned char _slave_address, short _function_address, short _data, bool _blocking = false );
+    bool setRegister(unsigned char _slave_address, short _function_address, short _data, bool _blocking = false );
 
-    bool setCoil(unsigned char _slave_address, short _function_address, short _data );
-    bool setRegister(unsigned char _slave_address, short _function_address, short _data );
 
     void stopModbusClient();
     bool* getModbusSensorNotifier();

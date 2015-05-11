@@ -184,8 +184,8 @@ private:
     bool checkField;
     bool isInField(int angle, int r);
 
-    bool shouldUseSlow(int distance);
-    bool shouldUseSlow(geometry::Point2D _position);
+    bool shouldUseSlow(int distance, int speed);
+    bool shouldUseSlow(geometry::Point2D _position, int speed);
 };
 
 }

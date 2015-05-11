@@ -10,8 +10,6 @@ ModbusClient* ModbusClient::instance=0;
 
 ModbusClient::ModbusClient():Node("ModbusClient"),m_mutex(new boost::mutex()){
     modbus = ModbusMaster::getModbusInstance();
-    //std::cout << "ModbusClient is running" << std::endl;
-    //instance = this;
     start();
 }
 
@@ -58,7 +56,7 @@ ModbusClient::Instruction ModbusClient::getNextInstruction(){
 
 }
 
-
+/*
 bool ModbusClient::setRegister(unsigned char _slave_address, short _function_address, short _data ){ // za klienta
     setSingleRegisterData data;
     //Instruction inst;
@@ -95,19 +93,20 @@ bool ModbusClient::setCoil(unsigned char _slave_address, short _function_address
     return true;
 
 }
-
+zamenjeno sa blocking and nonBlocking
+*/
 
 
 bool ModbusClient::writeToRegister(setSingleRegisterData data){
     bool success;
     int counter = 0;
 
-        /*
+
     std::cout << "writeing to register: "
               << int(data.ID.slaveAddress) << ":"
               << data.ID.functionAddress << ":"
               << data.data << std::endl;
-    */
+
         boost::lock_guard<boost::mutex> lock(*m_mutex);
 
         success = modbus->ModbusPresetSingleRegister(data.ID.slaveAddress, data.ID.functionAddress, data.data);
@@ -154,6 +153,45 @@ bool ModbusClient::writeToCoil(setSingleRegisterData data){
         counter = 0;
         return success;
 
+}
+
+bool ModbusClient::setCoil(unsigned char _slave_address, short _function_address, short _data, bool _blocking){
+    setSingleRegisterData data;
+
+    data.ID.slaveAddress = _slave_address;
+    data.ID.functionAddress = _function_address;
+    data.data = _data;
+
+    if(!_blocking){
+        queueLock.lock();
+        InstructionQueue.push(Instruction(SET_COIL,data));
+        queueLock.unlock();
+        queueNotEmpty.notify_one();
+        return true;
+    }else{
+       return writeToCoil(data);
+    }
+}
+
+bool ModbusClient::setRegister(unsigned char _slave_address, short _function_address, short _data, bool _blocking){
+    setSingleRegisterData data;
+
+    data.ID.slaveAddress = _slave_address;
+    data.ID.functionAddress = _function_address;
+    data.data = _data;
+
+    if(!_blocking){
+
+        queueLock.lock();
+        InstructionQueue.push(Instruction(SET_REGISTER, data));
+        queueLock.unlock();
+        queueNotEmpty.notify_one();
+
+        return true;
+
+    }else{
+        return writeToRegister(data);
+    }
 }
 
 

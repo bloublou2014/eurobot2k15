@@ -10,13 +10,14 @@ void ElectroSwitch::setCoilAddress(unsigned short _address){
     this->address = _address;
 }
 
-void ElectroSwitch::setCoilState(bool _status){
+bool ElectroSwitch::setCoilState(bool _status){
+    bool success;
     if(_status){
-        modbus->setCoil(slaveAddress, address, 1 );
+        success = modbus->setCoil(slaveAddress, address, 1, false );
     }else{
-        modbus->setCoil(slaveAddress, address, 0 );
-
+        success = modbus->setCoil(slaveAddress, address, 0, false );
     }
+    return success;
 }
 
 }

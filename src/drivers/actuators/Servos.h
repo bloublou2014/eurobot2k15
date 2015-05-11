@@ -9,10 +9,12 @@
 
 #include "utils/modbus/ModbusMaster.h"
 #include "utils/modbus/ModbusClient.h"
+#include "utils/modbus/ModbusClientSwitzerland.h"
 
 using namespace modbus;
 using modbus::ModbusMaster;
-using modbus::ModbusMaster;
+using modbus::ModbusClientSW;
+//using modbus::ModbusMaster;
 
 namespace servo {
 
@@ -36,10 +38,8 @@ private:
     signed char dataOFF;
 
     boost::mutex *s_mutex;
-    //ModbusMaster *modbus;
-    ModbusClient *modbus;
-    //static ModbusMaster modbus
-    //ModbusMaster modbus;
+    //ModbusClient *modbus;
+    ModbusClientSW* modbus;
 
 public:
 

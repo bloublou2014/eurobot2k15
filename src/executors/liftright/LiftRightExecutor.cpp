@@ -6,8 +6,8 @@ string LiftRightExecutor::NAME = "LiftRightExecutor";
 
 void LiftRightExecutor::suscribe(){
     this->registerCommand(ActuatorCommand::NAME, static_cast<commandCallback>(&LiftRightExecutor::processActuatorCommand));
-    modbusClient = ModbusSensorClient::getModbusSensorInstance();
-    readingSensore = true;
+    //modbusClient = ModbusSensorClient::getModbusSensorInstance();
+    //readingSensore = true;
     lastState.Aveable = true;
     lastState.Quantity = 0;
     executorName = this->NAME;
@@ -32,11 +32,15 @@ void LiftRightExecutor::mapping(){
 
 //    sensor.setSlaveAddress(char(4));
 //    sensor.setScanAddress(char(3));
-    modbusClient->registerToSensoreCallback(char(4),char(3),true, this);
+    //modbusClient->registerToSensoreCallback(char(4),char(3),true, this);
+    liftSensor.setConfig(char(4),char(3),1,this, false);
+    liftSensor.RegisterSensor();
+
     reload(&value, executorName);
 
     doorF(OPEN_GET);
     handF(CLOSE);
+    //liftF(value.LiftConfigs.lift.levelBall);
     liftF(LEVEL2);
 
 }
@@ -44,8 +48,10 @@ void LiftRightExecutor::mapping(){
 bool LiftRightExecutor::GetObjectFunction(){
     debug("LiftRight Get");
     shoulGetObject = true;
-    readingSensore = true;
     //readingSensore = true;
+    //readingSensore = true;
+    liftSensor.StartSensor();
+
     return true;
 }
 
@@ -73,7 +79,7 @@ bool LiftRightExecutor::liftProcess(){
         stateLock.lock();
         lastState.Quantity++;
         lastState.Aveable = true;
-        readingSensore = true;
+        //readingSensore = true;
         count=lastState.Quantity;
         stateLock.unlock();
 
@@ -105,7 +111,7 @@ bool LiftRightExecutor::liftProcess(){
         stateLock.lock();
         lastState.Quantity++;
         lastState.Aveable = true;
-        readingSensore = true;
+        //readingSensore = true;
         stateLock.unlock();
 
         //Send notification
@@ -141,7 +147,7 @@ bool LiftRightExecutor::UnloadObjectFunction(){
     stateLock.lock();
     lastState.Quantity = 0;
     lastState.Aveable = true;
-    readingSensore = true;
+    //readingSensore = true;
     stateLock.unlock();
 
     //Send notification
@@ -163,13 +169,20 @@ void LiftRightExecutor::processGetLiftState(Command* _command){
 bool LiftRightExecutor::CallbackGetRightFunction(){
     debug("executeing lift right callback command");
     bool success = false;
+
     success = this->liftProcess();
+    /*
     if(success) readingSensore = true;
     else readingSensore = false;
-
+    */
+    if(success){
+        liftSensor.StartSensor();
+    }else{
+        liftSensor.StopSensor();
+    }
 }
 
-
+/*
  void LiftRightExecutor::ProcessLiftRightSensoreCallback(){
      std::cout << "LIRT RIGHT" << std::endl;
      //readingSensore = true;
@@ -179,9 +192,16 @@ bool LiftRightExecutor::CallbackGetRightFunction(){
          commandQueueLock.unlock();
          queueNotEmpty.notify_one();
  }
+*/
 
-
-
+void LiftRightExecutor::SensorDriverCallback(int _id, bool _detected){
+    std::cout << "LIRT RIGHT" << std::endl;
+    Command* cmd = ActuatorAction::LiftRight(CALLBACK_GET_RIGHT);
+        commandQueueLock.lock();
+        commandsToProcess.push(Instruction(cmd));
+        commandQueueLock.unlock();
+        queueNotEmpty.notify_one();
+}
 
 
 

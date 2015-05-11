@@ -67,13 +67,13 @@ void MotionExecutor::processEnemyDetectedNotification(Notification* notification
     std::stringstream ss;
 
     ss<<"Enemy detected type: "<<ed->getType()<<" detected: "<<ed->isDetected()<<" ";
-    if (ed->getType()==EnemyDetectedNotification::Type::BRKON_BACK){
-        ss<<"BACK BRKON @ "<<ed->getAngle();
-    }
+//    if (ed->getType()==EnemyDetectedNotification::Type::BRKON_BACK){
+//        ss<<"BACK BRKON @ "<<ed->getAngle();
+//    }
 
-    if (ed->getType()==EnemyDetectedNotification::Type::BRKON_FRONT){
-        ss<<"FRONT BRKON @ "<<ed->getAngle();
-    }
+//    if (ed->getType()==EnemyDetectedNotification::Type::BRKON_FRONT){
+//        ss<<"FRONT BRKON @ "<<ed->getAngle();
+//    }
 
     debug(ss.str());
 }
@@ -153,11 +153,19 @@ bool MotionExecutor::isEnemyDetected(MotionState& ms){
     return false;
 }
 
-bool MotionExecutor::shouldUseSlow(int distance){
+bool MotionExecutor::shouldUseSlow(int distance, int speed){
+    if (speed<SLOW_SPEED) {
+        debug("DONT USE SLOW SPPED");
+        return false;
+    }
     return distance<SLOW_DISTANCE;  //if it's smaller than slow hould be used
 }
 
-bool MotionExecutor::shouldUseSlow(Point2D second){
+bool MotionExecutor::shouldUseSlow(Point2D second, int speed){
+    if (speed<SLOW_SPEED){
+        debug("DONT USE SLOW SPPED");
+        return false;
+    }
     return lastState.Position.euclidDist(second)<SLOW_DISTANCE;
 }
 
@@ -193,7 +201,7 @@ void MotionExecutor::main(){
                 }
             }else if (currentMotionInstruction.isSuspended()){
                 debug("Resuming motion");
-                if (shouldUseSlow(currentMotionInstruction.getDestination().Position)){
+                if (shouldUseSlow(currentMotionInstruction.getDestination().Position, newState.Speed)){
                     currentMotionInstruction.saveSpeed(driver.getSpeed());
                     driver.setSpeed(SLOW_SPEED);
                 }
@@ -293,7 +301,7 @@ void MotionExecutor::moveToPosition(MotionCommand* _motionCommand){
     destinationState.Direction=command->getDirection();
     currentMotionInstruction.Set(_motionCommand,destinationState);
 
-    if (shouldUseSlow(destinationState.Position)){
+    if (shouldUseSlow(destinationState.Position, lastState.Speed)){
         currentMotionInstruction.saveSpeed(driver.getSpeed());
         driver.setSpeed(SLOW_SPEED);
     }
@@ -314,7 +322,7 @@ void MotionExecutor::moveForward(MotionCommand* _motionCommand){
         destinationState.Direction=MotionDriver::MovingDirection::FORWARD;
     currentMotionInstruction.Set(_motionCommand, destinationState);
 
-    if (shouldUseSlow(distance)){
+    if (shouldUseSlow(distance, lastState.Speed)){
         currentMotionInstruction.saveSpeed(driver.getSpeed());
         driver.setSpeed(SLOW_SPEED);
     }
@@ -391,9 +399,9 @@ bool MotionExecutor::isInField(int angle, int r){
     if ((enemyPosition.getY()<0) ||(enemyPosition.getY()>maxY)){
         return false;
     }
-//    std::stringstream ss;
-    //ss<<"Enemy detected in field: "<<robotPosition.getX()<<", "<<robotPosition.getY()<<" enemy: "<<enemyPosition.getX()<<", "<<enemyPosition.getY();
-    //debug(ss.str());
+    std::stringstream ss;
+    ss<<"Enemy detected in field: "<<robotPosition.getX()<<", "<<robotPosition.getY()<<" enemy: "<<enemyPosition.getX()<<", "<<enemyPosition.getY();
+    debug(ss.str());
     return true;
 }
 

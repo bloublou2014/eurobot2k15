@@ -56,12 +56,17 @@ enum ActuatorType{SET_START_CONFIG,
                   STOP_BRXON,
                   START_BEACON,
                   STOP_BEACON,
-                  LEAVE_CARPET,
                   NULL_ACTION,
                   CALLBACK_GET_RIGHT,
                   CALLBACK_GET_LEFT,
                   START_DETECTION,
-                  STOP_DETECTION
+                  STOP_DETECTION,
+                  LEAVE_CARPET,
+                  CARPET_LEAVE,
+                  CARPET_POSITION_OPEN,
+                  CARPET_POSITION_1,
+                  CARPET_POSITION_2,
+                  CARPET_POSITION_CLOSE,
                  };
 
 typedef map<Executors, string> ExecutorsMap;
@@ -165,6 +170,31 @@ public:
 class LeaveCarpet: public ActuatorCommand{
 public:
     LeaveCarpet(Executors _executor):ActuatorCommand(LEAVE_CARPET, _executor){}
+};
+
+class CarpetLeave: public ActuatorCommand{
+public:
+    CarpetLeave(Executors _executor):ActuatorCommand(CARPET_LEAVE, _executor){}
+};
+
+class CarpetPositionOpen: public ActuatorCommand{
+public:
+    CarpetPositionOpen(Executors _executor):ActuatorCommand(CARPET_POSITION_OPEN, _executor){}
+};
+
+class CarpetPositionClose: public ActuatorCommand{
+public:
+    CarpetPositionClose(Executors _executor):ActuatorCommand(CARPET_POSITION_CLOSE, _executor){}
+};
+
+class CarpetPosition1: public ActuatorCommand{
+public:
+    CarpetPosition1(Executors _executor):ActuatorCommand(CARPET_POSITION_1, _executor){}
+};
+
+class CarpetPosition2: public ActuatorCommand{
+public:
+    CarpetPosition2(Executors _executor):ActuatorCommand(CARPET_POSITION_2, _executor){}
 };
 
 class CallbackGetLeft: public ActuatorCommand{

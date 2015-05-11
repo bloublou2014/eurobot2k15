@@ -20,8 +20,13 @@ private:
     ServoDriver armRight;
     ElectroSwitch el_switchLeft;
     ElectroSwitch el_switchRight;
-    bool LeaveCarpetFunction();
 
+    bool LeaveCarpetFunction();
+    bool CarpetLeaveFunction();
+    bool CarpetPosition1Function();
+    bool CarpetPosition2Function();
+    bool CarpetPositionOpenFunction();
+    bool CarpetPositionCloseFunction();
 };
 
 

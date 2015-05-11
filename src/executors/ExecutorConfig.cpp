@@ -9,8 +9,12 @@ ExecutorConfig::ExecutorConfig(){
 }
 
 bool ExecutorConfig::reload(ConfigValues* values, string _executorName){
-
+#ifdef VELIKI_ROBOT
     boost::property_tree::xml_parser::read_xml("Config.xml",pt);
+#endif
+#if MALI_ROBOT
+    boost::property_tree::xml_parser::read_xml("Config.xml",pt);
+#endif
 
     if(_executorName == "LiftLeftExecutor" || _executorName =="LiftRightExecutor"){
         //printf("reloadConfig: executorName is %s", _executorName);
@@ -19,6 +23,7 @@ bool ExecutorConfig::reload(ConfigValues* values, string _executorName){
                 values->LiftConfigs.lift.level0 = v.second.get<short>("level0");
                 values->LiftConfigs.lift.level1 = v.second.get<short>("level1");
                 values->LiftConfigs.lift.level2 = v.second.get<short>("level2");
+                values->LiftConfigs.lift.levelBall = v.second.get<short>("levelBall");
                 //printf("newValue of level0 is %d", values->lift.level0);
             }else if(v.first == "DoorConfig"){
                 values->LiftConfigs.door.openGetObject = v.second.get<short>("openGetObject");
@@ -122,11 +127,15 @@ bool ExecutorConfig::reload(ConfigValues* values, string _executorName){
      }else if(_executorName == "CarpetExecutor"){
         BOOST_FOREACH( ptree::value_type const& v, pt.get_child(_executorName)){
             if(v.first == "armRightConfig"){
-                values->CarpetConfig.armRight.open = v.second.get<short>("open");
-                values->CarpetConfig.armRight.close = v.second.get<short>("close");
+                values->CarpetConfig.armRight.positionOpen = v.second.get<short>("open");
+                values->CarpetConfig.armRight.positionClose = v.second.get<short>("close");
+                values->CarpetConfig.armRight.position1 = v.second.get<short>("position1");
+                values->CarpetConfig.armRight.position2 = v.second.get<short>("position2");
             }else if(v.first == "armLeftConfig"){
-                values->CarpetConfig.armLeft.open = v.second.get<short>("open");
-                values->CarpetConfig.armLeft.close = v.second.get<short>("close");
+                values->CarpetConfig.armLeft.positionOpen = v.second.get<short>("open");
+                values->CarpetConfig.armLeft.positionClose = v.second.get<short>("close");
+                values->CarpetConfig.armLeft.position1 = v.second.get<short>("position1");
+                values->CarpetConfig.armLeft.position2 = v.second.get<short>("position2");
             }else if(v.first == "TimeConfig"){
                 values->CarpetConfig.armOpenCloseTime  = v.second.get<int>("OpenArmTime");
                 values->CarpetConfig.leaveCarpetTime = v.second.get<int>("LeaveCarpetTime");

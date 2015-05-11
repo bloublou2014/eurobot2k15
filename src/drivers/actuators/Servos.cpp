@@ -1,32 +1,22 @@
 #include "Servos.h"
-#include <stdio.h>
-#include <stdlib.h>
-
-//using namespace modbus;
-//using modbus::ModbusMaster;
-//using modbus::ModbusClient;
 
 namespace servo {
 
 
 ServoDriver::ServoDriver():s_mutex(new boost::mutex()){
-    //this->robot = VELIKI;
     this->speed_address = 'b';
     this->position = 0; 
-    //modbus = ModbusMaster::getModbusInstance();
-    modbus = ModbusClient::getMobusClientInstance();
+    //modbus = ModbusClient::getMobusClientInstance();
+    modbus = ModbusClientSW::getModbusClientInstance();
 
 }
 
 ServoDriver::ServoDriver(unsigned char slave_address = 'a' , unsigned short position_address = 'a', unsigned short speed_address = 'a' ):s_mutex(new boost::mutex()){
-    //this->robot = robotType;
     this->slave_address = slave_address;
     this->position_address = position_address;
     this->speed_address = speed_address;
-    //modbus = ModbusMaster::getModbusInstance();
-     modbus = ModbusClient::getMobusClientInstance();
-
-
+    //modbus = ModbusClient::getMobusClientInstance();
+    modbus = ModbusClientSW::getModbusClientInstance();
 }
 
 ServoDriver::~ServoDriver(){
@@ -42,11 +32,7 @@ bool ServoDriver::rotateFor(short steps){
     position_calc = this->position + steps;
 
     if ((position_calc >= 0 ) && (position_calc <= 1023)){
-
-        //success = modbus->ModbusPresetSingleRegister(this->slave_address, this->position_address,position_calc);
-         success = modbus->setRegister(this->slave_address, this->position_address,position_calc);
-
-
+         success = modbus->setRegister(this->slave_address, this->position_address,position_calc, false);
     }else{
         printf("ERROR: POSITION OUT OF VALUE");
         return false;
@@ -63,8 +49,7 @@ bool ServoDriver::rotateToPosition(short position){
     bool success = true;
 
     if ((position >= 0 ) && (position <= 1023)){
-        //success = modbus->ModbusPresetSingleRegister(this->slave_address, this->position_address, position);
-        success = modbus->setRegister(this->slave_address, this->position_address,position);
+        success = modbus->setRegister(this->slave_address, this->position_address,position, false);
     }else{
         printf("ERROR: POSITION OUT OF VALUE");
         return false;

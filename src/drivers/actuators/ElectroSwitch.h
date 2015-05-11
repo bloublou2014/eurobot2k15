@@ -20,7 +20,7 @@ public:
 
     void setCoilSlaveAddress(unsigned char _slave_address);
     void setCoilAddress(unsigned short _address);
-    void setCoilState(bool _state);
+    bool setCoilState(bool _state);
 
 };
 
