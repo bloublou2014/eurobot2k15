@@ -200,18 +200,15 @@ private:
     static int MaxRetryCount;
 
     bool isEnemyDetected(MotionState& ms);
-    //void handleEnemyDetection();
+
+    int rSensor;
     bool useEnemyDetector;
     struct Enemy{
-        Enemy():Detected(false),obstacleId(-1){}
-        bool Detected;
+        Enemy(int _angle=0):Angle(_angle),Detected(false){}
         int Angle;
-        MotionDriver::MovingDirection Direction;
-        int Distance;
-        int obstacleId;
+        bool Detected;
     };
-    Enemy enemySensors[10];
-    int enemySensorCount;
+    Enemy detectedEnemies[2];
 
     /* Ignoring outer field obsticles*/
     int maxX;
@@ -222,8 +219,8 @@ private:
     bool isInField(int angle, int r);
 
     /* for slowing down motion on small distances */
-    bool shouldUseSlow(int distance);
-    bool shouldUseSlow(geometry::Point2D _position);
+    bool shouldUseSlow(int distance, int originalSpeed);
+    bool shouldUseSlow(geometry::Point2D _position, int originalSpeed);
 
     mutex pfLock;
     PathFinding* pathFinder;

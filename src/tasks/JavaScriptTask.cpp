@@ -109,9 +109,11 @@ void JavaScriptTask::onCreate(){
 
     Handle<String> runName=String::NewFromUtf8(getIsolate(),"onRun");
     Handle<String> pauseName=String::NewFromUtf8(getIsolate(), "onPause");
+    Handle<String> setupName=String::NewFromUtf8(getIsolate(), "onSetup");
 
     Handle<Value> runValue=context->Global()->Get(runName);
     Handle<Value> pauseValue=context->Global()->Get(pauseName);
+    Handle<Value> setupValue=context->Global()->Get(setupName);
 
     if (!runValue->IsFunction() || !pauseValue->IsFunction()){
         throw TaskExecutionException("Invalid script. Script must contain minumum onRun and onPause functions. Consult documentation.");
@@ -122,6 +124,36 @@ void JavaScriptTask::onCreate(){
 
     runCallback.Reset(getIsolate(), run);
     pauseCallback.Reset(getIsolate(), pause);
+
+    if (setupValue->IsFunction()){
+        Handle<Function> setup=Handle<Function>::Cast(setupValue);
+        setupCallback.Reset(getIsolate(),setup);
+    }
+}
+
+void JavaScriptTask::onSetup(StartMessage::Color matchColor){
+    HandleScope scope(getIsolate());
+    Local<Context> context =Local<Context>::New(getIsolate(), taskContext);
+    Context::Scope contextScope(context);
+
+    if (setupCallback.IsEmpty()) return;
+
+    TryCatch tryCatch;
+
+    Handle<Object> obj;
+    int argc=1;
+    Handle<Value> argv[argc];
+    if (matchColor==StartMessage::Color::GREEN)
+        argv[0]=v8::String::NewFromUtf8(getIsolate(), "GREEN");
+    else
+        argv[0]=v8::String::NewFromUtf8(getIsolate(), "YELLOW");
+
+    Local<Function> func=Local<Function>::New(getIsolate(), setupCallback);
+    Handle<Value> result= func->Call(context->Global(), argc, argv);
+    if (result.IsEmpty()){
+        ReportException(getIsolate(), &tryCatch);
+        throw JavaScriptVMException("Running onSetup function failed!");
+    }
 }
 
 void JavaScriptTask::onRun(){
@@ -226,7 +258,6 @@ void JavaScriptTask::subscripbeCallback(const v8::FunctionCallbackInfo<v8::Value
     string name(*paramName);
 
     JavaScriptTask* currentVM=static_cast<JavaScriptTask*>(isolate->GetData(1));
-    currentVM->debug("Hello world");
     currentVM->subscribedFunctions[name].Reset(isolate, args[1]);
     currentVM->subscribe(name,(notificationCallback)&JavaScriptTask::notificationReceived);
 }

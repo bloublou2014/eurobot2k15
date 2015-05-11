@@ -200,6 +200,8 @@ void JSScheduler::wrapTasks(Handle<Object> global){
     Local<ObjectTemplate> tpl = ObjectTemplate::New(isolate);
     tpl->SetAccessor(String::NewFromUtf8(isolate, "state"),
                             StateGetter);
+    tpl->Set(String::NewFromUtf8(isolate, "cancel", String::kInternalizedString),
+                FunctionTemplate::New(isolate, sendCancelNotificationCallback));
     tpl->SetInternalFieldCount(1);
 
     Local<Object> taskMap=Object::New(isolate);
@@ -304,6 +306,14 @@ void JSScheduler::getWorldStateCallback(const v8::FunctionCallbackInfo<Value> &a
     string value= scheduler->getHandler()->getWorldProperty(ToCString(key));
 
     args.GetReturnValue().Set(v8::String::NewFromUtf8(args.GetIsolate(), value.c_str()));
+}
+
+void JSScheduler::sendCancelNotificationCallback(const v8::FunctionCallbackInfo<Value> &args){
+    Local<Object> self = args.Holder();
+    AbstractTask* task=AbstractTask::Unwrap<AbstractTask>(self);
+    task->passMessage(new CancelTaskNotification());
+
+    args.GetReturnValue().Set(true);
 }
 
 }

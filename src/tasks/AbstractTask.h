@@ -43,7 +43,7 @@ public:
     void stop();
 
     //ovo bi trebao samo manager da poziva. Potrebno je atomicno promenuti stanje i updateovati heap.
-    void setState(TaskState _state);
+    void setState(TaskState _state, bool force=false);
     void updateState(TaskState _state);
     bool getColor(StartMessage::Color& color);
 
@@ -62,11 +62,15 @@ protected:
             KILL
         };
 
-        Instruction(Message* _message):message(_message),type(MESSAGE){}
+        Instruction(Message* _message):message(_message),type(MESSAGE),messageProcesed(NULL),processedLock(NULL){}
         Instruction(Type _type):type(_type){}
 
         Message* message;
         Type type;
+
+        mutex* processedLock;
+        bool* processed;
+        condition_variable* messageProcesed;
     };
 
     Instruction fetchInstruction();
@@ -74,6 +78,8 @@ protected:
 
     //this will be called when task's thread is created and it should be used to subsribe for desired events
     virtual void onCreate()=0;
+    //this will be called on match start to notify tasks of current color
+    virtual void onSetup(StartMessage::Color matchColor)=0;
     //this will notify task that it has been started (changed state to RUNNING)
     virtual void onRun()=0;
     //this will notify task that it has been stopped (changed state from RUNNING)

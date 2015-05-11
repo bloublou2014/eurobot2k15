@@ -83,23 +83,11 @@ void EnemyDetector::ProcessSensorCallback(){
 
 void EnemyDetector::ProcessEnemySensorCallback1(){
     readingSensore = true;
-    testBool = true;
-    if (previousState.left!=true){
-        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::LEFT, 0);
-        sendNotification(notification);
-        previousState.left=true;
-    }
 }
 
 void EnemyDetector::ProcessEnemySensorCallback2(){
     readingSensore = true;
 
-    testBool = true;
-    if (previousState.right!=true){
-        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::RIGHT, 0);
-        sendNotification(notification);
-        previousState.right=true;
-    }
 }
 
 void EnemyDetector::ProcessEnemySensorCallback3(){
@@ -114,55 +102,7 @@ void EnemyDetector::ProcessEnemySensorCallback3(){
 }
 
 void EnemyDetector::ProcessEnemySensorCallback4(){
-    readingSensore = true;
-    testBool = true;
 
-    using namespace std;
-
-    unsigned short data=modbusClient->readBrxon();
-    unsigned char backTmp=(char)data&0x00FF;
-    unsigned char frontTmp=(char)(data>>8)&0x00FF;
-
-    int back=-1*backTmp;
-    int front=frontTmp;
-
-//    std::stringstream ss;
-//    ss<<"BACK: "<<back<<" FRONT "<<front;
-//    debug(ss.str());
-    //Provera zadnjeg
-    if ((back>-50)||(back<-110)){
-        back=-255;
-    }
-    if ((front<50)||(front>110)){
-        front=255;
-    }
-
-    if (back==-255){  //Ako nije detektovano nista nazad
-        if (previousBackBrkon!=back){   //Ako je nesto bilo detektovano u prethodnoj iteraciji posalji da ga vise nema
-            EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON_BACK, previousBackBrkon, false);
-            sendNotification(notification);
-        }
-    }else{  //Ako je nesto detektovano
-        if (previousBackBrkon==-255){   //a malopre nije nista, posalji notifikaciju da se nesto pojavilo
-            EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON_BACK,back);
-            sendNotification(notification);
-        }
-    }
-    previousBackBrkon=back;
-
-    //Provera prednjeg
-    if (frontTmp==255){  //Ako nije detektovano nista nazad
-        if (previousFrontBrkon!=front){   //Ako je nesto bilo detektovano u prethodnoj iteraciji posalji da ga vise nema
-            EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON_FRONT, previousFrontBrkon, false);
-            sendNotification(notification);
-        }
-    }else{  //Ako je nesto detektovano
-        if (previousFrontBrkon==255){   //a malopre nije nista, posalji notifikaciju da se nesto pojavilo
-            EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON_FRONT,front);
-            sendNotification(notification);
-        }
-    }
-    previousFrontBrkon=front;
 }
 
 void EnemyDetector::ProcessBeaconCallback(){
@@ -177,19 +117,11 @@ void EnemyDetector::ProcessBeaconCallback(){
 }
 
 void EnemyDetector::ProcessNotEnemySensorCallback1(){
-    if (previousState.left){
-        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::LEFT, 0, false);
-        sendNotification(notification);
-        previousState.left=false;
-    }
+
 }
 
 void EnemyDetector::ProcessNotEnemySensorCallback2(){
-    if (previousState.right){
-        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::RIGHT, 0, false);
-        sendNotification(notification);
-        previousState.right=false;
-    }
+
 }
 
 void EnemyDetector::ProcessNotEnemySensorCallback3(){
@@ -201,16 +133,7 @@ void EnemyDetector::ProcessNotEnemySensorCallback3(){
 }
 
 void EnemyDetector::ProcessNotEnemySensorCallback4(){
-    if (previousBackBrkon!=-255){ //Ako je nesto bilo setovano za zadnji
-        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON_BACK, previousBackBrkon, false);
-        sendNotification(notification);
-        previousBackBrkon=-255;
-    }
-    if (previousFrontBrkon!=255){ //Ako je nesto bilo setovano za zadnji
-        EnemyDetectedNotification* notification=new EnemyDetectedNotification(EnemyDetectedNotification::BRKON_FRONT, previousFrontBrkon, false);
-        sendNotification(notification);
-        previousFrontBrkon=255;
-    }
+
 }
 
 

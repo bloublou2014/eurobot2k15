@@ -14,6 +14,7 @@ using std::vector;
 
 namespace robot{
 
+
 class Scheduler:public Node, public NotificationHandler, public JavaScriptVM{
 public:
     Scheduler(TaskManagerInterface* _hanler);

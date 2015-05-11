@@ -11,7 +11,8 @@
 namespace motion
 {
 
-MotionDriver::MotionDriver(geometry::Point2D initPosition, RobotType robotType, int initOrientation, int initSpeed):io_mutex(new boost::mutex())
+MotionDriver::MotionDriver(geometry::Point2D initPosition, RobotType robotType, int initOrientation, int initSpeed):
+    io_mutex(new boost::mutex()),Logger("DriverMotion")
 {
 	setPositionAndOrientation(initPosition, initOrientation);
 	setSpeed(initSpeed);
@@ -28,6 +29,7 @@ MotionDriver::~MotionDriver()
 
 void MotionDriver::moveStraight(int distance)
 {
+    debug("Move strait");
 	boost::lock_guard<boost::mutex> lock(*io_mutex);
 	
 	char message[] = {
@@ -44,6 +46,7 @@ void MotionDriver::moveStraight(int distance)
 
 void MotionDriver::rotateFor(int relativeAngle)
 {
+    debug("Rotate for");
 	boost::lock_guard<boost::mutex> lock(*io_mutex);
 	
 	char message[] = {
@@ -57,6 +60,7 @@ void MotionDriver::rotateFor(int relativeAngle)
 
 void MotionDriver::rotateTo(int absoluteAngle)
 {
+    debug("Rotate to");
 	boost::lock_guard<boost::mutex> lock(*io_mutex);
 	
 	char message[] = {
@@ -70,6 +74,7 @@ void MotionDriver::rotateTo(int absoluteAngle)
 
 void MotionDriver::moveToPosition(geometry::Point2D position, MovingDirection direction)
 {   
+    debug("Move to postion");
 	boost::lock_guard<boost::mutex> lock(*io_mutex);
 	
 	char message[] = {
@@ -113,6 +118,7 @@ void MotionDriver::stop()
 }
 
 void MotionDriver::softStop(){
+    debug("Soft stop");
     boost::lock_guard<boost::mutex> lock(*io_mutex);
 
     uart.writeUart('s');
@@ -145,6 +151,7 @@ int MotionDriver::getDirection()
 
 void MotionDriver::setSpeed(char speed)
 {
+debug("Set speed");
 	boost::lock_guard<boost::mutex> lock(*io_mutex);
 
 	this->speed = speed;
@@ -159,6 +166,7 @@ void MotionDriver::setSpeed(char speed)
 
 void MotionDriver::setPositionAndOrientation(const geometry::Point2D position, int orientation)
 {
+    debug("Set position and orientation");
 	boost::lock_guard<boost::mutex> lock(*io_mutex);
 
 	this->position = position;
