@@ -37,15 +37,25 @@ bool AbstractTask::runTask(){
 }
 
 bool AbstractTask::pauseTask(){
+    mutex messageLock;
+    condition_variable messageStateChanged;
+    Instruction instr(Instruction::Type::STOP);
+    bool processed=false;
+    instr.processed=&processed;
+    instr.processedLock=&messageLock;
+    instr.messageProcesed=&messageStateChanged;
     queueLock.lock();
-    instructionQueue.push(Instruction(Instruction::Type::STOP));
+    instructionQueue.push(instr);
     queueLock.unlock();
     queueNotEmpty.notify_one();
     //TODO: isto se mora proveriti uslov za pauziranje
 
-    //TODO: Cekaj dok se pause ne izvrsi!
-
-
+    {   //Blokiram se dok se poruka ne zavrsi
+        unique_lock<boost::mutex> lock(messageLock);
+        while(!*instr.processed){
+            messageStateChanged.wait(lock);
+        }
+    }
     return true;
 }
 
@@ -68,6 +78,7 @@ AbstractTask::Instruction AbstractTask::fetchInstruction(){
 }
 
 void AbstractTask::updateState(TaskState _state){
+    if (state==TaskState::FINISHED || state==TaskState::IMPOSSIBLE) return;
     handler->updateStatus(getName(),_state);
 }
 
@@ -80,11 +91,19 @@ bool AbstractTask::getColor(StartMessage::Color &color){
     }
 }
 
-void AbstractTask::setState(TaskState _state){
+void AbstractTask::setState(TaskState _state, bool force){
+    if (state==_state) return;  //No need to update state
+    if (!force){
+        if (state==TaskState::RUNNING && _state==TaskState::READY) return;  //If we are running no need to be ready
+    }
     if (state==TaskState::RUNNING && _state!=TaskState::RUNNING){
         onPause();
     }
     state=_state;
+
+    if (state==TaskState::RUNNING){
+        onRun();
+    }
 }
 
 void AbstractTask::registerManager(TaskManagerInterface *manager){
@@ -132,19 +151,30 @@ void AbstractTask::main(){
                 case COMMAND_RESPONSE:
                     processCommandResponse((CommandResponse*)message);
                     break;
+                case START_MESSAGE:
+//                    StartMessage* sm=((StartMessage*)message);
+                    onSetup(((StartMessage*)message)->getColor());
+                    break;
                 default:
                     break;
                 }
             }else{
                 switch(instr.type){
                 case Instruction::Type::START:
-                    setState(RUNNING);
-                    onRun();
+                    if (state==TaskState::READY){
+                        setState(RUNNING);
+                    }else{
+                        error("Can't run not ready task");
+                    }
                     break;
                 case Instruction::Type::STOP:
-                    onPause();
                     if (getTaskState()==RUNNING){
-                        setState(READY);
+                        setState(READY,true);
+                    }
+                    {
+                        unique_lock<boost::mutex> lock(*instr.processedLock);
+                        *instr.processed=true;
+                        instr.messageProcesed->notify_all();
                     }
                     break;
                 case Instruction::Type::KILL:

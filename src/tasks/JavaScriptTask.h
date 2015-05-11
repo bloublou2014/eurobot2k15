@@ -46,6 +46,7 @@ protected:
 
     //Task callbacks
     void onCreate();
+    void onSetup(StartMessage::Color matchColor);
     void onRun();
     void onPause();
     void onDestroy();
@@ -82,6 +83,7 @@ private:
     //Global callback functions
     Persistent<Function> runCallback;
     Persistent<Function> pauseCallback;
+    Persistent<Function> setupCallback;
 
     Persistent<ObjectTemplate> loggerTemplate;
     Persistent<ObjectTemplate> commandTemplate;

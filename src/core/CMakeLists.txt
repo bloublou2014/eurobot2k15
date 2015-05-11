@@ -12,6 +12,7 @@ TaskManagerInterface.cpp
 TaskStateChangeNotification.cpp
 JavaScriptVM.cpp
 Scheduler.cpp
-JSScheduler.cpp)
+JSScheduler.cpp
+CancelTaskNotification.cpp)
 
 target_link_libraries(core executors messages tasks)

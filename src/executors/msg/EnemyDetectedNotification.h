@@ -14,11 +14,8 @@ class EnemyDetectedNotification : public Notification
 {
 public:
     enum Type{
-        BRKON_FRONT=0,
-        BRKON_BACK=1,
-        LEFT=2,
-        RIGHT=3,
-        BACK=4
+        FRONT=0,
+        BACK=1
     };
 
     static string NAME;

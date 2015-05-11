@@ -18,6 +18,7 @@
 #include "executors/msg/SideNotification.h"
 #include "core/TaskStateChangeNotification.h"
 #include "executors/msg/EnemyDetectorCommand.h"
+#include "core/CancelTaskNotification.h"
 
 using std::string;
 using std::map;

@@ -13,11 +13,14 @@
 
 #include "utils/uart/UartConnection.h"
 #include "utils/geometry/Point2D.h"
+#include "core/Logger.h"
+
+using robot::Logger;
 
 namespace motion
 {
 
-class MotionDriver {
+class MotionDriver : public Logger{
 public:
 	enum State{IDLE, STUCK, MOVING, ROTATING, ERROR};
 	enum MovingDirection{FORWARD=1, BACKWARD=-1};

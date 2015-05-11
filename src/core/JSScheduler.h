@@ -55,6 +55,7 @@ private:
     static void setWorldStateCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
     static void getWorldStateCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
 
+    static void sendCancelNotificationCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
 };
 
 }

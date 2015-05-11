@@ -167,6 +167,11 @@ void TaskManager::dispatchMessage(){
             StartMessage* sm=(StartMessage*)message;
             matchColor=sm->getColor();
             matchStarted=true;
+            //Send all tasks message to setup
+            map<string, AbstractTask*>::iterator it=availableTasks.begin();
+            for (;it!=availableTasks.end();++it){
+                it->second->passMessage(sm->clone());
+            }
             scheduler.startDispatching();
         }
         break;
