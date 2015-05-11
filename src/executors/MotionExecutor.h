@@ -1,6 +1,7 @@
 #ifndef _MOTIONEXECUTOR_H
 #define _MOTIONEXECUTOR_H
 
+#include <deque>
 #include <boost/thread/mutex.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/thread/thread.hpp>
@@ -22,10 +23,14 @@
 #include "drivers/motion/MotionDriver.h"
 #include "executors/msg/MotionNotification.h"
 #include "executors/msg/EnemyDetectedNotification.h"
+#include "utils/pathFinding/PathFinding.h"
+#include "executors/msg/EnemyDetectorCommand.h"
 
 using namespace robot;
+using namespace path_finding;
 using boost::mutex;
 using std::queue;
+using std::deque;
 using std::pair;
 using std::max_element;
 
@@ -48,15 +53,19 @@ public:
         retryCount=0;
         delete command;
         command=NULL;
+        usePathFinder=false;
+        pfPositions.clear();
     }
 
-    void Set(MotionCommand* _motionCommand, MotionState& _destination){
+    void Set(MotionCommand* _motionCommand, MotionState& _destination, bool _usePf=false){
         destination=_destination;
         suspended=false;
         command=_motionCommand;
         slowSpeed=false;
         previousSpeed=0;
         retryCount=0;
+        usePathFinder=_usePf;
+        pfPositions.clear();
     }
 
     void pause(MotionDriver& driver){
@@ -67,7 +76,11 @@ public:
     void resume(MotionDriver& driver){
         suspended=false;
         retryCount=0;
-        driver.moveToPosition(destination.Position,destination.Direction);
+        if (pfPositions.size()>0){
+            driver.moveToPosition(pfPositions.front(),destination.Direction);
+        }else{
+            driver.moveToPosition(destination.Position,destination.Direction);
+        }
     }
 
     inline MotionCommand* getCommand(){
@@ -108,15 +121,35 @@ public:
         return destination;
     }
 
+    bool shouldUsePF() const{
+        return usePathFinder;
+    }
+
+    std::deque<geometry::Point2D>& getPfPositions(){
+        return pfPositions;
+    }
+
+    void moveToNextPoint(MotionDriver& driver){
+        pfPositions.pop_front();
+        resume(driver);
+    }
+
+    bool hasMorePoints(){
+        if (usePathFinder)
+            return pfPositions.size()>0;
+        return false;
+    }
+
 private:
     MotionDriver::MovingDirection direction;
     MotionCommand* command;
     MotionState destination;
     int retryCount;
     bool suspended;
-
+    bool usePathFinder;
     bool slowSpeed;
     int previousSpeed;
+    std::deque<geometry::Point2D> pfPositions;
 };
 
 class MotionExecutor: public AbstractExecutor{
@@ -132,6 +165,7 @@ public:
     void processMotionCommand(Command* command);
     void processGetMotionState(Command* command);
     void processSetEnemyDetector(Command* command);
+    void processAddObstacle(Command* command);
 
     void processEnemyDetectedNotification(Notification* notification);
 protected:
@@ -166,26 +200,34 @@ private:
     static int MaxRetryCount;
 
     bool isEnemyDetected(MotionState& ms);
-    //void handleEnemyDetection();
+
+    int rSensor;
     bool useEnemyDetector;
     struct Enemy{
-        Enemy():Detected(false){}
-        bool Detected;
+        Enemy(int _angle=0):Angle(_angle),Detected(false){}
         int Angle;
-        MotionDriver::MovingDirection Direction;
-        int Distance;
+        bool Detected;
     };
-    Enemy enemySensors[10];
-    int enemySensorCount;
+    Enemy detectedEnemies[2];
 
     /* Ignoring outer field obsticles*/
     int maxX;
     int maxY;
+    int minX;
+    int minY;
     bool checkField;
     bool isInField(int angle, int r);
 
-    bool shouldUseSlow(int distance, int speed);
-    bool shouldUseSlow(geometry::Point2D _position, int speed);
+    /* for slowing down motion on small distances */
+    bool shouldUseSlow(int distance, int originalSpeed);
+    bool shouldUseSlow(geometry::Point2D _position, int originalSpeed);
+
+    mutex pfLock;
+    PathFinding* pathFinder;
+    vector<Point2D> enemyDimensions;
+    int dodajSestougao(int krugX, int krugY, int triangleSide);
+    int enemyDistance;
+    int triangleSide;
 };
 
 }

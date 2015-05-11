@@ -22,7 +22,7 @@ namespace robot{
 
 class Node : public Logger{
 public:
-    Node(const string& _name):name(_name){}
+    Node(const string& _name):name(_name), Logger(_name){}
     string getName() const;
 
     virtual void init();
@@ -33,11 +33,6 @@ public:
 protected:
     void setName(const string& _name);
     virtual void main()=0;
-
-    void debug(const string& message);
-    void error(const string& message);
-    void warning(const string& message);
-    void info(const string& message);
 private:
     string name;
     boost::thread thread;

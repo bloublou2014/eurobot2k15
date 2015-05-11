@@ -104,11 +104,12 @@ public:
     static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
 
 
-    MoveToPosition(Point2D _position, MotionDriver::MovingDirection _direction= MotionDriver::MovingDirection::FORWARD):
-        MotionCommand(MOVE_TO_POSITION), position(_position),direction(_direction){}
-    MoveToPosition(const MoveToPosition& mtp):MotionCommand(mtp),position(mtp.position),direction(mtp.direction){}
+    MoveToPosition(Point2D _position, MotionDriver::MovingDirection _direction= MotionDriver::MovingDirection::FORWARD, bool _usePf=false):
+        MotionCommand(MOVE_TO_POSITION), position(_position),direction(_direction), usePathFinder(_usePf){}
+    MoveToPosition(const MoveToPosition& mtp):MotionCommand(mtp),position(mtp.position),direction(mtp.direction),usePathFinder(mtp.usePathFinder){}
     Point2D getPosition() const {return position;}
     MotionDriver::MovingDirection getDirection() const{return direction;}
+    bool shouldUsePathFinder(){return usePathFinder;}
 
     Message* clone(){
         return new MoveToPosition(*this);
@@ -116,6 +117,7 @@ public:
 private:
     Point2D position;
     MotionDriver::MovingDirection direction;
+    bool usePathFinder;
 };
 
 class MoveArc : public MotionCommand{ // done

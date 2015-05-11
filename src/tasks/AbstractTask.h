@@ -5,6 +5,7 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
 #include <queue>
+#include <map>
 
 #include "core/Node.h"
 #include "core/CommandSource.h"
@@ -12,17 +13,23 @@
 #include "core/NotificationSource.h"
 #include "core/AbstractMessageHandler.h"
 #include "core/TaskManagerInterface.h"
+#include "core/JavaScriptVM.h"
 
 using std::queue;
+using std::map;
 using boost::mutex;
 using boost::condition_variable;
 using boost::unique_lock;
 
+using namespace v8;
+using javascript::JavaScriptMessageProvider;
+using javascript::ObjectWrap;
+
 namespace robot{
 
-class AbstractTask: public Node, protected CommandSource, protected NotificationHandler, public NotificationSource{
+class AbstractTask: public Node, protected CommandSource, protected NotificationHandler, public NotificationSource, public ObjectWrap{
 public:
-    AbstractTask(const string& name):Node(name), taskKilled(false), state(TaskState::SUSPENDED){}
+    AbstractTask(const string& name, int _rank=0):Node(name), taskKilled(false), state(TaskState::SUSPENDED),rank(_rank){}
 
     bool passMessage(Message* message);
     bool isSubscribed(Notification *message);
@@ -41,6 +48,11 @@ public:
     bool getColor(StartMessage::Color& color);
 
     void registerManager(TaskManagerInterface* manager);
+    TaskManagerInterface* getHandler() const;
+
+    int getRank() const;
+    string getLocalState(const string& key);
+    void setLocalState(const string& key, const string& value);
 protected:
     struct Instruction{
         enum Type{
@@ -56,7 +68,6 @@ protected:
         Message* message;
         Type type;
     };
-
 
     Instruction fetchInstruction();
     void main();
@@ -81,6 +92,9 @@ private:
     bool taskKilled;
 
     TaskManagerInterface* handler;
+    int rank;
+    mutex localStateLock;
+    map<string, string> localState;
 };
 
 struct TaskExecutionException: public std::exception{

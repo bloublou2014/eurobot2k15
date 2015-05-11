@@ -42,6 +42,10 @@ bool AbstractTask::pauseTask(){
     queueLock.unlock();
     queueNotEmpty.notify_one();
     //TODO: isto se mora proveriti uslov za pauziranje
+
+    //TODO: Cekaj dok se pause ne izvrsi!
+
+
     return true;
 }
 
@@ -77,6 +81,9 @@ bool AbstractTask::getColor(StartMessage::Color &color){
 }
 
 void AbstractTask::setState(TaskState _state){
+    if (state==TaskState::RUNNING && _state!=TaskState::RUNNING){
+        onPause();
+    }
     state=_state;
 }
 
@@ -84,6 +91,29 @@ void AbstractTask::registerManager(TaskManagerInterface *manager){
     CommandSource::setHandler(manager);
     NotificationSource::setHandler(manager);
     handler=manager;
+}
+
+TaskManagerInterface *AbstractTask::getHandler() const{
+    return handler;
+}
+
+int AbstractTask::getRank() const{
+    return rank;
+}
+
+string AbstractTask::getLocalState(const string &key){
+    boost::mutex::scoped_lock lock(localStateLock);
+    map<string,string>::iterator it;
+    if ((it=localState.find(key))!=localState.end()){
+        return it->second;
+    }else{
+        return "";
+    }
+}
+
+void AbstractTask::setLocalState(const string &key, const string &value){
+     boost::mutex::scoped_lock lock(localStateLock);
+     localState[key]=value;
 }
 
 void AbstractTask::main(){
@@ -112,10 +142,10 @@ void AbstractTask::main(){
                     onRun();
                     break;
                 case Instruction::Type::STOP:
+                    onPause();
                     if (getTaskState()==RUNNING){
                         setState(READY);
                     }
-                    onPause();
                     break;
                 case Instruction::Type::KILL:
                     setState(IMPOSSIBLE);
@@ -127,6 +157,11 @@ void AbstractTask::main(){
                 }
             }
         }
+    }
+    catch(JavaScriptVMException& e){
+        setState(IMPOSSIBLE);
+        error("Javascript error. Reason:");
+        error(e.what());
     }
     catch(TaskExecutionException& e){
         setState(IMPOSSIBLE);

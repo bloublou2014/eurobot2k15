@@ -4,79 +4,16 @@ namespace robot{
 
 string JavaScriptTask::UTILS_SCRIPT="utils.js";
 
-void JavaScriptTask::InitV8Platform(){
-    v8::V8::InitializeICU();
-    v8::Platform* platform = v8::platform::CreateDefaultPlatform();
-    v8::V8::InitializePlatform(platform);
-    v8::V8::Initialize();
+JavaScriptTask* JavaScriptTask::UnwrapJavascriptTask(Handle<Object> object){
+    Handle<External> field = Handle<External>::Cast(object->GetInternalField(0));
+    void* ptr = field->Value();
+    return static_cast<JavaScriptTask*>(ptr);
 }
 
-const char* JavaScriptTask::ToCString(const v8::String::Utf8Value& value) {
-    return *value ? *value : "<string conversion failed>";
-}
-
-void JavaScriptTask::ReportException(v8::Isolate* isolate, v8::TryCatch* try_catch) {
-    static mutex exceptionLock;
-    unique_lock<mutex> lock(exceptionLock);
-
-    v8::HandleScope handle_scope(isolate);
-    v8::String::Utf8Value exception(try_catch->Exception());
-    const char* exception_string = ToCString(exception);
-    v8::Handle<v8::Message> message = try_catch->Message();
-    if (message.IsEmpty()) {
-        // V8 didn't provide any extra information about this error; just
-        // print the exception.
-        fprintf(stderr, "%s\n", exception_string);
-    } else {
-        // Print (filename):(line number): (message).
-        v8::String::Utf8Value filename(message->GetScriptOrigin().ResourceName());
-        const char* filename_string = ToCString(filename);
-        int linenum = message->GetLineNumber();
-        fprintf(stderr, "%s:%i: %s\n", filename_string, linenum, exception_string);
-        // Print line of source code.
-        v8::String::Utf8Value sourceline(message->GetSourceLine());
-        const char* sourceline_string = ToCString(sourceline);
-        fprintf(stderr, "%s\n", sourceline_string);
-        // Print wavy underline (GetUnderline is deprecated).
-        int start = message->GetStartColumn();
-        for (int i = 0; i < start; i++) {
-            fprintf(stderr, " ");
-        }
-        int end = message->GetEndColumn();
-        for (int i = start; i < end; i++) {
-            fprintf(stderr, "^");
-        }
-        fprintf(stderr, "\n");
-        v8::String::Utf8Value stack_trace(try_catch->StackTrace());
-        if (stack_trace.length() > 0) {
-            const char* stack_trace_string = ToCString(stack_trace);
-            fprintf(stderr, "%s\n", stack_trace_string);
-        }
-    }
-}
-
-Handle<Object> JavaScriptTask::createObjectFromTemplate(ObjectTemplateBuilder builder, Persistent<ObjectTemplate>& objTemplate, void* internalField){
-    EscapableHandleScope scope(getIsolate());
-
-    if (objTemplate.IsEmpty()){
-        Handle<ObjectTemplate> newTemplate= builder(getIsolate());
-        objTemplate.Reset(getIsolate(), newTemplate);
-    }
-
-    Handle<ObjectTemplate> templ=Local<ObjectTemplate>::New(getIsolate(), objTemplate);
-    Local<Object> result=templ->NewInstance();
-    Handle<External> refferencePtr=External::New(getIsolate(), internalField);
-    result->SetInternalField(0, refferencePtr);
-
-    return scope.Escape(result);
-}
-
-void JavaScriptTask::createGlobalObjects(){
+void JavaScriptTask::createGlobalObjects(Handle<Object> global){
     HandleScope scope(getIsolate());
 
-    v8::Local<v8::Context> context =
-            v8::Local<v8::Context>::New(getIsolate(), taskContext);
-    Handle<Object> global=context->Global();
+    getIsolate()->SetData(1,this);
 
     /* Exposing builtin functions and objects */
     Local<Object> logger=createObjectFromTemplate(static_cast<ObjectTemplateBuilder>(&createLogTemplate), loggerTemplate, this);
@@ -87,58 +24,11 @@ void JavaScriptTask::createGlobalObjects(){
     global->Set(v8::String::NewFromUtf8(getIsolate(), "Notification"), notification);
     global->Set(v8::String::NewFromUtf8(getIsolate(), "Command"), command);
     global->Set(v8::String::NewFromUtf8(getIsolate(), "Manager"), manager);
-
-    messageFactory->init(global);
 }
 
-Handle<String> JavaScriptTask::ReadScript(Isolate* isolate, const string& fileName) {
-    FILE* file = fopen(fileName.c_str(), "rb");
-    if (file == NULL) return Handle<String>();
-
-    fseek(file, 0, SEEK_END);
-    int size = ftell(file);
-    rewind(file);
-
-    char* chars = new char[size + 1];
-    chars[size] = '\0';
-
-    for (int i = 0; i < size;) {
-        int read = static_cast<int>(fread(&chars[i], 1, size - i, file));
-        i += read;
-    }
-
-    fclose(file);
-    Handle<String> result = String::NewFromUtf8(isolate, chars, String::kNormalString, size);
-    delete[] chars;
-    return result;
-}
-
-Isolate* JavaScriptTask::getIsolate() const{
-    return isolate;
-}
-
-Handle<Script> JavaScriptTask::compileScript(Handle<String> scriptSource){
-    EscapableHandleScope scope(getIsolate());
-
-    TryCatch tryCatch;
-    Local<Script> compiledScript=Script::Compile(scriptSource);
-    if (compiledScript.IsEmpty()){
-        ReportException(getIsolate(), &tryCatch);
-        throw TaskExecutionException("Compiling script contains errors. Check stack trace for details.");
-    }
-    return scope.Escape(compiledScript);
-}
-
-Handle<Script> JavaScriptTask::compileScript(Handle<Script> script, Handle<String> scriptSource){
-    EscapableHandleScope scope(getIsolate());
-
-    TryCatch tryCatch;
-    script->Compile(scriptSource);
-    if (script.IsEmpty()){
-        ReportException(getIsolate(), &tryCatch);
-        throw TaskExecutionException("Compiling script contains errors. Check stack trace for details.");
-    }
-    return script;
+void JavaScriptTask::getScriptNames(std::vector<string> &scripts){
+    scripts.push_back(directoryName+boost::filesystem::path::preferred_separator+UTILS_SCRIPT);
+    scripts.push_back(scriptName);
 }
 
 Handle<ObjectTemplate> JavaScriptTask::createLogTemplate(Isolate* isolate){
@@ -181,6 +71,10 @@ Handle<ObjectTemplate> JavaScriptTask::createManagerTemplate(Isolate* isolate){
                 FunctionTemplate::New(isolate, setStateCallback));
     result->Set(String::NewFromUtf8(isolate, "getColor", String::kInternalizedString),
                 FunctionTemplate::New(isolate, getCollorCallback));
+    result->Set(String::NewFromUtf8(isolate, "getWorldState", String::kInternalizedString),
+                FunctionTemplate::New(isolate, getWorldStateCallback));
+    result->Set(String::NewFromUtf8(isolate, "setWorldState", String::kInternalizedString),
+                FunctionTemplate::New(isolate, setWorldStateCallback));
 
     return scope.Escape(result);
 }
@@ -200,53 +94,18 @@ Handle<ObjectTemplate> JavaScriptTask::createNotificationTemplate(Isolate* isola
     return scope.Escape(result);
 }
 
-JavaScriptTask* JavaScriptTask::UnwrapJavascriptTask(Handle<Object> object){
-    Handle<External> field = Handle<External>::Cast(object->GetInternalField(0));
-    void* ptr = field->Value();
-    return static_cast<JavaScriptTask*>(ptr);
-}
-
-void JavaScriptTask::runScript(Handle<Script> compiledScript){
-    TryCatch tryCatch;
-    Local<Value> result=compiledScript->Run();
-    if (result.IsEmpty()){
-        ReportException(getIsolate(), &tryCatch);
-        throw TaskExecutionException("Running script contains errors. Check stack trace for details.");
-    }
-}
-
 void JavaScriptTask::onCreate(){
     debug("onCreate");
 
-    isolate = Isolate::New();
-    isolate->Enter();
+    //Initialize VM
+    initializeGlobalState();
 
     HandleScope scope(getIsolate());
 
-    Handle<Context> context=Context::New(getIsolate());
-    taskContext.Reset(getIsolate(), context);
 
+    v8::Local<v8::Context> context =
+                v8::Local<v8::Context>::New(getIsolate(), taskContext);
     Context::Scope contextScope(context);
-
-    messageFactory=new JavaScriptMessageFactory();
-    isolate->SetData(0,messageFactory);
-    isolate->SetData(1,this);
-
-    createGlobalObjects();
-
-    Handle<String> utilsScript=ReadScript(getIsolate(), directoryName+boost::filesystem::path::preferred_separator+UTILS_SCRIPT);
-    if (!utilsScript.IsEmpty()){
-        Local<Script> compiledUtilsScript=compileScript(utilsScript);
-        runScript(compiledUtilsScript);
-    }
-
-    Handle<String> script=ReadScript(getIsolate(), scriptName);
-    if (script.IsEmpty()){
-        throw TaskExecutionException("Error reading file. Empty or nonexisting file.");
-    }
-
-    Local<Script> compiledScript=compileScript(script);
-    runScript(compiledScript);
 
     Handle<String> runName=String::NewFromUtf8(getIsolate(),"onRun");
     Handle<String> pauseName=String::NewFromUtf8(getIsolate(), "onPause");
@@ -265,24 +124,6 @@ void JavaScriptTask::onCreate(){
     pauseCallback.Reset(getIsolate(), pause);
 }
 
-bool JavaScriptTask::executeGlobalFunction(Handle<Function> function, const int argc, Handle<Value> argv[]){
-    HandleScope scope(getIsolate());
-
-    Local<Context> context=Local<Context>::New(getIsolate(),taskContext);
-    Context::Scope contextScope(context);
-
-    TryCatch tryCatch;
-
-    Handle<Value> result=function->Call(context->Global(),argc,argv);
-
-    if (result.IsEmpty()){
-        error("Error starting script");
-        return false;
-    }
-
-    return true;
-}
-
 void JavaScriptTask::onRun(){
     callJavascriptCommandCallback(runCallback,NULL);
 }
@@ -292,8 +133,7 @@ void JavaScriptTask::onPause(){
 
 void JavaScriptTask::onDestroy(){
     debug("Exiting isolate");
-    isolate->Exit();
-    delete messageFactory;
+    finalize();
 }
 
 void JavaScriptTask::commandSuccess(CommandResponse* resp){
@@ -317,32 +157,6 @@ void JavaScriptTask::commandError(CommandResponse* resp){
 void JavaScriptTask::commandProgress(CommandResponse* resp){
     if (commandResponseCallbacks.find(resp->getId())==commandResponseCallbacks.end()) return;
     callJavascriptCommandCallback(commandResponseCallbacks[resp->getId()]->progress,resp);
-}
-
-void JavaScriptTask::callJavascriptCommandCallback(Persistent<Function>& function, CommandResponse* resp){
-    HandleScope scope(getIsolate());
-    Local<Context> context =Local<Context>::New(getIsolate(), taskContext);
-    Context::Scope contextScope(context);
-
-    TryCatch tryCatch;
-
-    Handle<Object> obj;
-    int argc=1;
-    Handle<Value> argv[argc];
-    if (resp!=NULL){
-        obj=messageFactory->wrapObject(resp->getName(),getIsolate(),resp);
-        argc=1;
-        argv[0]=obj;
-    }else{
-        argc=0;
-    }
-
-    Local<Function> func=Local<Function>::New(getIsolate(), function);
-    Handle<Value> result= func->Call(context->Global(),argc, argv);
-    if (result.IsEmpty()){
-        ReportException(getIsolate(), &tryCatch);
-        throw TaskExecutionException("Running callback method function failed.");
-    }
 }
 
 void JavaScriptTask::notificationReceived(Notification* testNotification){
@@ -412,6 +226,7 @@ void JavaScriptTask::subscripbeCallback(const v8::FunctionCallbackInfo<v8::Value
     string name(*paramName);
 
     JavaScriptTask* currentVM=static_cast<JavaScriptTask*>(isolate->GetData(1));
+    currentVM->debug("Hello world");
     currentVM->subscribedFunctions[name].Reset(isolate, args[1]);
     currentVM->subscribe(name,(notificationCallback)&JavaScriptTask::notificationReceived);
 }
@@ -508,6 +323,36 @@ void JavaScriptTask::getCollorCallback(const v8::FunctionCallbackInfo<v8::Value>
     }else{
         isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Can't get color, match not started!"));
     }
+}
+
+void JavaScriptTask::setWorldStateCallback(const v8::FunctionCallbackInfo<Value> &args){
+    Isolate* isolate=Isolate::GetCurrent();
+    JavaScriptTask* task=UnwrapJavascriptTask(args.Holder());
+
+    if (args.Length()<2){
+        isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Not enaugh parameters!"));
+    }
+
+    v8::String::Utf8Value key(args[0]);
+    v8::String::Utf8Value value(args[1]);
+
+    task->getHandler()->setWorldProperty(ToCString(key),ToCString(value));
+    args.GetReturnValue().Set(true);
+}
+
+void JavaScriptTask::getWorldStateCallback(const v8::FunctionCallbackInfo<Value> &args){
+    Isolate* isolate=Isolate::GetCurrent();
+    JavaScriptTask* task=UnwrapJavascriptTask(args.Holder());
+
+    if (args.Length()<1){
+        isolate->ThrowException(v8::String::NewFromUtf8(isolate, "Not enaugh parameters!"));
+    }
+
+    v8::String::Utf8Value key(args[0]);
+
+    string value= task->getHandler()->getWorldProperty(ToCString(key));
+
+    args.GetReturnValue().Set(v8::String::NewFromUtf8(args.GetIsolate(), value.c_str()));
 }
 
 }
