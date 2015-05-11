@@ -18,17 +18,15 @@ void MotionExecutor::init(){
     using namespace boost::property_tree;
     ptree pt;
 
-    int rBrkon;
-    int rSensor;
     read_xml(CONFIG_FILENAME, pt);
     BOOST_FOREACH(ptree::value_type &v, pt.get_child("motionConfig"))
     {
-        rBrkon=v.second.get<int>("rBrkon");
         rSensor=v.second.get<int>("rSensor");
         maxX=v.second.get<int>("maxX");
         maxY=v.second.get<int>("maxY");
         minX=v.second.get<int>("minX");
         minY=v.second.get<int>("minY");
+
         enemyDistance=v.second.get<int>("enemyDistance");
         triangleSide=v.second.get<int>("triangleSide");
     }
@@ -39,7 +37,7 @@ void MotionExecutor::init(){
     this->registerCommand(AddStaticObject::NAME,static_cast<commandCallback>(&MotionExecutor::processAddObstacle));
 
     //Subscribe to enemy detection notifications
-    this->subscribe(EnemyDetectedNotification::NAME,static_cast<notificationCallback>(&MotionExecutor::processEnemyDetectedNotification));
+//    this->subscribe(EnemyDetectedNotification::NAME,static_cast<notificationCallback>(&MotionExecutor::processEnemyDetectedNotification));
 
     motionHandles[MotionCommand::MotionType::MOVE_STRAIGHT]=static_cast<motionCommandHandle>(&MotionExecutor::moveForward);
     motionHandles[MotionCommand::MotionType::MOVE_TO_POSITION]=static_cast<motionCommandHandle>(&MotionExecutor::moveToPosition);
@@ -51,53 +49,41 @@ void MotionExecutor::init(){
     motionHandles[MotionCommand::MotionType::SET_POSITION]=static_cast<motionCommandHandle>(&MotionExecutor::setPosition);
 
     //Initialize sensor distances
-    enemySensors[EnemyDetectedNotification::Type::BRKON_FRONT].Distance=rBrkon;
-    enemySensors[EnemyDetectedNotification::Type::BRKON_BACK].Distance=rBrkon;
-    enemySensors[EnemyDetectedNotification::Type::LEFT].Distance=rSensor;
-    enemySensors[EnemyDetectedNotification::Type::RIGHT].Distance=rSensor;
-    enemySensors[EnemyDetectedNotification::Type::BACK].Distance=rSensor;
-
-    enemySensors[EnemyDetectedNotification::Type::BRKON_FRONT].Direction=MotionDriver::MovingDirection::FORWARD;
-    enemySensors[EnemyDetectedNotification::Type::BRKON_BACK].Direction=MotionDriver::MovingDirection::BACKWARD;
-    enemySensors[EnemyDetectedNotification::Type::LEFT].Direction=MotionDriver::MovingDirection::FORWARD;
-    enemySensors[EnemyDetectedNotification::Type::RIGHT].Direction=MotionDriver::MovingDirection::FORWARD;
-    enemySensors[EnemyDetectedNotification::Type::BACK].Direction=MotionDriver::MovingDirection::BACKWARD;
-    enemySensorCount=5;
-
     pathFinder=new PathFinding(maxX, minX, maxY, minY);
 }
 
 void MotionExecutor::processEnemyDetectedNotification(Notification* notification){
     EnemyDetectedNotification* ed=static_cast<EnemyDetectedNotification*>(notification);
-    pfLock.lock();
-    enemySensors[ed->getType()].Detected=ed->isDetected();
-    int angle=ed->getAngle();
-    enemySensors[ed->getType()].Angle=angle;
-    //Izbacim iz pf ako je nesto vec bilo ubaceno
-    if(enemySensors[ed->getType()].obstacleId!=-1){
-        pathFinder->removeObstacle(enemySensors[ed->getType()].obstacleId);
-    }
-    if (ed->isDetected()){
-        stateLock.lock();
-        Point2D enemyPosition=lastState.Position;
-        stateLock.unlock();
-        enemyPosition.setX(enemyPosition.getX()+enemyDistance*cos(angle));
-        enemyPosition.setY(enemyPosition.getY()+enemyDistance*sin(angle));
-        enemySensors[ed->getType()].obstacleId=dodajSestougao(enemyPosition.getX(),enemyPosition.getY(),triangleSide);
-    }
-    pfLock.unlock();
+//    pfLock.lock();    //Path finding logic
+//    enemySensors[ed->getType()].Detected=ed->isDetected();
+//    int angle=ed->getAngle();
+//    enemySensors[ed->getType()].Angle=angle;
+//    //Izbacim iz pf ako je nesto vec bilo ubaceno
+//    if(enemySensors[ed->getType()].obstacleId!=-1){
+//        pathFinder->removeObstacle(enemySensors[ed->getType()].obstacleId);
+//    }
+//    if (ed->isDetected()){
+//        stateLock.lock();
+//        Point2D enemyPosition=lastState.Position;
+//        stateLock.unlock();
+//        enemyPosition.setX(enemyPosition.getX()+enemyDistance*cos(angle));
+//        enemyPosition.setY(enemyPosition.getY()+enemyDistance*sin(angle));
+//        enemySensors[ed->getType()].obstacleId=dodajSestougao(enemyPosition.getX(),enemyPosition.getY(),triangleSide);
+//    }
+//    pfLock.unlock();
 
     std::stringstream ss;
-
-    ss<<"Enemy detected type: "<<ed->getType()<<" detected: "<<ed->isDetected()<<" ";
-//    if (ed->getType()==EnemyDetectedNotification::Type::BRKON_BACK){
-//        ss<<"BACK BRKON @ "<<ed->getAngle();
-//    }
-
-//    if (ed->getType()==EnemyDetectedNotification::Type::BRKON_FRONT){
-//        ss<<"FRONT BRKON @ "<<ed->getAngle();
-//    }
-
+    EnemyDetectedNotification::Type detectedType=ed->getType();
+    if (!ed->isDetected()){
+        detectedEnemies[detectedType].Detected=false;
+        ss<<"Enemy detected type: "<<ed->getType()<<" detected angle: "<<ed->getAngle();
+        //TODO: Remove enemy from path finder
+    }else{
+        detectedEnemies[detectedType].Detected=true;
+        detectedEnemies[detectedType].Angle=ed->getAngle();
+        ss<<"Enemy detected type: "<<ed->getType()<<" detected angle: "<<ed->getAngle();
+        //TODO: Add enemy in pathfinder
+    }
     debug(ss.str());
 }
 
@@ -114,6 +100,13 @@ void MotionExecutor::processGetMotionState(Command* command){
     resp->setId(command->getId());
     stateLock.unlock();
     sendResponse(resp);
+}
+
+void MotionExecutor::processAddObstacle(Command* command){
+    pfLock.lock();
+    AddStaticObject* cmd=(AddStaticObject*)command;
+    pathFinder->addObstacle(cmd->getEdges());
+    pfLock.unlock();
 }
 
 void MotionExecutor::processSetEnemyDetector(Command* command){
@@ -160,35 +153,37 @@ void MotionExecutor::stop(){
 
 const int MotionInstruction::MaxRetryCount=500;
 bool MotionExecutor::isEnemyDetected(MotionState& ms){
-    if (ms.State==MotionDriver::State::ROTATING) return false;  //Fix zbog malog
-    for(int i=0;i<enemySensorCount;++i){
-        //If we are moving in direction of detected obsticle
-        if (enemySensors[i].Direction==ms.Direction && enemySensors[i].Detected){
-            if (isInField(enemySensors[i].Angle,enemySensors[i].Distance)){
-                //than enemy is detected in moving direction
-                std::stringstream ss;
-                ss<<"Enemy detected: "<<i;
-//                debug(ss.str());
-                return true;
-            }
-        }
+    if (ms.State!=MotionDriver::State::MOVING) return false;  //We won't use enemy detection when not moving
+    EnemyDetectedNotification::Type detectedType;
+    if (ms.Direction==MotionDriver::MovingDirection::FORWARD){
+        detectedType=EnemyDetectedNotification::Type::FRONT;
+    }else{
+        detectedType=EnemyDetectedNotification::Type::BACK;
+    }
+    if (!detectedEnemies[detectedType].Detected)
+        return false;  //We didn't find anything on moving side
+    if (isInField(detectedEnemies[detectedType].Angle,rSensor)){
+        //than enemy is detected in moving direction
+        return true;
     }
     return false;
 }
 
-bool MotionExecutor::shouldUseSlow(int distance){
-    return distance<SLOW_DISTANCE;  //if it's smaller than slow hould be used
+bool MotionExecutor::shouldUseSlow(int distance,int originalSpeed){
+    if (originalSpeed<=SLOW_SPEED) return false;
+    return abs(distance)<SLOW_DISTANCE;  //if it's smaller than slow hould be used
 }
 
-bool MotionExecutor::shouldUseSlow(Point2D second){
-    return lastState.Position.euclidDist(second)<SLOW_DISTANCE;
+bool MotionExecutor::shouldUseSlow(Point2D second, int originalSpeed){
+    if (originalSpeed<=SLOW_SPEED) return false;
+    return abs(lastState.Position.euclidDist(second))<SLOW_DISTANCE;
 }
 
 void MotionExecutor::main(){
     shouldStop=false;
     debug("Started main thread execution");
 
-    bool waitOnEnemyCountCheck=true;
+    bool waitOnEnemyCountCheck=false;
 #ifdef MALI_ROBOT
     waitOnEnemyCountCheck=false;
 #endif
@@ -225,12 +220,12 @@ void MotionExecutor::main(){
                         }
                     }
                 }else{
-                    debug("******* Pausing execution *******");
+                    debug("******* Pausing motion *******");
                     currentMotionInstruction.pause(driver);
                 }
             }else if (currentMotionInstruction.isSuspended()){
                 debug("Resuming motion");
-                if (shouldUseSlow(currentMotionInstruction.getDestination().Position)){
+                if (shouldUseSlow(currentMotionInstruction.getDestination().Position,driver.getSpeed())){
                     currentMotionInstruction.saveSpeed(driver.getSpeed());
                     driver.setSpeed(SLOW_SPEED);
                 }
@@ -341,14 +336,12 @@ void MotionExecutor::moveToPosition(MotionCommand* _motionCommand){
         pfLock.unlock();
         currentMotionInstruction.moveToNextPoint(driver);
     }else{
-        if (shouldUseSlow(destinationState.Position)){
+        if (shouldUseSlow(destinationState.Position,driver.getSpeed())){
             currentMotionInstruction.saveSpeed(driver.getSpeed());
             driver.setSpeed(SLOW_SPEED);
         }
         driver.moveToPosition(destinationState.Position,destinationState.Direction);
     }
-
-    driver.moveToPosition(destinationState.Position,destinationState.Direction);
 }
 
 void MotionExecutor::moveForward(MotionCommand* _motionCommand){
@@ -364,7 +357,7 @@ void MotionExecutor::moveForward(MotionCommand* _motionCommand){
         destinationState.Direction=MotionDriver::MovingDirection::FORWARD;
     currentMotionInstruction.Set(_motionCommand, destinationState);
 
-    if (shouldUseSlow(distance)){
+    if (shouldUseSlow(distance,driver.getSpeed())){
         currentMotionInstruction.saveSpeed(driver.getSpeed());
         driver.setSpeed(SLOW_SPEED);
     }
@@ -431,6 +424,8 @@ void MotionExecutor::stopMovement(MotionCommand* _motionCommand){
 }
 
 bool MotionExecutor::isInField(int angle, int r){
+    return true;    //Fix for now, always is in field
+
     if (!checkField) return true;
     Point2D robotPosition=driver.getPosition();
     int rotation= driver.getOrientation()+angle;
