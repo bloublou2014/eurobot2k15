@@ -26,9 +26,9 @@ else()
     link_directories(${PROJECT_SOURCE_DIR}/libs/boost/stage/lib)
 
     #v8 include
-    include_directories(/home/milan/tools/v8)
-    link_directories(/home/milan/tools/v8/out/x64.debug/obj.target/tools/gyp)
-    link_directories(/home/milan/tools/v8/out/x64.debug/obj.target/third_party/icu)
+    include_directories(/home/project/libs/v8)
+    link_directories(/home/project/libs/v8/out/x64.debug/obj.target/tools/gyp)
+    link_directories(/home/project/libs/v8/out/x64.debug/obj.target/third_party/icu)
 endif()
 
 if(${ROBOT} MATCHES VECI)

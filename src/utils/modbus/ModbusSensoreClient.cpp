@@ -134,17 +134,18 @@ void ModbusSensorClient::main(){
                 modbus->readCoil(&doCallbak, it->first);
                 //std::cout << "reading coil" << std::endl;
                 if (doCallbak){
-                    it->second->readingSensore = false;
+                    //it->second->readingSensore = false;
                     //std::cout << "detected" << std::endl;
 #ifdef VELIKI_ROBOT
-                     switch(it->first.functionAddress){
+                    switch(it->first.functionAddress){
+
                     case 2: it->second->ProcessEnemySensorCallback1(); it->second->enemyDetected.left = true; break;
                     case 1: it->second->ProcessEnemySensorCallback2(); it->second->enemyDetected.right = true; break;
-                    case 3: it->second->ProcessLiftRightSensoreCallback(); std::cout << "desni" << std::endl; break;
-                    case 4: it->second->ProcessLiftLeftSensoreCallback(); std::cout << "levi"  << std::endl; break;
+                    case 3: it->second->ProcessLiftRightSensoreCallback(); std::cout << "desni" << std::endl; it->second->readingSensore = false; break;
+                    case 4: it->second->ProcessLiftLeftSensoreCallback(); std::cout << "levi"  << std::endl; it->second->readingSensore = false; break;
                     case 5: it->second->ProcessEnemySensorCallback3(); it->second->enemyDetected.back = true; break;
-                    case 7: it->second->ProcessEnemySensorCallback4(); it->second->enemyDetected.brkon = true; break;
-                    default: it->second->ProcessSensorCallback();
+                    //case 7: it->second->ProcessEnemySensorCallback4(); it->second->enemyDetected.brkon = true; break;
+                    //default: it->second->ProcessSensorCallback();
                     }
                 }else{
                     switch(it->first.functionAddress){
@@ -153,6 +154,7 @@ void ModbusSensorClient::main(){
                     case 5: it->second->ProcessNotEnemySensorCallback3(); it->second->enemyDetected.back = false; break;
                     case 7: it->second->ProcessNotEnemySensorCallback4(); it->second->enemyDetected.brkon = false; break;
                     }
+
 #endif
 
 #ifdef MALI_ROBOT
@@ -193,12 +195,12 @@ unsigned short ModbusSensorClient::readBrxon(){
 }
 
 bool ModbusSensorClient::startBrxon(){
-    modbus->setCoil(brxonStartID.slaveAddress, brxonStartID.functionAddress, 1);
+    modbus->setCoil(brxonStartID.slaveAddress, brxonStartID.functionAddress, 1, false);
     return true;
 }
 
 bool ModbusSensorClient::stopBrxon(){
-    modbus->setCoil(brxonStartID.slaveAddress, brxonStartID.functionAddress, 0);
+    modbus->setCoil(brxonStartID.slaveAddress, brxonStartID.functionAddress, 0, false);
     return true;
 }
 
@@ -206,8 +208,8 @@ bool ModbusSensorClient::startBeacon(){
     bool success = false;
     if(!beaconID.beaconON){
 
-        success =  modbus->setCoil(beaconID.slaveAddress, beaconID.functionAddress_NumberOfBeacons, 1 );
-        success =  modbus->setCoil(beaconID.slaveAddress, beaconID.functionAddress_Start, 1 );
+        success =  modbus->setCoil(beaconID.slaveAddress, beaconID.functionAddress_NumberOfBeacons, 1 , false);
+        success =  modbus->setCoil(beaconID.slaveAddress, beaconID.functionAddress_Start, 1, false );
 
         if(success){
             beaconID.beaconON = true;
@@ -222,8 +224,8 @@ bool ModbusSensorClient::startBeacon(){
 bool ModbusSensorClient::stopBecaon(){
     bool success = false;
     if(beaconID.interface != NULL){
-        success =  modbus->setCoil(beaconID.slaveAddress, beaconID.functionAddress_NumberOfBeacons, 0 );
-        modbus->setCoil(beaconID.slaveAddress, beaconID.functionAddress_Start, 0);
+        success =  modbus->setCoil(beaconID.slaveAddress, beaconID.functionAddress_NumberOfBeacons, 0, false );
+        modbus->setCoil(beaconID.slaveAddress, beaconID.functionAddress_Start, 0, false);
         if(success) beaconID.beaconON = false;
     }else{
         std::cout<< "have to register to beacon interface firts";

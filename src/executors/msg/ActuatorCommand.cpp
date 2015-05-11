@@ -86,6 +86,11 @@ Command* ActuatorAction::EnemyDetector(ActuatorType _type){
 Command* ActuatorAction::Carpet(ActuatorType _type){
     switch(_type){
     case LEAVE_CARPET: return (Command*) new LeaveCarpet(CARPET);
+    case CARPET_LEAVE: return (Command*) new CarpetLeave(CARPET);
+    case CARPET_POSITION_1: return (Command*) new CarpetPosition1(CARPET);
+    case CARPET_POSITION_2: return (Command*) new CarpetPosition2(CARPET);
+    case CARPET_POSITION_OPEN: return (Command*) new CarpetPositionOpen(CARPET);
+    case CARPET_POSITION_CLOSE: return (Command*) new CarpetPositionClose(CARPET);
     default: return NULL;
     }
 }
@@ -253,6 +258,11 @@ Command* ActuatorCommandJS::parseCreateCommand(string _executorString, string _a
         }
     }else if(executorTmp == CARPET){
         if(_actionString.compare("Leave") == 0 ) actionTmp = LEAVE_CARPET;
+        else if(_actionString.compare("PositionOpen") == 0 ) actionTmp = CARPET_POSITION_OPEN;
+        else if(_actionString.compare("PositionClose") == 0 ) actionTmp = CARPET_POSITION_CLOSE;
+        else if(_actionString.compare("Position1") == 0 ) actionTmp = CARPET_POSITION_1;
+        else if(_actionString.compare("Position2") == 0 ) actionTmp = CARPET_POSITION_2;
+        else if(_actionString.compare("OpenHolder") == 0 )actionTmp = CARPET_LEAVE;
         else{
             actionTmp = NULL_ACTION;
             *_success = false;

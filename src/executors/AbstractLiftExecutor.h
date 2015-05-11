@@ -60,7 +60,8 @@ protected:
 
     enum LiftFunctiontype{ LEVEL0,
                            LEVEL1,
-                           LEVEL2};
+                           LEVEL2,
+                           LEVEL_BALL};
 
 
     virtual void suscribe(){}
@@ -102,7 +103,7 @@ protected:
     */
 private:
 
-   ModbusSensorClient* modbusClient;
+   // ModbusSensorClient* modbusClient;
     ModbusClient* modbus;
 
     void getObject(ActuatorCommand* _actionCommand);

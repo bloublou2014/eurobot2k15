@@ -110,7 +110,7 @@ bool ModbusMaster::ModbusGetStartChar()
 		}
 		attempts--;
 	}
-	printf("didn't get start char, after attempts=%d\n", 30-attempts);
+    //printf("didn't get start char, after attempts=%d\n", 30-attempts);
 	return false;
 }
 

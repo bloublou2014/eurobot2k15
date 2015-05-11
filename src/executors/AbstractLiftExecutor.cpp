@@ -10,7 +10,7 @@ void AbstractLiftExecutor::maping(){
 
 void AbstractLiftExecutor::suscribeToSensore(){
     this->registerCommand(ActuatorCommand::NAME, static_cast<commandCallback>(&AbstractLiftExecutor::processActuatorCommand));
-    modbusClient = ModbusSensorClient::getModbusSensorInstance();
+    //modbusClient = ModbusSensorClient::getModbusSensorInstance();
     modbus = ModbusClient::getMobusClientInstance();
     //modbusClient->registerToSensoreCallback(char(4),char(4),true,this);   ne moze ovde
     //modbusClient->registerToSensoreCallback(char(4),char(3),true,this);
@@ -71,8 +71,8 @@ void AbstractLiftExecutor::SetLiftAddresses(unsigned char _slave_address, unsign
 }
 
 void AbstractLiftExecutor::SetSensorAddresses(unsigned char _slave_address, unsigned short _position_address){
-    sensor.setSlaveAddress(_slave_address);
-    sensor.setScanAddress(_position_address);
+    //sensor.setSlaveAddress(_slave_address);
+    //sensor.setScanAddress(_position_address);
 }
 
 bool AbstractLiftExecutor::doorF(DoorFunctionType _option){
@@ -140,6 +140,13 @@ bool AbstractLiftExecutor::liftF(LiftFunctiontype _option){
         currentLevel = LEVEL2;
         break;
     }
+
+    case LEVEL_BALL:{
+        debug("setting on balls level");
+        lift.rotateToPosition(value.LiftConfigs.lift.levelBall);
+        break;
+    }
+
     }
     //while(liftS()) delayF(10);
     //delayF(value.LiftConfigs.time.adjust_position);
@@ -157,9 +164,9 @@ void AbstractLiftExecutor::delayF(){
 }
 
 bool AbstractLiftExecutor::sensorF(){
-    bool _objectOnsight;
-    _objectOnsight = sensor.scanSensorStatus();
-    return _objectOnsight;
+    //bool _objectOnsight;
+    //_objectOnsight = sensor.scanSensorStatus();
+    //return _objectOnsight;
 }
 
 bool AbstractLiftExecutor::liftS(){

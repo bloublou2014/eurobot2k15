@@ -6,11 +6,12 @@ string LiftLeftExecutor::NAME = "LiftLeftExecutor";
 
 void LiftLeftExecutor::suscribe(){
     this->registerCommand(ActuatorCommand::NAME, static_cast<commandCallback>(&LiftLeftExecutor::processActuatorCommand));
-    modbusClient = ModbusSensorClient::getModbusSensorInstance();
-    this->readingSensore = true;
+    //modbusClient = ModbusSensorClient::getModbusSensorInstance();
+    //this->readingSensore = true;
     lastState.Aveable = true;
     lastState.Quantity = 0;
     executorName = this->NAME;
+
 }
 
 void LiftLeftExecutor::mapping(){
@@ -32,14 +33,16 @@ void LiftLeftExecutor::mapping(){
 
     //sensor.setSlaveAddress(char(4));
     //sensor.setScanAddress(char(4));
-    modbusClient->registerToSensoreCallback(char(4),char(4), true, this);
-
-
+    //modbusClient->registerToSensoreCallback(char(4),char(4), true, this);
+    //modbusClient->registerCoilReading(this,char(4),char(4));
+    liftSensor.setConfig(char(4),char(4),1,this,false);
+    liftSensor.RegisterSensor();
 
     reload(&value, executorName);
 
     doorF(OPEN_GET);
     handF(CLOSE);
+    //lift.rotateToPosition(value.LiftConfigs.lift.levelBall);
     liftF(LEVEL2);
 }
 
@@ -47,7 +50,9 @@ void LiftLeftExecutor::mapping(){
 bool LiftLeftExecutor::GetObjectFunction(){
     debug("LiftLeft Get");
     shoulGetObject = true;
-    readingSensore = true;
+    //readingSensore = true;
+    liftSensor.StartSensor();
+
 
     return true;
 
@@ -78,7 +83,7 @@ bool LiftLeftExecutor::liftProcess(){
             lastState.Quantity++;
             lastState.Aveable = true;
             //readingSensore = true;
-            readingSensore = true;
+            //readingSensore = true;
             count=lastState.Quantity;
             stateLock.unlock();
 
@@ -109,7 +114,7 @@ bool LiftLeftExecutor::liftProcess(){
             stateLock.lock();
             lastState.Quantity++;
             lastState.Aveable = true;
-            readingSensore = true;
+            //readingSensore = true;
             stateLock.unlock();
 
             LIftNotification* liftNotification=new LIftNotification(LIftNotification::Side::LEFT, 4);
@@ -147,7 +152,7 @@ bool LiftLeftExecutor::UnloadObjectFunction(){
     stateLock.lock();
     lastState.Quantity = 0;
     lastState.Aveable = true;
-    readingSensore = true;
+    //readingSensore = true;
 
     stateLock.unlock();
 
@@ -172,12 +177,19 @@ bool LiftLeftExecutor::CallbackGetLeftFunction(){
     debug("executeing lift left callback command");
     bool success = false;
     success = this->liftProcess();
+    /*
     if(success) readingSensore = true;
     else readingSensore = false;   
+    */
+    if(success){
+        liftSensor.StartSensor();
+    }else{
+        liftSensor.StopSensor();
+    }
     return success;
 }
 
-
+/*
 void LiftLeftExecutor::ProcessLiftLeftSensoreCallback(){
 
     std::cout << "LIRT LEFT" << std::endl;
@@ -188,7 +200,17 @@ void LiftLeftExecutor::ProcessLiftLeftSensoreCallback(){
         commandQueueLock.unlock();
         queueNotEmpty.notify_one();
 }
+*/
 
+void LiftLeftExecutor::SensorDriverCallback(int _id, bool _detected){
+    std::cout << "LIRT LEFT" << std::endl;
+    //readingSensore = true;
+    Command* cmd = ActuatorAction::LiftLeft(CALLBACK_GET_LEFT);
+        commandQueueLock.lock();
+        commandsToProcess.push(Instruction(cmd));
+        commandQueueLock.unlock();
+        queueNotEmpty.notify_one();
+}
 
 
 

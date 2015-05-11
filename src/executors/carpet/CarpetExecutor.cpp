@@ -35,8 +35,8 @@ void CarpetExecutor::mapping(){
 
 bool CarpetExecutor::LeaveCarpetFunction(){
 
-    armLeft.rotateToPosition(value.CarpetConfig.armLeft.open);
-    armRight.rotateToPosition(value.CarpetConfig.armRight.open);
+    armLeft.rotateToPosition(value.CarpetConfig.armLeft.positionOpen);
+    armRight.rotateToPosition(value.CarpetConfig.armRight.positionOpen);
 
     boost::this_thread::sleep(boost::posix_time::milliseconds(value.CarpetConfig.armOpenCloseTime));
 
@@ -45,12 +45,43 @@ bool CarpetExecutor::LeaveCarpetFunction(){
 
     boost::this_thread::sleep(boost::posix_time::milliseconds(value.CarpetConfig.leaveCarpetTime));
 
-    armLeft.rotateToPosition(value.CarpetConfig.armLeft.close);
-    armRight.rotateToPosition(value.CarpetConfig.armRight.close);
+    armLeft.rotateToPosition(value.CarpetConfig.armLeft.positionClose);
+    armRight.rotateToPosition(value.CarpetConfig.armRight.positionClose);
 
     return true;
 
 }
 
+bool CarpetExecutor::CarpetLeaveFunction(){
+     return el_switchLeft.setCoilState(true);
+     
+}
 
+bool CarpetExecutor::CarpetPosition1Function(){
+    bool successLeft = armLeft.rotateToPosition(value.CarpetConfig.armLeft.position1);
+    bool successRight = armRight.rotateToPosition(value.CarpetConfig.armRight.position1);
+    if(successLeft && successRight) return true;
+    else return false;
+}
+
+bool CarpetExecutor::CarpetPosition2Function(){
+    bool successLeft = armLeft.rotateToPosition(value.CarpetConfig.armLeft.position2);
+    bool successRight = armRight.rotateToPosition(value.CarpetConfig.armRight.position2);
+    if(successLeft && successRight) return true;
+    else return false;
+}
+
+bool CarpetExecutor::CarpetPositionOpenFunction(){
+    bool successLeft = armLeft.rotateToPosition(value.CarpetConfig.armLeft.positionOpen);
+    bool successRight = armRight.rotateToPosition(value.CarpetConfig.armRight.positionOpen);
+    if(successLeft && successRight) return true;
+    else return false;
+}
+
+bool CarpetExecutor::CarpetPositionCloseFunction(){
+    bool successLeft = armLeft.rotateToPosition(value.CarpetConfig.armLeft.positionClose);
+    bool successRight = armRight.rotateToPosition(value.CarpetConfig.armRight.positionClose);
+    if(successLeft && successRight) return true;
+    else return false;
+}
 }

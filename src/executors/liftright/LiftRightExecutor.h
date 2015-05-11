@@ -7,12 +7,14 @@
 #include "executors/msg/GetLiftState.h"
 #include "utils/modbus/ModbusSensoreClient.h"
 #include "executors/msg/LIftNotification.h"
+#include "drivers/sensors/SensorDriver.h"
 
+using namespace sensor;
 namespace executor {
 
-class LiftRightExecutor: public AbstractLiftExecutor, public ModbusSensorClientInterface2{
+class LiftRightExecutor: public AbstractLiftExecutor, /*public ModbusSensorClientInterface2*/ public SensorDriverInterface  {
 public:
-    LiftRightExecutor():AbstractLiftExecutor(this->NAME), ModbusSensorClientInterface2(){}
+    LiftRightExecutor():AbstractLiftExecutor(this->NAME), /*ModbusSensorClientInterface2()*/ SensorDriverInterface(){}
     static string NAME;
     void suscribe();
     bool GetObjectFunction();
@@ -24,11 +26,12 @@ private:
     boost::mutex stateLock;
     bool shouldCollect = false;
     bool CallbackGetRightFunction();
-    ModbusSensorClient* modbusClient;
+    //ModbusSensorClient* modbusClient;
     bool liftProcess();
 
-    void ProcessLiftRightSensoreCallback();
-
+    //void ProcessLiftRightSensoreCallback();
+    SensorDriver liftSensor;
+    void SensorDriverCallback(int _id, bool _detected);
 
 };
 

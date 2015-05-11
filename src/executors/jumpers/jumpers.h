@@ -3,7 +3,8 @@
 #define _JUMPERS
 
 //#define CROSS_COMPILING
-
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/thread/thread.hpp> // za deley
 
 #ifdef CROSS_COMPILING
 

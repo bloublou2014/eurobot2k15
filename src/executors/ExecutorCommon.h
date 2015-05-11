@@ -93,10 +93,15 @@ protected:
     virtual bool StartBeaconFunction();
     virtual bool StopBeaconFunction();
     virtual bool LeaveCarpetFunction();
-    virtual bool CallbackGetRightFunction(){}
-    virtual bool CallbackGetLeftFunction(){}
-    virtual bool StartDetectionFunction(){}
-    virtual bool StopDetectionFunction(){}
+    virtual bool CarpetLeaveFunction(){ return false; }
+    virtual bool CarpetPosition1Function(){return false;}
+    virtual bool CarpetPosition2Function(){return false; }
+    virtual bool CarpetPositionOpenFunction(){ return false;}
+    virtual bool CarpetPositionCloseFunction(){ return false;}
+    virtual bool CallbackGetRightFunction(){ return false; }
+    virtual bool CallbackGetLeftFunction(){ return false; }
+    virtual bool StartDetectionFunction(){ return false; }
+    virtual bool StopDetectionFunction(){ return false; }
 
 
 protected:
@@ -120,6 +125,11 @@ protected:
     void startBeacon(ActuatorCommand* _command);
 
     void leaveCarpet(ActuatorCommand* _command);
+    void carpetLeave(ActuatorCommand* _command);
+    void carpetPosition1(ActuatorCommand* _command);
+    void carpetPosition2(ActuatorCommand* _command);
+    void carpetPositionOpen(ActuatorCommand* _command);
+    void carpetPositionClose(ActuatorCommand* _command);
 
     void startDetection(ActuatorCommand* _command);
     void stopDetection(ActuatorCommand* _commnad);

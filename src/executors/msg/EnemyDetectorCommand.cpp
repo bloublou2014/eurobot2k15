@@ -1,6 +1,13 @@
 #include "EnemyDetectorCommand.h"
 
+namespace robot{
+string SensorCommand::NAME = "SensorCommand";
+string BeaconCommand::NAME = "BeaconCommand";
+string BrkonCommand::NAME = "BrkonCommand";
+}
+
 namespace motion{
+
 
 string AddStaticObject::NAME="AddStaticObject";
 void AddStaticObject::Init(Handle<Object> exports){
