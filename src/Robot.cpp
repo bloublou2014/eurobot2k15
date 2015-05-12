@@ -21,8 +21,8 @@
 
 #include "tasks/PipeTask.h"
 #include "messages/StartMatchMessage.h"
-//#define CROSS_COMPILING
-//#define VELIKI
+#define CROSS_COMPILING
+#define VELIKI
 //#define MALI
 
 using namespace std;

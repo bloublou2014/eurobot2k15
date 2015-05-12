@@ -29,6 +29,14 @@ void BrkonDriver::stopBrkon(){
     modbusClient->setReading(registerID.modID, false);
     modbusClient->setCoil(powerID.slave_address, powerID.function_address,0,false);
 
+    modbusClient->setReading(coilID.modID, false);
+    modbusClient->setReading(registerID.modID, false);
+    modbusClient->setCoil(powerID.slave_address, powerID.function_address,0,false);
+
+    modbusClient->setReading(coilID.modID, false);
+    modbusClient->setReading(registerID.modID, false);
+    modbusClient->setCoil(powerID.slave_address, powerID.function_address,0,false);
+
 }
 
 void BrkonDriver::registerBrkon(){
@@ -42,7 +50,7 @@ void BrkonDriver::registerInerface(BrkonDriverInterface* _callback_interface){
 
 void BrkonDriver::callbackCoilFunction(int _mapID, bool _detected){
     if(_detected){
-        std::cout << "BRKON DRIVER [D] callback" << std::endl;
+        //std::cout << "BRKON DRIVER [D] callback" << std::endl;
         if (_mapID == coilID.modID){
             modbusClient->setReading(registerID.modID, true);
             modbusClient->setReading(coilID.modID, true);
@@ -51,6 +59,8 @@ void BrkonDriver::callbackCoilFunction(int _mapID, bool _detected){
         }
     }else{
         callbakInterface->brkonDriverCallback(0xFF,0xFF, false);
+        modbusClient->setReading(coilID.modID, true);
+
 
     }
 
@@ -58,12 +68,13 @@ void BrkonDriver::callbackCoilFunction(int _mapID, bool _detected){
 
 void BrkonDriver::callbackRegisterFunction(int _mapID, short _data){
     if(_mapID == registerID.modID){
-        short data = _data;
-        short dataFront;
-        short dataBack;
-        dataFront = data & 0x00FF;
-        data = _data;
-        dataBack = (data >> 8) & 0x00FF;
+        short dataFront = _data;
+        short dataBack = _data;
+        printf("%X \n", _data);
+        dataFront = dataFront & 0xFF00;
+        dataFront = dataFront >> 8;
+        dataBack = dataBack & 0x00FF;
+
         callbakInterface->brkonDriverCallback(dataFront, dataBack, true);
     }
 }

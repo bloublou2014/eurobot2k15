@@ -28,7 +28,7 @@ private:
 
 public:
     EnemyDetector():ExecutorCommon(this->NAME),BeaconDriverInterface(),BrkonDriverInterface(),SensorDriverInterface(){}
-    ~EnemyDetector(){ }
+    ~EnemyDetector(){ brkon.stopBrkon();}
 private:
     static string NAME;
     void suscribe();

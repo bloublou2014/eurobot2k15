@@ -19,7 +19,7 @@ void ExecutorCommon::init(){
     actuatorHandles[ActuatorType::STOP_BRXON]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::stopBrxon);
     actuatorHandles[ActuatorType::START_BEACON]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::startBeacon);
     actuatorHandles[ActuatorType::STOP_BEACON]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::stopBeacon);
-    actuatorHandles[ActuatorType::LEAVE_CARPET]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::leaveCarpet); 
+    actuatorHandles[ActuatorType::LEAVE_CARPET]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::leaveCarpet);
     actuatorHandles[ActuatorType::CARPET_LEAVE]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::carpetLeave);
     actuatorHandles[ActuatorType::CARPET_POSITION_1]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::carpetPosition1);
     actuatorHandles[ActuatorType::CARPET_POSITION_2]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::carpetPosition2);
@@ -66,17 +66,18 @@ ExecutorCommon::Instruction ExecutorCommon::getNextCommand(){  // if there is mo
         queueNotEmpty.wait(lock);
     }
 
-        while(commandsToProcess.size() > 1){
-            Instruction cmd = commandsToProcess.front();
-            commandsToProcess.pop();
-            debug("newer Command, seding error to old");
-            ActuatorCommand* cmdAct = cmd.command;
-
+    while(commandsToProcess.size() > 1){
+        Instruction cmd = commandsToProcess.front();
+        commandsToProcess.pop();
+        debug("newer Command, seding error to old");
+        ActuatorCommand* cmdAct = cmd.command;
+        if(cmd.command->getId() != -1){
             sendResponseFromCommand(cmdAct, ERROR);
         }
-        Instruction newInst = commandsToProcess.front();
-        commandsToProcess.pop();
-        //newCommand = newInst.command;
+    }
+    Instruction newInst = commandsToProcess.front();
+    commandsToProcess.pop();
+    //newCommand = newInst.command;
 
     return newInst;
 }
@@ -527,7 +528,7 @@ bool ExecutorCommon::KickLeftFunction(){
 
 bool ExecutorCommon::UnKickRightFunction(){
     debug("UNKICK RIGHT: REDEFINE PLEASE");
-     return false;
+    return false;
 }
 
 bool ExecutorCommon::UnKickLeftFunction(){

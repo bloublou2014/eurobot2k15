@@ -120,6 +120,9 @@ void ModbusClientSW::main(){
                         m_mutex->unlock();
                         allData.interface->callbackCoilFunction(counterMap, false);
                         counterRead = 0;
+                        if(allData.modID.function_address == char(7)){
+//                            std::cout << "reading coil, value: " << allData.detected << std::endl;
+                        }
                     }else{
                         counterRead = 0;
                     }
