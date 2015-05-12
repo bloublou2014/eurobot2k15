@@ -8,6 +8,8 @@
 
 #include "drivers/actuators/Servos.h"
 
+#include "utils/helper/BeaconData.h"
+
 //#include "utils/javascript/ObjectWrap.h"
 
 using namespace boost::assign;
@@ -67,6 +69,11 @@ enum ActuatorType{SET_START_CONFIG,
                   CARPET_POSITION_1,
                   CARPET_POSITION_2,
                   CARPET_POSITION_CLOSE,
+
+                  BEACON_MALI_CALLBACK,
+                  BEACON_VELIKI_CALLBACK,
+                  BRKON_CALLBACK,
+                  SENSOR_CALLBACK
                  };
 
 typedef map<Executors, string> ExecutorsMap;
@@ -237,6 +244,61 @@ private:
     ServoType servo;
 };
 
+class SensorCommand: public ActuatorCommand {
+public:
+    SensorCommand(int _id, bool _detected):ActuatorCommand(SENSOR_CALLBACK, ENEMY_DETECT), sensorID(_id), detected(_detected){}
+
+    int getSensorID(){return sensorID;}
+    bool getDetected(){return detected;}
+private:
+    int sensorID;
+    int detected;
+};
+
+class BrkonCommand: public ActuatorCommand{
+public:
+    BrkonCommand(short _angleFront,short _angleBack , bool _deteced):ActuatorCommand(BRKON_CALLBACK, ENEMY_DETECT),
+        angleFront(_angleFront),angleBack(_angleBack),detected(_deteced){}
+
+    short getAngleFront(){ return angleFront;}
+    short getAngleBack(){ return angleBack;}
+    bool getDetected(){return detected;}
+private:
+    int angleFront;
+    int angleBack;
+    bool detected;
+};
+
+class BeaconMaliCommand: public ActuatorCommand{
+public:
+
+    BeaconMaliCommand(short _cordX, short _cordY, bool _working): ActuatorCommand(BEACON_MALI_CALLBACK, ENEMY_DETECT),
+        cordX(_cordX), cordY(_cordY), working(_working){}
+
+    short getCordX() {return cordX;}
+    short getCordY() {return cordY;}
+    bool getStatus() {return working;}
+
+private:
+    short cordX;
+    short cordY;
+    bool working;
+};
+
+class BeaconVelikiCommand: public ActuatorCommand{
+public:
+    BeaconVelikiCommand(short _cordX, short _cordY, bool _working): ActuatorCommand(BEACON_VELIKI_CALLBACK, ENEMY_DETECT),
+    cordX(_cordX), cordY(_cordY), working(_working){}
+
+    short getCordX() {return cordX;}
+    short getCordY() {return cordY;}
+    bool getStatus() {return working;}
+private:
+    short cordX;
+    short cordY;
+    bool working;
+
+};
 
 class ActuatorAction: public ActuatorCommand {
 

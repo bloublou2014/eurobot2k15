@@ -27,12 +27,21 @@ private:
         bool settedY = false;
         bool running = false;
     };
+    struct ConfigID{
+        unsigned char slave_address;
+        short power_address;
+        short numberOfBeacons_address;
+        int numberOfBeacons;
+    };
 
 public:
     BeaconDriver();
     setBeaconConfig(unsigned char _slave_address_veliki, short _function_address_cordX_veliki, short _function_address_cordY_veliki,
                     unsigned char _slave_address_mali, short _function_address_cordX_mali, short _function_address_cordY_mali,
+                    unsigned char _slave_address_funtions, short _power_address, short _number_address, int _numberOfBeacons,
                     BeaconDriverInterface* _interface );
+    void setBeaconNumber(int _number);
+
     void registerBeacon();
     void startBeacon();
     void stopBeacon();
@@ -43,6 +52,8 @@ private:
     BeaconDriverInterface* interface;
     ModID beaconMali;
     ModID beaconVeliki;
+    ConfigID beaconConfig;
+
 
     void callbackRegisterFunction(int _mapID, short _data);
 };

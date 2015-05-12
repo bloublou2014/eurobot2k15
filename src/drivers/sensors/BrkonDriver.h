@@ -8,7 +8,7 @@ namespace sensor {
 
 class BrkonDriverInterface{
 public:
-    virtual void brkonDriverCallback(short _data){ return;}
+    virtual void brkonDriverCallback(short _dataFront, short _dataBack, bool _detected){ return;}
 };
 
 class BrkonDriver : public ModbusClientSWInterface, public BrkonDriverInterface{

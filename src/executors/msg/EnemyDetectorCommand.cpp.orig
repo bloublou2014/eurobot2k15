@@ -1,8 +1,14 @@
 #include "EnemyDetectorCommand.h"
 
 
-namespace motion{
+namespace robot{
+string SensorCommand::NAME = "SensorCommand";
+string BeaconCommand::NAME = "BeaconCommand";
+string BrkonCommand::NAME = "BrkonCommand";
+}
 
+
+namespace motion{
 
 string AddStaticObject::NAME="AddStaticObject";
 void AddStaticObject::Init(Handle<Object> exports){
@@ -48,3 +54,4 @@ void AddStaticObject::New(const v8::FunctionCallbackInfo<v8::Value>& args) {
 }
 
 }
+

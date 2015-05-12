@@ -5,6 +5,7 @@
 //#include "utils/modbus/ModbusSensoreClient.h"
 #include "executors/msg/EnemyDetectedNotification.h"
 #include "executors/msg/EnemyDetectorCommand.h"
+#include "executors/msg/ActuatorCommand.h"
 
 #include "drivers/sensors/BeaconDriver.h"
 #include "drivers/sensors/BrkonDriver.h"
@@ -21,7 +22,8 @@ private:
     struct previousStateVeliki{
         bool sensorBack = false;
         bool sensorFront = false;
-        int angle = 0;
+        int angleFront = 0;
+        int angleBack = 0;
     };
 
 public:
@@ -31,13 +33,19 @@ private:
     static string NAME;
     void suscribe();
     // callbacs for sensors
-    void brkonDriverCallback(short _data);
-    void beaconDriverCallbackVeliki(short _veliki_cordX, short _veliki_cordY, bool _running){}
-    void beaconDriverCallbackMali(short _mali_cordX, short _mali_cordY, bool _running){}
+    void brkonDriverCallback(short _dataFront, short _dataBack, bool _detected);
+    void beaconDriverCallbackVeliki(short _veliki_cordX, short _veliki_cordY, bool _running);
+    void beaconDriverCallbackMali(short _mali_cordX, short _mali_cordY, bool _running);
     void SensorDriverCallback(int _id, bool _detected);
 
     bool StartBrxonFunction();
     bool StopBrxonFunction();
+    bool StartBeaconFunction();
+    bool StopBeaconFunction();
+    bool BeaconMaliCallbackFunction(short _cordX, short _cordY, bool _running);
+    bool BeaconVelikiCallbackFunction(short _cordX, short _cordY, bool _running);
+    bool BrkonCallbackFunction(short _dataFront, short _dataBack, bool _detected);
+    bool SensorCallbackFunction(int _id, bool _detected);
 
 #ifdef VELIKI_ROBOT
 

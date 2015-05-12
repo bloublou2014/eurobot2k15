@@ -18,9 +18,9 @@ void BrkonDriver::setPowerCoilConfig(unsigned char _slave_address, short _functi
 }
 
 void BrkonDriver::startBrkon(){
-     std::cout << "BRKON DRIVER [D] Starting Brkon" << std::endl;
-     modbusClient->setReading(coilID.modID, true);
-     modbusClient->setCoil(powerID.slave_address, powerID.function_address,1,false);
+    std::cout << "BRKON DRIVER [D] Starting Brkon" << std::endl;
+    modbusClient->setReading(coilID.modID, true);
+    modbusClient->setCoil(powerID.slave_address, powerID.function_address,1,false);
 
 }
 
@@ -32,7 +32,7 @@ void BrkonDriver::stopBrkon(){
 }
 
 void BrkonDriver::registerBrkon(){
-    coilID.modID = modbusClient->registerCoilReading(this, coilID.slave_address, coilID.function_address,false);
+    coilID.modID = modbusClient->registerCoilReading(this, coilID.slave_address, coilID.function_address,true);
     registerID.modID = modbusClient->registerRegisterReading(this, registerID.slave_address, registerID.function_address);
 }
 
@@ -41,19 +41,30 @@ void BrkonDriver::registerInerface(BrkonDriverInterface* _callback_interface){
 }
 
 void BrkonDriver::callbackCoilFunction(int _mapID, bool _detected){
-    std::cout << "BRKON DRIVER [D] callback" << std::endl;
-    if (_mapID == coilID.modID){
-        modbusClient->setReading(registerID.modID, true);
-        modbusClient->setReading(coilID.modID, true);
+    if(_detected){
+        std::cout << "BRKON DRIVER [D] callback" << std::endl;
+        if (_mapID == coilID.modID){
+            modbusClient->setReading(registerID.modID, true);
+            modbusClient->setReading(coilID.modID, true);
+        }else{
+            std::cout << "ERRRORRRR BRKON DRIVER" << std::endl;
+        }
     }else{
-        std::cout << "ERRRORRRR BRKON DRIVER" << std::endl;
+        callbakInterface->brkonDriverCallback(0xFF,0xFF, false);
+
     }
 
 }
 
 void BrkonDriver::callbackRegisterFunction(int _mapID, short _data){
     if(_mapID == registerID.modID){
-         callbakInterface->brkonDriverCallback(_data);
+        short data = _data;
+        short dataFront;
+        short dataBack;
+        dataFront = data & 0x00FF;
+        data = _data;
+        dataBack = (data >> 8) & 0x00FF;
+        callbakInterface->brkonDriverCallback(dataFront, dataBack, true);
     }
 }
 

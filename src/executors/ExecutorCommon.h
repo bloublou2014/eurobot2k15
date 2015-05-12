@@ -11,6 +11,7 @@
 #include "drivers/sensors/SensorDriver.h"
 #include "drivers/actuators/Servos.h"
 #include "executors/msg/ActuatorCommand.h"
+#include "executors/msg/EnemyDetectorCommand.h"
 
 #include "executors/ExecutorConfig.h"
 #include "utils/modbus/ModbusSensoreClient.h"
@@ -93,15 +94,20 @@ protected:
     virtual bool StartBeaconFunction();
     virtual bool StopBeaconFunction();
     virtual bool LeaveCarpetFunction();
-    virtual bool CarpetLeaveFunction(){ return false; }
-    virtual bool CarpetPosition1Function(){return false;}
-    virtual bool CarpetPosition2Function(){return false; }
-    virtual bool CarpetPositionOpenFunction(){ return false;}
-    virtual bool CarpetPositionCloseFunction(){ return false;}
-    virtual bool CallbackGetRightFunction(){ return false; }
-    virtual bool CallbackGetLeftFunction(){ return false; }
-    virtual bool StartDetectionFunction(){ return false; }
-    virtual bool StopDetectionFunction(){ return false; }
+    virtual bool CarpetLeaveFunction(){ std::cout << "REDEFINE " << std::endl;  return false; }
+    virtual bool CarpetPosition1Function(){std::cout << "REDEFINE " << std::endl;return false;}
+    virtual bool CarpetPosition2Function(){std::cout << "REDEFINE " << std::endl;return false; }
+    virtual bool CarpetPositionOpenFunction(){ std::cout << "REDEFINE " << std::endl;return false;}
+    virtual bool CarpetPositionCloseFunction(){ std::cout << "REDEFINE " << std::endl;return false;}
+    virtual bool CallbackGetRightFunction(){std::cout << "REDEFINE " << std::endl; return false; }
+    virtual bool CallbackGetLeftFunction(){std::cout << "REDEFINE " << std::endl; return false; }
+    virtual bool StartDetectionFunction(){ std::cout << "REDEFINE " << std::endl;return false; }
+    virtual bool StopDetectionFunction(){ std::cout << "REDEFINE " << std::endl;return false; }
+
+    virtual bool BeaconMaliCallbackFunction(short _cordX, short _cordY, bool _running){ std::cout << "REDEFINE " << std::endl;return false;}
+    virtual bool BeaconVelikiCallbackFunction(short _cordX, short _cordY, bool _running){ std::cout << "REDEFINE " << std::endl;return false;}
+    virtual bool BrkonCallbackFunction(short _dataFront, short _dataBack, bool _detected){ std::cout << "REDEFINE " << std::endl;return false;}
+    virtual bool SensorCallbackFunction(int _id, bool _detected){ std::cout << "REDEFINE " << std::endl;return false;}
 
 
 protected:
@@ -133,6 +139,12 @@ protected:
 
     void startDetection(ActuatorCommand* _command);
     void stopDetection(ActuatorCommand* _commnad);
+
+    // enemy detector Command
+    void sensorCommand(ActuatorCommand* _command);
+    void beaconMaliCommand(ActuatorCommand* _command);
+    void beaconVelikiCommand(ActuatorCommand* _command);
+    void brkonCommand(ActuatorCommand* _command);
 
     condition_variable queueNotEmpty;
 

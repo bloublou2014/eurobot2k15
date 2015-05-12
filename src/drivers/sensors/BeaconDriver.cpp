@@ -6,8 +6,10 @@ BeaconDriver::BeaconDriver(){
     modbusClient = ModbusClientSW::getModbusClientInstance();
 }
 
-BeaconDriver::setBeaconConfig(unsigned char _slave_address_veliki, short _function_address_cordX_veliki,short _function_address_cordY_veliki,
-                              unsigned char _slave_address_mali,short _function_address_cordX_mali,short _function_address_cordY_mali,
+BeaconDriver::setBeaconConfig(unsigned char _slave_address_veliki, short _function_address_cordX_veliki, short _function_address_cordY_veliki,
+                              unsigned char _slave_address_mali, short _function_address_cordX_mali, short _function_address_cordY_mali,
+                              unsigned char _slave_address_funtions, short _power_address, short _number_address,
+                              int _numberOfBeacons,
                               BeaconDriverInterface* _interface ){
     beaconVeliki.slave_address = _slave_address_veliki;
     beaconVeliki.function_address_cordX = _function_address_cordX_veliki;
@@ -16,6 +18,11 @@ BeaconDriver::setBeaconConfig(unsigned char _slave_address_veliki, short _functi
     beaconMali.slave_address = _slave_address_mali;
     beaconMali.function_address_cordX = _function_address_cordX_mali;
     beaconMali.function_address_cordY = _function_address_cordY_mali;
+
+    beaconConfig.slave_address = _slave_address_funtions;
+    beaconConfig.power_address = _power_address;
+    beaconConfig.numberOfBeacons_address = _number_address;
+    beaconConfig.numberOfBeacons = _numberOfBeacons;
 
     interface = _interface;
 }
@@ -30,11 +37,30 @@ void BeaconDriver::registerBeacon(){
 }
 
 void BeaconDriver::startBeacon(){
+    // note:
+    // first must be choses number of beacons then beacon shoul be started
+
+    if(beaconConfig.numberOfBeacons == 1) modbusClient->setCoil(beaconConfig.slave_address,beaconConfig.numberOfBeacons_address,0);
+    else modbusClient->setCoil(beaconConfig.slave_address, beaconConfig.numberOfBeacons_address,1);
+
+    modbusClient->setCoil(beaconConfig.slave_address,beaconConfig.power_address, 1);
+
     modbusClient->setReading(beaconMali.modID_cordX, true);
     modbusClient->setReading(beaconMali.modID_cordY, true);
 
     modbusClient->setReading(beaconVeliki.modID_cordX,true);
     modbusClient->setReading(beaconVeliki.modID_cordY,true);
+}
+
+void BeaconDriver::stopBeacon(){
+
+    modbusClient->setCoil(beaconConfig.slave_address,beaconConfig.power_address,0);
+
+    modbusClient->setReading(beaconMali.modID_cordX, false);
+    modbusClient->setReading(beaconMali.modID_cordY, false);
+
+    modbusClient->setReading(beaconVeliki.modID_cordX, false);
+    modbusClient->setReading(beaconVeliki.modID_cordY, false);
 }
 
 void BeaconDriver::callbackRegisterFunction(int _mapID, short _data){

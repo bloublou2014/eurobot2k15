@@ -30,6 +30,12 @@ void ExecutorCommon::init(){
     actuatorHandles[ActuatorType::START_DETECTION]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::startDetection);
     actuatorHandles[ActuatorType::STOP_DETECTION]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::stopDetection);
 
+    //enemy detecotr
+    actuatorHandles[ActuatorType::SENSOR_CALLBACK]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::sensorCommand);
+    actuatorHandles[ActuatorType::BRKON_CALLBACK]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::brkonCommand);
+    actuatorHandles[ActuatorType::BEACON_MALI_CALLBACK]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::beaconMaliCommand);
+    actuatorHandles[ActuatorType::BEACON_VELIKI_CALLBACK]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::beaconVelikiCommand);
+
 
 
     suscribeToSensore();
@@ -462,6 +468,51 @@ void ExecutorCommon::carpetPositionClose(ActuatorCommand * _command){
     }
 }
 
+void ExecutorCommon::sensorCommand(ActuatorCommand *_command){
+    bool success;
+    int id;
+    bool detected;
+    SensorCommand* command = (SensorCommand*) _command;
+    currentActuatorCommand = command;
+    id = command->getId();
+    detected = command->getDetected();
+    SensorCallbackFunction(id, detected);
+}
+
+void ExecutorCommon::beaconMaliCommand(ActuatorCommand *_command){
+    short x;
+    short y;
+    bool working;
+    BeaconMaliCommand* command = (BeaconMaliCommand*) _command;
+    currentActuatorCommand = command;
+    x = command->getCordX();
+    y = command->getCordY();
+    working = command->getStatus();
+    BeaconMaliCallbackFunction(x,y,working);
+}
+
+void ExecutorCommon::beaconVelikiCommand(ActuatorCommand *_command){
+    short x;
+    short y;
+    bool working;
+    BeaconVelikiCommand* command = (BeaconVelikiCommand*) _command;
+    currentActuatorCommand = command;
+    x = command->getCordX();
+    y = command->getCordY();
+    working = command->getStatus();
+    BeaconVelikiCallbackFunction(x,y,working);
+}
+
+void ExecutorCommon::brkonCommand(ActuatorCommand *_command){
+    short front;
+    short back;
+    bool detected;
+    BrkonCommand* command = (BrkonCommand*) _command;
+    front = command->getAngleFront();
+    back = command->getAngleBack();
+    detected = command->getDetected();
+    BrkonCallbackFunction(front,back,detected);
+}
 
 
 bool ExecutorCommon::KickRightFunction(){
