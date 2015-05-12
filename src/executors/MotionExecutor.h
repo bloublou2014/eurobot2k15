@@ -199,7 +199,7 @@ private:
     /*Used for enemy detector and path finder*/
     static int MaxRetryCount;
 
-    bool isEnemyDetected(MotionState& ms);
+    bool isEnemyDetected(MotionState& ms, bool isSuspended);
 
     int rSensor;
     bool useEnemyDetector;

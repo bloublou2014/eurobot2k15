@@ -175,13 +175,16 @@ bool EnemyDetector::BrkonCallbackFunction(short _dataFront, short _dataBack, boo
 }
 
 bool EnemyDetector::SensorCallbackFunction(int _id, bool _detected){
-    if(_id == this->sensorBackID){
+EnemyDetectedNotification* notification=NULL;    
+if(_id == this->sensorBackID){
         if(previousState.sensorBack != _detected){
             previousState.sensorBack = _detected;
 
             if(_detected){
+                notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::BACK,0,true);
                 debug("DOSO BACK");
             }else{
+                notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::BACK,0,false);
                 debug("OTISAO BACK");
             }
         }
@@ -191,14 +194,20 @@ bool EnemyDetector::SensorCallbackFunction(int _id, bool _detected){
             previousState.sensorFront = _detected;
 
             if(_detected){
+                notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,0,true);
                 debug("DOSO FRONT");
             }else{
+                notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,0,false);
                 debug("OTISAO FRONT");
             }
         }
         frontSensor.StartSensor();
     }else{
         debug("WROOONG ID ");
+    }
+    if (notification!=NULL){
+        debug("Sending enemy detected notification!");
+        sendNotification(notification);
     }
     return true;
 }
