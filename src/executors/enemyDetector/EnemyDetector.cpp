@@ -48,13 +48,16 @@ bool EnemyDetector::StopBrxonFunction(){
 
 void EnemyDetector::SensorDriverCallback(int _id, bool _detected){
     //debug("SENSOR CALLBACK ");
+    EnemyDetectedNotification* notification=NULL;
     if(_id == this->sensorBackID){
         if(previousState.sensorBack != _detected){
             previousState.sensorBack = _detected;
 
             if(_detected){
+                notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::BACK,0,true);
                 debug("DOSO BACK");
             }else{
+                notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::BACK,0,false);
                 debug("OTISAO BACK");
             }
         }
@@ -64,14 +67,20 @@ void EnemyDetector::SensorDriverCallback(int _id, bool _detected){
             previousState.sensorFront = _detected;
 
             if(_detected){
+                notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,0,true);
                 debug("DOSO FRONT");
             }else{
+                notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,0,false);
                 debug("OTISAO FRONT");
             }
         }
         frontSensor.StartSensor();
     }else{
         debug("WROOONG ID ");
+    }
+    if (notification!=NULL){
+        debug("Sending enemy detected notification!");
+        sendNotification(notification);
     }
 }
 

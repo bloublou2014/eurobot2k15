@@ -37,7 +37,7 @@ void MotionExecutor::init(){
     this->registerCommand(AddStaticObject::NAME,static_cast<commandCallback>(&MotionExecutor::processAddObstacle));
 
     //Subscribe to enemy detection notifications
-//    this->subscribe(EnemyDetectedNotification::NAME,static_cast<notificationCallback>(&MotionExecutor::processEnemyDetectedNotification));
+    this->subscribe(EnemyDetectedNotification::NAME,static_cast<notificationCallback>(&MotionExecutor::processEnemyDetectedNotification));
 
     motionHandles[MotionCommand::MotionType::MOVE_STRAIGHT]=static_cast<motionCommandHandle>(&MotionExecutor::moveForward);
     motionHandles[MotionCommand::MotionType::MOVE_TO_POSITION]=static_cast<motionCommandHandle>(&MotionExecutor::moveToPosition);
@@ -53,6 +53,7 @@ void MotionExecutor::init(){
 }
 
 void MotionExecutor::processEnemyDetectedNotification(Notification* notification){
+    debug("Enemy detected notification received");
     EnemyDetectedNotification* ed=static_cast<EnemyDetectedNotification*>(notification);
 //    pfLock.lock();    //Path finding logic
 //    enemySensors[ed->getType()].Detected=ed->isDetected();
@@ -81,7 +82,7 @@ void MotionExecutor::processEnemyDetectedNotification(Notification* notification
     }else{
         detectedEnemies[detectedType].Detected=true;
         detectedEnemies[detectedType].Angle=ed->getAngle();
-        ss<<"Enemy detected type: "<<ed->getType()<<" detected angle: "<<ed->getAngle();
+        ss<<"Enemy NOT detected type: "<<ed->getType()<<" detected angle: "<<ed->getAngle();
         //TODO: Add enemy in pathfinder
     }
     debug(ss.str());
@@ -152,8 +153,8 @@ void MotionExecutor::stop(){
 }
 
 const int MotionInstruction::MaxRetryCount=500;
-bool MotionExecutor::isEnemyDetected(MotionState& ms){
-    if (ms.State!=MotionDriver::State::MOVING) return false;  //We won't use enemy detection when not moving
+bool MotionExecutor::isEnemyDetected(MotionState& ms, bool isSuspended){
+    if (ms.State!=MotionDriver::State::MOVING && !isSuspended) return false;  //We won't use enemy detection when not moving
     EnemyDetectedNotification::Type detectedType;
     if (ms.Direction==MotionDriver::MovingDirection::FORWARD){
         detectedType=EnemyDetectedNotification::Type::FRONT;
@@ -197,7 +198,7 @@ void MotionExecutor::main(){
 
         /* Proverim da li robot moze da ide tamo gde se uputio */
         if (currentMotionInstruction.isSet()){
-            if (isEnemyDetected(newState)){
+            if (isEnemyDetected(newState, currentMotionInstruction.isSuspended())){
                 if (currentMotionInstruction.isSuspended()){
                     if (!currentMotionInstruction.canRetry(waitOnEnemyCountCheck)){  //If we can't wait any more
                         bool giveUp=true;
