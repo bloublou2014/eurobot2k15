@@ -45,6 +45,10 @@ Command* ActuatorAction::LiftCenter(ActuatorType _type){
     case GET_OBJECT :    return (Command*) new GetObject(LIFT_CENTER);
     case UNLOAD_OBJECT : return (Command*) new UnloadObject(LIFT_CENTER);
     case SET_START_CONFIG : return (Command*) new SetStartConfig(LIFT_CENTER);
+    case GET_BALL: return (Command*) new GetBall(LIFT_CENTER);
+    case LEAVE_BALL: return (Command*) new LeaveBall(LIFT_CENTER);
+    case GET_GLASS: return (Command*) new GetGlass(LIFT_CENTER);
+    case LEAVE_GLASS: return (Command*) new LeaveGlass(LIFT_CENTER);
     case RELOAD_CONFIG : return (Command*) new ReloadConfig(LIFT_CENTER);
     default : return NULL;
     }
@@ -224,6 +228,10 @@ Command* ActuatorCommandJS::parseCreateCommand(string _executorString, string _a
     }else if(executorTmp == LIFT_CENTER){
         if(_actionString.compare("Get") == 0) actionTmp = GET_OBJECT;
         else if(_actionString.compare("Unload") == 0) actionTmp = UNLOAD_OBJECT;
+        else if(_actionString.compare("GetGlass")== 0) actionTmp = GET_GLASS;
+        else if(_actionString.compare("LeaveGlass")== 0) actionTmp = LEAVE_GLASS;
+        else if(_actionString.compare("GetBall")==0) actionTmp = GET_BALL;
+        else if(_actionString.compare("LeaveBall") == 0) actionTmp = LEAVE_BALL;
         else {
             actionTmp = NULL_ACTION;
             *_success = false;

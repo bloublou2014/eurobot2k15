@@ -17,7 +17,7 @@ void JumpersExecutor::init(){
 }
 
 void JumpersExecutor::main(){
-    while(!digitalRead(start_jumper)){
+    while(!digitalRead(start_jumper) && !shouldStop){
         digitalWrite(led_workiing_RED, LOW);
         boost::this_thread::sleep(boost::posix_time::milliseconds(100));
         digitalWrite(led_workiing_RED, HIGH);

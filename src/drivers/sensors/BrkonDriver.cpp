@@ -68,9 +68,9 @@ void BrkonDriver::callbackCoilFunction(int _mapID, bool _detected){
 
 void BrkonDriver::callbackRegisterFunction(int _mapID, short _data){
     if(_mapID == registerID.modID){
-        short dataFront = _data;
-        short dataBack = _data;
-        printf("%X \n", _data);
+        unsigned short dataFront = _data;
+        unsigned short dataBack = _data;
+        //printf("%X \n", _data);
         dataFront = dataFront & 0xFF00;
         dataFront = dataFront >> 8;
         dataBack = dataBack & 0x00FF;
