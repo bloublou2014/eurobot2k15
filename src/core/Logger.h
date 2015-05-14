@@ -3,6 +3,7 @@
 
 #include <string>
 #include <iostream>
+#include <boost/thread/mutex.hpp>
 
 using namespace::std;
 

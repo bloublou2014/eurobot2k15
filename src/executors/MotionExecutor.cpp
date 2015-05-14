@@ -5,6 +5,7 @@
 #define MOTION_TRESHOLD 10
 #define SLOW_DISTANCE 100
 #define SLOW_SPEED 50
+static double PI=3.141592653584;
 
 using namespace std;
 
@@ -26,6 +27,7 @@ void MotionExecutor::init(){
         maxY=v.second.get<int>("maxY");
         minX=v.second.get<int>("minX");
         minY=v.second.get<int>("minY");
+        margin=v.second.get<int>("margin");
 
         enemyDistance=v.second.get<int>("enemyDistance");
         triangleSide=v.second.get<int>("triangleSide");
@@ -55,37 +57,42 @@ void MotionExecutor::init(){
 void MotionExecutor::processEnemyDetectedNotification(Notification* notification){
     debug("Enemy detected notification received");
     EnemyDetectedNotification* ed=static_cast<EnemyDetectedNotification*>(notification);
-//    pfLock.lock();    //Path finding logic
-//    enemySensors[ed->getType()].Detected=ed->isDetected();
-//    int angle=ed->getAngle();
-//    enemySensors[ed->getType()].Angle=angle;
-//    //Izbacim iz pf ako je nesto vec bilo ubaceno
-//    if(enemySensors[ed->getType()].obstacleId!=-1){
-//        pathFinder->removeObstacle(enemySensors[ed->getType()].obstacleId);
-//    }
-//    if (ed->isDetected()){
-//        stateLock.lock();
-//        Point2D enemyPosition=lastState.Position;
-//        stateLock.unlock();
-//        enemyPosition.setX(enemyPosition.getX()+enemyDistance*cos(angle));
-//        enemyPosition.setY(enemyPosition.getY()+enemyDistance*sin(angle));
-//        enemySensors[ed->getType()].obstacleId=dodajSestougao(enemyPosition.getX(),enemyPosition.getY(),triangleSide);
-//    }
-//    pfLock.unlock();
-
-    std::stringstream ss;
     EnemyDetectedNotification::Type detectedType=ed->getType();
+    std::stringstream ss;
+    int angle=ed->getAngle();
+
+    pfLock.lock();    //Path finding logic
     if (!ed->isDetected()){
         detectedEnemies[detectedType].Detected=false;
-        ss<<"Enemy detected type: "<<ed->getType()<<" detected angle: "<<ed->getAngle();
-        //TODO: Remove enemy from path finder
+        ss<<"Enemy NOT detected: "<<ed->getType()<<" detected angle: "<<ed->getAngle();
+
+        if(detectedEnemies[detectedType].Id!=-1){
+            pathFinder->removeObstacle(detectedEnemies[detectedType].Id);
+            debug("Removed enemy from PF");
+        }
     }else{
         detectedEnemies[detectedType].Detected=true;
         detectedEnemies[detectedType].Angle=ed->getAngle();
-        ss<<"Enemy NOT detected type: "<<ed->getType()<<" detected angle: "<<ed->getAngle();
-        //TODO: Add enemy in pathfinder
+        ss<<"Enemy detected type: "<<ed->getType()<<" detected angle: "<<ed->getAngle();
+
+        stateLock.lock();
+        Point2D enemyPosition=lastState.Position;
+        angle+=lastState.Orientation;
+        stateLock.unlock();
+        enemyPosition.setX(enemyPosition.getX()+enemyDistance*cos(angle*PI/180.0));
+        enemyPosition.setY(enemyPosition.getY()+enemyDistance*sin(angle*PI/180.0));
+
+        stringstream ss;
+        ss<<"Calculated enemy position: "<<enemyPosition;
+        debug(ss.str());
+
+        detectedEnemies[detectedType].Id=dodajSestougao(enemyPosition.getX(),enemyPosition.getY(),triangleSide);
+
+        debug("Added new enemy in PF");
     }
-    debug(ss.str());
+    pfLock.unlock();
+
+    //debug(ss.str());
 }
 
 void MotionExecutor::processMotionCommand(Command* command){
@@ -108,6 +115,8 @@ void MotionExecutor::processAddObstacle(Command* command){
     AddStaticObject* cmd=(AddStaticObject*)command;
     pathFinder->addObstacle(cmd->getEdges());
     pfLock.unlock();
+
+    sendResponseFromCommand(command);
 }
 
 void MotionExecutor::processSetEnemyDetector(Command* command){
@@ -184,7 +193,7 @@ void MotionExecutor::main(){
     shouldStop=false;
     debug("Started main thread execution");
 
-    bool waitOnEnemyCountCheck=false;
+    bool waitOnEnemyCountCheck=true;
 #ifdef MALI_ROBOT
     waitOnEnemyCountCheck=false;
 #endif
@@ -195,6 +204,22 @@ void MotionExecutor::main(){
             driver.stop();
             break;
         }
+
+        try{
+            driver.refreshData();
+        }catch(...){
+            error("***** Error in UART communication! ****");
+            if (currentMotionInstruction.isSet()){
+                sendResponse(currentMotionInstruction.getErrorMessage(MotionCommandError::UART));
+                currentMotionInstruction.reset(driver);
+            }
+            return;
+        }
+        newState.Direction=driver.getDirection();
+        newState.Orientation=driver.getOrientation();
+        newState.Position=driver.getPosition();
+        newState.Speed=driver.getSpeed();
+        newState.State=driver.getState();
 
         /* Proverim da li robot moze da ide tamo gde se uputio */
         if (currentMotionInstruction.isSet()){
@@ -209,27 +234,35 @@ void MotionExecutor::main(){
                             Point2D destination=currentMotionInstruction.getDestination().Position;
                             giveUp=!pathFinder->search(newState.Position,destination,
                                                        currentMotionInstruction.getPfPositions());
+
+                            cout<<"**Number of obstacles: "<<pathFinder->getAllObstacles().size()<<endl;
+
                             pfLock.unlock();
                             debug("Finished cacluating alternative route");
-                            currentMotionInstruction.resume(driver);
+                            if (!giveUp){
+                                debug("Moving to next position returned from PF");
+                                currentMotionInstruction.moveToNextPoint(driver);
+                            }
                         }
                         if (giveUp){
-                            debug("****** Sending error, timeout *******");
+                            debug("****** Sending error, timeout, enemy detected *******");
                             sendResponse(currentMotionInstruction.getErrorMessage(MotionCommandError::ENEMY));
                             currentMotionInstruction.reset(driver);
                             driver.stop();
                         }
                     }
                 }else{
-                    debug("******* Pausing motion *******");
+                    debug("******* Pausing motion, waiting for enemy to leave*******");
                     currentMotionInstruction.pause(driver);
                 }
             }else if (currentMotionInstruction.isSuspended()){
                 debug("Resuming motion");
                 if (shouldUseSlow(currentMotionInstruction.getDestination().Position,driver.getSpeed())){
+                    debug("Slowing down, small distance!");
                     currentMotionInstruction.saveSpeed(driver.getSpeed());
                     driver.setSpeed(SLOW_SPEED);
                 }
+                debug("Resuming movement");
                 currentMotionInstruction.resume(driver);
             }
         }
@@ -283,6 +316,7 @@ void MotionExecutor::main(){
                 sendResponseFromCommand(currentMotionInstruction.getCommand());
                 currentMotionInstruction.reset(driver);
             }else{
+                debug("Moving to next point");
                 currentMotionInstruction.moveToNextPoint(driver);
             }
         }
@@ -292,7 +326,7 @@ void MotionExecutor::main(){
                 && currentMotionInstruction.isSet()){
             error("Robot stuck, canceling movement");
             sendResponse(currentMotionInstruction.getErrorMessage(MotionCommandError::STUCK));
-            driver.stop();
+            //driver.stop();
             currentMotionInstruction.reset(driver);
         }
 
@@ -325,19 +359,34 @@ void MotionExecutor::main(){
 
 void MotionExecutor::moveToPosition(MotionCommand* _motionCommand){
     MoveToPosition* command=(MoveToPosition*)_motionCommand;
-    debug("Moving to position");
+    debug(command->getSource()+" Received: Moving to position");
     MotionState destinationState=lastState;
     destinationState.Position=command->getPosition();
     destinationState.Direction=command->getDirection();
     currentMotionInstruction.Set(_motionCommand,destinationState, command->shouldUsePathFinder());
 
     if (command->shouldUsePathFinder()){
+        bool pathFound=false;
+
         pfLock.lock();
-        pathFinder->search(lastState.Position,destinationState.Position,currentMotionInstruction.getPfPositions());
+        pathFound=pathFinder->search(lastState.Position,destinationState.Position,currentMotionInstruction.getPfPositions());
         pfLock.unlock();
-        currentMotionInstruction.moveToNextPoint(driver);
+
+        for (auto it=currentMotionInstruction.getPfPositions().begin();it!=currentMotionInstruction.getPfPositions().end();++it){
+            std::stringstream ss;
+            ss<<"Path finder point: "<<*it;
+            debug(ss.str());
+        }
+
+        if (pathFound){
+            currentMotionInstruction.moveToNextPoint(driver);
+        }else{
+            sendResponse(currentMotionInstruction.getErrorMessage(MotionCommandError::ENEMY));
+            currentMotionInstruction.reset(driver);
+        }
     }else{
         if (shouldUseSlow(destinationState.Position,driver.getSpeed())){
+            debug("Slowing down2");
             currentMotionInstruction.saveSpeed(driver.getSpeed());
             driver.setSpeed(SLOW_SPEED);
         }
@@ -347,11 +396,11 @@ void MotionExecutor::moveToPosition(MotionCommand* _motionCommand){
 
 void MotionExecutor::moveForward(MotionCommand* _motionCommand){
     MoveForward* command=(MoveForward*)_motionCommand;
-    debug("Moving forward");
+    debug(command->getSource()+" Received: Move forward");
     MotionState destinationState=lastState;
     int distance=command->getDistance();
-    destinationState.Position.setX(destinationState.Position.getX()+distance*cos(destinationState.Orientation));
-    destinationState.Position.setY(destinationState.Position.getY()+distance*sin(destinationState.Orientation));
+    destinationState.Position.setX(destinationState.Position.getX()+distance*cos(destinationState.Orientation*PI/180.0));
+    destinationState.Position.setY(destinationState.Position.getY()+distance*sin(destinationState.Orientation*PI/180.0));
     if (distance<0)
         destinationState.Direction=MotionDriver::MovingDirection::BACKWARD;
     else
@@ -359,6 +408,7 @@ void MotionExecutor::moveForward(MotionCommand* _motionCommand){
     currentMotionInstruction.Set(_motionCommand, destinationState);
 
     if (shouldUseSlow(distance,driver.getSpeed())){
+        debug("Slowing down3");
         currentMotionInstruction.saveSpeed(driver.getSpeed());
         driver.setSpeed(SLOW_SPEED);
     }
@@ -368,7 +418,7 @@ void MotionExecutor::moveForward(MotionCommand* _motionCommand){
 
 void MotionExecutor::rotateFor(MotionCommand* _motionCommand){
     RotateFor* command=(RotateFor*)_motionCommand;
-    debug("Rotating for");
+    debug(command->getSource()+" Received: Rotate for");
     MotionState destinationState=lastState;
     destinationState.Orientation+=command->getRelativeAngle();
     currentMotionInstruction.Set(_motionCommand,destinationState);
@@ -377,7 +427,7 @@ void MotionExecutor::rotateFor(MotionCommand* _motionCommand){
 
 void MotionExecutor::rotateTo(MotionCommand* _motionCommand){
     RotateTo* command=(RotateTo*)_motionCommand;
-    debug("Rotating to");
+    debug(command->getSource()+" Received: Rotate to");
     MotionState destinationState=lastState;
     destinationState.Orientation=command->getAbsoluteAngle();
     currentMotionInstruction.Set(_motionCommand, destinationState);
@@ -386,14 +436,14 @@ void MotionExecutor::rotateTo(MotionCommand* _motionCommand){
 
 void MotionExecutor::moveArc(MotionCommand* _motionCommand){
     MoveArc* command=(MoveArc*)_motionCommand;
-    debug("Moving arc");
+    debug(command->getSource()+" Received: Move arc");
     currentMotionInstruction.Set(_motionCommand, lastState);
     driver.moveArc(command->getCenter(),command->getAngle(),command->getDirection());
 }
 
 void MotionExecutor::setSpeed(MotionCommand* _motionCommand){
-    debug("Setting speed");
     SetSpeedMotion* command=(SetSpeedMotion*)_motionCommand;
+    debug(command->getSource()+" Received: Set speed");
     currentMotionInstruction.Set(_motionCommand, lastState);
     std::stringstream ss;
     ss<<"Set speed @ "<<command->getSpeed();
@@ -402,8 +452,8 @@ void MotionExecutor::setSpeed(MotionCommand* _motionCommand){
 }
 
 void MotionExecutor::setPosition(MotionCommand* _motionCommand){
-    debug("Setting position");
     SetPosition* command=(SetPosition*)_motionCommand;
+    debug(command->getSource()+" Received: Set position");
     currentMotionInstruction.Set(_motionCommand, lastState);
     std::stringstream ss;
     debug(ss.str());
@@ -424,22 +474,24 @@ void MotionExecutor::stopMovement(MotionCommand* _motionCommand){
     }
 }
 
+static double PI=3.141592653584;
 bool MotionExecutor::isInField(int angle, int r){
-    return true;    //Fix for now, always is in field
+    static int xMinC=minX+margin;
+    static int xMaxC=maxX-margin;
+    static int yMinC=minY+margin;
+    static int yMaxC=maxY-margin;
 
-    if (!checkField) return true;
+//    if (!checkField) return true;
     Point2D robotPosition=driver.getPosition();
-    int rotation= driver.getOrientation()+angle;
-    Point2D enemyPosition(robotPosition.getX()+r*cos(rotation),robotPosition.getY()+r*sin(rotation));
-    if ((enemyPosition.getX()<minX) || (enemyPosition.getX()>maxX)){
+    int rotation=driver.getOrientation()+angle;
+
+    Point2D enemyPosition(robotPosition.getX()+r*cos(rotation*PI/180.0),robotPosition.getY()+r*sin(rotation*PI/180.0));
+    if ((enemyPosition.getX()<xMinC) || (enemyPosition.getX()>xMaxC)){
         return false;
     }
-    if ((enemyPosition.getY()<minY) || (enemyPosition.getY()>maxY)){
+    if ((enemyPosition.getY()<yMinC) || (enemyPosition.getY()>yMaxC)){
         return false;
     }
-//    std::stringstream ss;
-    //ss<<"Enemy detected in field: "<<robotPosition.getX()<<", "<<robotPosition.getY()<<" enemy: "<<enemyPosition.getX()<<", "<<enemyPosition.getY();
-    //debug(ss.str());
     return true;
 }
 
@@ -453,6 +505,13 @@ int MotionExecutor::dodajSestougao(int krugX, int krugY, int triangleSide){
     obsticlePoints.push_back(geometry::Point2D(krugX - triangleSide,     krugY));
     obsticlePoints.push_back(geometry::Point2D(krugX - (triangleSide/2), krugY + triangleHeight));
     obsticlePoints.push_back(geometry::Point2D(krugX + (triangleSide/2), krugY + triangleHeight));
+
+    for (auto it=obsticlePoints.begin();it!=obsticlePoints.end();++it){
+        stringstream ss;
+        ss<<"Point: "<<*it;
+        debug(ss.str());
+    }
+
     return pathFinder->addObstacle(obsticlePoints);
 }
 

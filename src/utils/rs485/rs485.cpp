@@ -126,7 +126,7 @@ int rs485Connection::getString(char output[], int numOfBytes)
 			}
 			else if(rv == 0)
 			{
-				printf("select timeout in attempt %d \n", i); // a timeout occured
+//				printf("select timeout in attempt %d \n", i); // a timeout occured
 				return numOfBytesReceived;
 			}
 			else
