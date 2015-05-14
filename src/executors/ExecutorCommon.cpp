@@ -36,6 +36,9 @@ void ExecutorCommon::init(){
     actuatorHandles[ActuatorType::BEACON_MALI_CALLBACK]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::beaconMaliCommand);
     actuatorHandles[ActuatorType::BEACON_VELIKI_CALLBACK]=static_cast<ActuatorCommandHandle>(&ExecutorCommon::beaconVelikiCommand);
 
+    //added for new "Srednji mehanizam"
+
+
 
 
     suscribeToSensore();

@@ -22,14 +22,14 @@ void EnemyDetector::suscribe(){
     brkon.setRegisterConfig(char(4),char(1));
     brkon.setPowerCoilConfig(char(4),char(8));
     brkon.registerInerface(this);
-//    brkon.registerBrkon();
+    brkon.registerBrkon();
 //    brkon.startBrkon();
 
     //TODO
     //dodati za beacon
-    beacon.setBeaconConfig(char(4),char(1),char(2),char(4),char(3),char(4),char(4),char(1),char(2),2,this);
+    beacon.setBeaconConfig(char(2),char(1),char(2),char(2),char(3),char(4),char(2),char(1),char(2),2,this);
 //    beacon.registerBeacon();
-//    beacon.startBeacon();
+    //    beacon.startBeacon();
 
 
 #endif
@@ -55,7 +55,7 @@ bool EnemyDetector::StopBrxonFunction(){
 void EnemyDetector::SensorDriverCallback(int _id, bool _detected){
     EnemyDetectedNotification* notification=NULL;
     //debug("SENSOR CALLBACK ");
-    if(_id == this->sensorBackID){
+    if(_id == this->sensorBackID || _id == backSesnorID){
         if(previousState.sensorBack != _detected){
             previousState.sensorBack = _detected;
 
@@ -68,7 +68,7 @@ void EnemyDetector::SensorDriverCallback(int _id, bool _detected){
             }
         }
         backSensor.StartSensor();
-    }else if(_id ==this->sensorFrontID){
+    }else if(_id ==this->sensorFrontID || (_id == frontLeftSensorID) || ( _id == frontRightSensorID )){
         if(previousState.sensorFront != _detected){
             previousState.sensorFront = _detected;
 
@@ -84,20 +84,45 @@ void EnemyDetector::SensorDriverCallback(int _id, bool _detected){
     }else{
         debug("WROOONG ID ");
     }
-    if (notification!=NULL){
-        debug("Sending enemy detected notification!");
-        sendNotification(notification);
-    }
+
 }
 
-void EnemyDetector::brkonDriverCallback(short _dataFront, short _dataBack, bool _detected){
-
+void EnemyDetector::brkonDriverCallback(unsigned char _dataFront, unsigned char _dataBack, bool _detected){
+    EnemyDetectedNotification* notification=NULL;
+/*
     std::cout << "angle front: " << _dataFront << std::endl
               << "angle back: " << _dataBack << std::endl
               << "coil" << _detected << std::endl;
+              */
+    //printf("anglefront: %d \n angleBack: %d \n", _dataFront, _dataBack);
 
+    if (_detected){
+        if((_dataFront != 0xFF ) && (std::abs(previousState.angleFront - _dataFront) > ANGLE_DIFFERENCE)){
+            previousState.angleFrontDetected = true;
+            previousState.angleFront = _dataFront;
+            notification = new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,(_dataFront-50),true);
+            printf("BRKON FRONT enemy on: %d ", (_dataFront-50));
+        }else if( _dataFront == 0xFF && previousState.angleFrontDetected == true){
+            previousState.angleFrontDetected = false;
+            notification = new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,(previousState.angleFront - 50),false);
+            debug("BRKON FRONT enemy OFF");
+        }
 
-/*
+        if((_dataBack != 0xFF) && (std::abs(previousState.angleBack - _dataBack) > ANGLE_DIFFERENCE)){
+            previousState.angleBackDetected = true;
+            previousState.angleBack = _dataBack;
+            notification = new EnemyDetectedNotification(EnemyDetectedNotification::Type::BACK, (_dataBack + 135),true);
+            printf("BRKON BACK enemy on: %d ", (_dataBack+135));
+
+        }else if( _dataBack == 0xFF && previousState.angleBackDetected == true){
+            previousState.angleBackDetected = false;
+            notification = new EnemyDetectedNotification(EnemyDetectedNotification::Type::BACK,(previousState.angleBack +135),false);
+            debug("BRKON BACK eneme OFF");
+
+        }
+    }
+
+    /*
     BrkonCommand* command = new BrkonCommand(_dataFront, _dataBack, _detected);
     commandQueueLock.lock();
     //commandsToProcess.push(Instruction(command));
@@ -115,6 +140,20 @@ void EnemyDetector::beaconDriverCallbackVeliki(short _veliki_cordX, short _velik
     }else{
         debug("beacon is not getting valide data");
     }
+
+    if(_running){
+        m_mutex.lock();
+        enemyPosition.veliki_cordX = _veliki_cordX;
+        enemyPosition.veliki_cordY = _veliki_cordY;
+        enemyPosition.veliki_valid_data = true;
+        m_mutex.unlock();
+    }else{
+        m_mutex.lock();
+        enemyPosition.veliki_valid_data = false;
+        m_mutex.unlock();
+
+    };
+
     /*
     BeaconVelikiCommand* command = new BeaconVelikiCommand(_veliki_cordX,_veliki_cordY, _running);
 
@@ -136,7 +175,21 @@ void EnemyDetector::beaconDriverCallbackMali(short _mali_cordX, short _mali_cord
     }else{
         debug("beacon is not getting valide data");
     }
-/*
+
+    if(_running){
+        beaconRetryCounter = 0;
+        m_mutex.lock();
+        enemyPosition.mali_cordX = _mali_cordX;
+        enemyPosition.mali_cordY = _mali_cordY;
+        enemyPosition.mali_valid_data = true;
+        m_mutex.unlock();
+    }else{
+        m_mutex.lock();
+        enemyPosition.mali_valid_data = false;
+        m_mutex.unlock();
+
+    }
+    /*
     BeaconMaliCommand* command = new BeaconMaliCommand(_mali_cordX,_mali_cordY, _running);
 
     commandQueueLock.lock();
@@ -172,8 +225,8 @@ bool EnemyDetector::BeaconVelikiCallbackFunction(short _cordX, short _cordY, boo
 
 bool EnemyDetector::BrkonCallbackFunction(short _dataFront, short _dataBack, bool _detected){
     if(_detected){
-    std::cout << "angle front: " << _dataFront << std::endl
-              << "angle back: " << _dataBack << std::endl;
+        std::cout << "angle front: " << _dataFront << std::endl
+                  << "angle back: " << _dataBack << std::endl;
 
     }else{
 
@@ -182,8 +235,8 @@ bool EnemyDetector::BrkonCallbackFunction(short _dataFront, short _dataBack, boo
 }
 
 bool EnemyDetector::SensorCallbackFunction(int _id, bool _detected){
-EnemyDetectedNotification* notification=NULL;    
-if(_id == this->sensorBackID){
+    EnemyDetectedNotification* notification=NULL;
+    if(_id == this->sensorBackID){
         if(previousState.sensorBack != _detected){
             previousState.sensorBack = _detected;
 
@@ -219,5 +272,40 @@ if(_id == this->sensorBackID){
     return true;
 }
 
+void EnemyDetector::main(){
+    while(!shouldStop){
+        EnemyPosition positionTmp;
+        m_mutex.lock();
+        positionTmp = enemyPosition;
+        m_mutex.unlock();
+
+        if( color == StartMessage::Color::YELLOW){
+            // adjust positions to "normal ones"
+            positionTmp.veliki_cordX -= 1500;
+            positionTmp.veliki_cordY = 2000 - positionTmp.veliki_cordY;
+
+            positionTmp.mali_cordX -= 1500;
+            positionTmp.mali_cordY = 2000 - positionTmp.mali_cordY;
+        }else{
+            positionTmp.veliki_cordX = 1500 - positionTmp.veliki_cordX;
+            // position Y is ok
+            positionTmp.mali_cordX = 1500 - positionTmp.mali_cordX;
+        }
+
+    std::cout << "BEACON:" << std::endl
+              << "veliki  X: "  << positionTmp.veliki_cordX
+              << " Y: " << positionTmp.veliki_cordY
+              << std::endl
+              << "mali    X: " << positionTmp.mali_cordX
+              << " Y: " << positionTmp.mali_cordY
+              << std::endl;
+    boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
+
+    }
+}
+
+void EnemyDetector::stop(){
+    shouldStop = true;
+}
 
 } // end namespace

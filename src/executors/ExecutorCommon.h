@@ -109,6 +109,14 @@ protected:
     virtual bool BrkonCallbackFunction(short _dataFront, short _dataBack, bool _detected){ std::cout << "REDEFINE " << std::endl;return false;}
     virtual bool SensorCallbackFunction(int _id, bool _detected){ std::cout << "REDEFINE " << std::endl;return false;}
 
+    //added for new srednji mehanizam
+
+    virtual bool GetGlassFunction(){ return false; }
+    virtual bool LeaveGlassFunction(){ return false; }
+    virtual bool GetBallFunction(){ return false; }
+    virtual bool LeaveBallFunction(){ return false; }
+
+
 
 protected:
 
@@ -145,6 +153,9 @@ protected:
     void beaconMaliCommand(ActuatorCommand* _command);
     void beaconVelikiCommand(ActuatorCommand* _command);
     void brkonCommand(ActuatorCommand* _command);
+
+    // added for new "srednji mehanizam
+
 
     condition_variable queueNotEmpty;
 

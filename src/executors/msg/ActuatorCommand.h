@@ -59,21 +59,29 @@ enum ActuatorType{SET_START_CONFIG,
                   START_BEACON,
                   STOP_BEACON,
                   NULL_ACTION,
+                  // added for old enemy detector
                   CALLBACK_GET_RIGHT,
                   CALLBACK_GET_LEFT,
                   START_DETECTION,
                   STOP_DETECTION,
+                  // new mali robot commands
                   LEAVE_CARPET,
                   CARPET_LEAVE,
                   CARPET_POSITION_OPEN,
                   CARPET_POSITION_1,
                   CARPET_POSITION_2,
                   CARPET_POSITION_CLOSE,
-
+                  // added for new enemy detector - after testing ... not using it eny more
                   BEACON_MALI_CALLBACK,
                   BEACON_VELIKI_CALLBACK,
                   BRKON_CALLBACK,
-                  SENSOR_CALLBACK
+                  SENSOR_CALLBACK,
+                  // for new "srednji mehanizam"
+                  GET_GLASS,
+                  GET_BALL,
+                  LEAVE_BALL,
+                  LEAVE_GLASS,
+
                  };
 
 typedef map<Executors, string> ExecutorsMap;
@@ -224,6 +232,29 @@ public:
   StartDetection(Executors _executor):ActuatorCommand(START_DETECTION, _executor){}
 };
 
+// added for new "srednji mehanizam"
+
+class GetGlass: public ActuatorCommand{
+public:
+    GetGlass(Executors _executor):ActuatorCommand(GET_GLASS, _executor){}
+};
+
+class GetBall: public ActuatorCommand{
+public:
+    GetBall(Executors _executor):ActuatorCommand(GET_BALL, _executor){}
+};
+
+class LeaveBall: public ActuatorCommand{
+public:
+    LeaveBall(Executors _executor):ActuatorCommand(LEAVE_BALL, _executor){}
+};
+
+class LeaveGlass: public ActuatorCommand{
+public:
+    LeaveGlass(Executors _executor):ActuatorCommand(LEAVE_GLASS, _executor){}
+};
+
+// end of commands
 class SetSpeed: public ActuatorCommand {
 public:
     SetSpeed(Executors _executor, ServoType _servo,  int _value): ActuatorCommand(SET_SPEED, _executor), value(_value){}
