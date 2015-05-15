@@ -238,10 +238,11 @@ private:
     int rSensor;
     bool useEnemyDetector;
     struct Enemy{
-        Enemy(int _angle=0):Angle(_angle),Detected(false),Id(-1){}
-        int Angle;
+        Enemy(int _angle=0):Detected(false),Id(-1),EnemyLeft(true){}
+        Point2D Position;
         bool Detected;
         int Id;
+        bool EnemyLeft;
     };
     Enemy detectedEnemies[2];
 
@@ -252,7 +253,7 @@ private:
     int minY;
     int margin;
     bool checkField;
-    bool isInField(int angle, int r);
+    bool isInField(Point2D& enemyPosition);
 
     /* for slowing down motion on small distances */
     bool shouldUseSlow(int distance, int originalSpeed);

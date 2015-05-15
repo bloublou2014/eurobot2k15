@@ -23,11 +23,11 @@ void EnemyDetector::suscribe(){
     brkon.setPowerCoilConfig(char(4),char(8));
     brkon.registerInerface(this);
     brkon.registerBrkon();
-//    brkon.startBrkon();
+    brkon.startBrkon();
 
     //TODO
     //dodati za beacon
-    beacon.setBeaconConfig(char(2),char(1),char(2),char(2),char(3),char(4),char(2),char(1),char(2),2,this);
+//    beacon.setBeaconConfig(char(2),char(1),char(2),char(2),char(3),char(4),char(2),char(1),char(2),2,this);
 //    beacon.registerBeacon();
     //    beacon.startBeacon();
 
@@ -85,6 +85,11 @@ void EnemyDetector::SensorDriverCallback(int _id, bool _detected){
         debug("WROOONG ID ");
     }
 
+    if (notification!=NULL){
+        debug("Sending enemy detected notification!");
+        //sendNotification(notification);
+    }
+
 }
 
 void EnemyDetector::brkonDriverCallback(unsigned char _dataFront, unsigned char _dataBack, bool _detected){
@@ -117,8 +122,12 @@ void EnemyDetector::brkonDriverCallback(unsigned char _dataFront, unsigned char 
         }else if( _dataBack == 0xFF && previousState.angleBackDetected == true){
             previousState.angleBackDetected = false;
             notification = new EnemyDetectedNotification(EnemyDetectedNotification::Type::BACK,(previousState.angleBack +135),false);
-            debug("BRKON BACK eneme OFF");
+            debug("BRKON BACK enemy OFF");
 
+        }
+        if (notification!=NULL){
+            debug("Sending enemy detected notification!");
+            sendNotification(notification);
         }
     }
 

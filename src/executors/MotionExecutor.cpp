@@ -64,15 +64,16 @@ void MotionExecutor::processEnemyDetectedNotification(Notification* notification
     pfLock.lock();    //Path finding logic
     if (!ed->isDetected()){
         detectedEnemies[detectedType].Detected=false;
+        detectedEnemies[detectedType].EnemyLeft=true;
         ss<<"Enemy NOT detected: "<<ed->getType()<<" detected angle: "<<ed->getAngle();
 
         if(detectedEnemies[detectedType].Id!=-1){
             pathFinder->removeObstacle(detectedEnemies[detectedType].Id);
             debug("Removed enemy from PF");
+            detectedEnemies[detectedType].Id=-1;
         }
     }else{
         detectedEnemies[detectedType].Detected=true;
-        detectedEnemies[detectedType].Angle=ed->getAngle();
         ss<<"Enemy detected type: "<<ed->getType()<<" detected angle: "<<ed->getAngle();
 
         stateLock.lock();
@@ -86,13 +87,24 @@ void MotionExecutor::processEnemyDetectedNotification(Notification* notification
         ss<<"Calculated enemy position: "<<enemyPosition;
         debug(ss.str());
 
+        if (detectedEnemies[detectedType].Id!=-1){
+            pathFinder->removeObstacle(detectedEnemies[detectedType].Id);
+        }
+
         detectedEnemies[detectedType].Id=dodajSestougao(enemyPosition.getX(),enemyPosition.getY(),triangleSide);
+
+        if (!detectedEnemies[detectedType].EnemyLeft && enemyPosition.euclidDist(detectedEnemies[detectedType].Position)<=200){
+            debug("Enemy is in fact not detected!");
+            detectedEnemies[detectedType].Detected=false;
+        }
+        detectedEnemies[detectedType].EnemyLeft=false;
+        detectedEnemies[detectedType].Position=enemyPosition;
 
         debug("Added new enemy in PF");
     }
     pfLock.unlock();
 
-    //debug(ss.str());
+    debug(ss.str());
 }
 
 void MotionExecutor::processMotionCommand(Command* command){
@@ -161,7 +173,7 @@ void MotionExecutor::stop(){
     shouldStop=true;
 }
 
-const int MotionInstruction::MaxRetryCount=500;
+const int MotionInstruction::MaxRetryCount=80;
 bool MotionExecutor::isEnemyDetected(MotionState& ms, bool isSuspended){
     if (ms.State!=MotionDriver::State::MOVING && !isSuspended) return false;  //We won't use enemy detection when not moving
     EnemyDetectedNotification::Type detectedType;
@@ -172,7 +184,7 @@ bool MotionExecutor::isEnemyDetected(MotionState& ms, bool isSuspended){
     }
     if (!detectedEnemies[detectedType].Detected)
         return false;  //We didn't find anything on moving side
-    if (isInField(detectedEnemies[detectedType].Angle,rSensor)){
+    if (isInField(detectedEnemies[detectedType].Position)){
         //than enemy is detected in moving direction
         return true;
     }
@@ -242,6 +254,15 @@ void MotionExecutor::main(){
                             if (!giveUp){
                                 debug("Moving to next position returned from PF");
                                 currentMotionInstruction.moveToNextPoint(driver);
+                                // if we found path than remove detected enemy
+                                debug("Deleting detected enemy");
+                                EnemyDetectedNotification::Type detectedType;
+                                if (newState.Direction==MotionDriver::MovingDirection::FORWARD){
+                                    detectedType=EnemyDetectedNotification::Type::FRONT;
+                                }else{
+                                    detectedType=EnemyDetectedNotification::Type::BACK;
+                                }
+                                detectedEnemies[detectedType].Detected=false;
                             }
                         }
                         if (giveUp){
@@ -379,8 +400,10 @@ void MotionExecutor::moveToPosition(MotionCommand* _motionCommand){
         }
 
         if (pathFound){
+            debug("Path found!");
             currentMotionInstruction.moveToNextPoint(driver);
         }else{
+            debug("Path not found!");
             sendResponse(currentMotionInstruction.getErrorMessage(MotionCommandError::ENEMY));
             currentMotionInstruction.reset(driver);
         }
@@ -475,17 +498,17 @@ void MotionExecutor::stopMovement(MotionCommand* _motionCommand){
 }
 
 static double PI=3.141592653584;
-bool MotionExecutor::isInField(int angle, int r){
+bool MotionExecutor::isInField(Point2D& enemyPosition){
     static int xMinC=minX+margin;
     static int xMaxC=maxX-margin;
     static int yMinC=minY+margin;
     static int yMaxC=maxY-margin;
 
 //    if (!checkField) return true;
-    Point2D robotPosition=driver.getPosition();
-    int rotation=driver.getOrientation()+angle;
+//    Point2D robotPosition=driver.getPosition();
+//    int rotation=driver.getOrientation()+angle;
 
-    Point2D enemyPosition(robotPosition.getX()+r*cos(rotation*PI/180.0),robotPosition.getY()+r*sin(rotation*PI/180.0));
+//    Point2D enemyPosition(robotPosition.getX()+r*cos(rotation*PI/180.0),robotPosition.getY()+r*sin(rotation*PI/180.0));
     if ((enemyPosition.getX()<xMinC) || (enemyPosition.getX()>xMaxC)){
         return false;
     }
