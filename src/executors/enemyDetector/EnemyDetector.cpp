@@ -76,7 +76,9 @@ void EnemyDetector::SensorDriverCallback(int _id, bool _detected){
                 previousState.detectionBrkonBack = true;
                 notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::BACK,180,true);
                 debug("DOSO BACK");
-            }else {
+            }else if(!_detected && !previousState.detectionBrkonBack) {
+                previousState.angleBack = 255;
+
                 previousState.detectionSensorBack = _detected;
                 notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::BACK,180,false);
                 debug("OTISAO BACK");
@@ -92,8 +94,9 @@ void EnemyDetector::SensorDriverCallback(int _id, bool _detected){
                 previousState.detectionBrkonFront = true;
                 notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,0,true);
                 debug("DOSO FRONT");
-            }else if(_detected && !previousState.detectionBrkonFront){
+            }else if(!_detected && !previousState.detectionBrkonFront){
                 previousState.detectionSensorFront = _detected;
+                previousState.angleFront = 255;
                 notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,0,false);
                 debug("OTISAO FRONT");
             }
@@ -117,7 +120,7 @@ void EnemyDetector::brkonDriverCallback(unsigned char _dataFront, unsigned char 
               << "angle back: " << _dataBack << std::endl
               << "coil" << _detected << std::endl;
               */
-//    printf("anglefront: %d \n angleBack: %d \n", _dataFront, _dataBack);
+    printf("anglefront: %d \n angleBack: %d \n", _dataFront, _dataBack);
 
 //        if (_detected){ // ne treba jer svakako proveramo da li je jednako 0xFF sto znaci da nema nista a iscitavanje regisra pocinje kada se
     //    se coil setuje
@@ -129,6 +132,7 @@ void EnemyDetector::brkonDriverCallback(unsigned char _dataFront, unsigned char 
         printf("BRKON FRONT enemy ON: %d ", (_dataFront-50));
     }else if( _dataFront == 0xFF && previousState.detectionFront == true){
         previousState.detectionFront = false;
+        previousState.angleFront = 255;
         notification = new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,(previousState.angleFront - 50),false);
         debug("BRKON FRONT enemy OFF");
     }
@@ -141,6 +145,7 @@ void EnemyDetector::brkonDriverCallback(unsigned char _dataFront, unsigned char 
 
     }else if( _dataBack == 0xFF && previousState.detectionBack == true){
         previousState.detectionBack = false;
+        previousState.angleBack = 255;
         notification = new EnemyDetectedNotification(EnemyDetectedNotification::Type::BACK,(previousState.angleBack +135),false);
         debug("BRKON BACK eneme OFF");
 
