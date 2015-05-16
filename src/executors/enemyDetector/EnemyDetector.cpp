@@ -68,28 +68,32 @@ void EnemyDetector::SensorDriverCallback(int _id, bool _detected){
     EnemyDetectedNotification* notification=NULL;
     //debug("SENSOR CALLBACK ");
     if(_id == this->sensorBackID || _id == backSesnorID){
-        if(previousState.detectionBack != _detected){
-            previousState.detectionBack = _detected;
+        if(previousState.detectionSensorBack != _detected){
 
-            if(_detected ){
+            if(_detected && !previousState.detectionBrkonBack ){
                 previousState.angleBack = 45;
+                previousState.detectionSensorBack = _detected;
+                previousState.detectionBrkonBack = true;
                 notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::BACK,180,true);
                 debug("DOSO BACK");
             }else {
+                previousState.detectionSensorBack = _detected;
                 notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::BACK,180,false);
                 debug("OTISAO BACK");
             }
         }
         backSensor.StartSensor();
     }else if(_id ==this->sensorFrontID || (_id == frontLeftSensorID) || ( _id == frontRightSensorID )){
-        if(previousState.detectionFront != _detected){
-            previousState.detectionFront = _detected;
+        if(previousState.detectionSensorFront != _detected){
 
-            if(_detected){
+            if(_detected && !previousState.detectionBrkonFront){
                 previousState.angleFront = 50;
+                previousState.detectionSensorFront = _detected;
+                previousState.detectionBrkonFront = true;
                 notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,0,true);
                 debug("DOSO FRONT");
-            }else{
+            }else if(_detected && !previousState.detectionBrkonFront){
+                previousState.detectionSensorFront = _detected;
                 notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,0,false);
                 debug("OTISAO FRONT");
             }
