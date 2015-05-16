@@ -183,7 +183,6 @@ void MoveToPosition::New(const v8::FunctionCallbackInfo<v8::Value>& args) {
         int valueDirection = args[2]->IsUndefined()  ? 1 : args[2]->NumberValue();
         int valuePF = args[3]->IsUndefined()  ? false : args[3]->BooleanValue();
 
-
         MoveToPosition* obj;
         if (valueDirection==1){
             obj = new MoveToPosition(Point2D(valueXcord,valueYcord), MotionDriver::MovingDirection::FORWARD, valuePF);

@@ -29,7 +29,9 @@ MotionDriver::~MotionDriver()
 
 void MotionDriver::moveStraight(int distance)
 {
-    debug("Move strait");
+    std::stringstream ss;
+    ss<<"Move strait: "<<distance;
+    debug(ss.str());
 	boost::lock_guard<boost::mutex> lock(*io_mutex);
 	
 	char message[] = {
@@ -46,7 +48,9 @@ void MotionDriver::moveStraight(int distance)
 
 void MotionDriver::rotateFor(int relativeAngle)
 {
-    debug("Rotate for");
+    std::stringstream ss;
+    ss<<"Rotate for: "<<(int)relativeAngle;
+    debug(ss.str());
 	boost::lock_guard<boost::mutex> lock(*io_mutex);
 	
 	char message[] = {
@@ -60,7 +64,9 @@ void MotionDriver::rotateFor(int relativeAngle)
 
 void MotionDriver::rotateTo(int absoluteAngle)
 {
-    debug("Rotate to");
+    std::stringstream ss;
+    ss<<"Rotate to: "<<(int)absoluteAngle;
+    debug(ss.str());
 	boost::lock_guard<boost::mutex> lock(*io_mutex);
 	
 	char message[] = {
@@ -74,7 +80,9 @@ void MotionDriver::rotateTo(int absoluteAngle)
 
 void MotionDriver::moveToPosition(geometry::Point2D position, MovingDirection direction)
 {   
-    debug("Move to postion");
+    std::stringstream ss;
+    ss<<"Move to position: "<<position;
+    debug(ss.str());
 	boost::lock_guard<boost::mutex> lock(*io_mutex);
 	
 	char message[] = {
@@ -112,6 +120,7 @@ void MotionDriver::moveArc(geometry::Point2D center, int angle, MovingDirection 
 
 void MotionDriver::stop()
 {
+    debug("Stop command received");
 	boost::lock_guard<boost::mutex> lock(*io_mutex);
 
 	uart.writeUart('S');
@@ -151,7 +160,9 @@ int MotionDriver::getDirection()
 
 void MotionDriver::setSpeed(char speed)
 {
-debug("Set speed");
+    std::stringstream ss;
+    ss<<"Set speed "<<(int)speed;
+    debug(ss.str());
 	boost::lock_guard<boost::mutex> lock(*io_mutex);
 
 	this->speed = speed;

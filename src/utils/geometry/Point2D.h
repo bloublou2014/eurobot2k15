@@ -9,6 +9,10 @@
 #ifndef POINT2D_H_
 #define POINT2D_H_
 
+#include <ostream>
+
+using std::ostream;
+
 namespace geometry {
 
 class Point2D {
@@ -26,7 +30,11 @@ public:
 	int getY() const;
 	void setX(int x);
 	void setY(int y);
+
+    friend ostream& operator<< (ostream &out, Point2D &p);
 };
+
+ostream& operator<< (ostream &out, Point2D &cPoint);
 
 } /* namespace geometry */
 #endif /* POINT2D_H_ */

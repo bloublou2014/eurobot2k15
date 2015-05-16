@@ -60,4 +60,10 @@ bool Point2D::operator<(const Point2D &rhs) const
     return (x < rhs.x) || ((x == rhs.x) && (y < rhs.y));
 }
 
+ostream& operator<< (ostream &out, Point2D &cPoint){
+    out << "(" << cPoint.x << ", " <<
+    cPoint.y << ", " << ")";
+    return out;
+}
+
 } /* namespace geometry */

@@ -25,6 +25,7 @@
 #include "executors/msg/EnemyDetectedNotification.h"
 #include "utils/pathFinding/PathFinding.h"
 #include "executors/msg/EnemyDetectorCommand.h"
+#include "utils/geometry/GeometryUtil.h"
 
 using namespace robot;
 using namespace path_finding;
@@ -77,9 +78,13 @@ public:
         suspended=false;
         retryCount=0;
         if (pfPositions.size()>0){
-            driver.moveToPosition(pfPositions.front(),destination.Direction);
+//            driver.moveToPosition(pfPositions.front(),destination.Direction);
+
+            MoveToAutoPosition(pfPositions.front(),driver);
         }else{
-            driver.moveToPosition(destination.Position,destination.Direction);
+//            driver.moveToPosition(destination.Position,destination.Direction);
+
+            MoveToAutoPosition(destination.Position,driver);
         }
     }
 
@@ -130,14 +135,43 @@ public:
     }
 
     void moveToNextPoint(MotionDriver& driver){
-        pfPositions.pop_front();
+
+        cout<<"**Move to next position: "<<pfPositions.front().getX()<<" Y: "<<pfPositions.front().getY()<<endl;
+
         resume(driver);
+        pfPositions.pop_front();
     }
 
     bool hasMorePoints(){
         if (usePathFinder)
             return pfPositions.size()>0;
         return false;
+    }
+
+    void MoveToAutoPosition(const Point2D &position,  MotionDriver &driver)
+    {
+        MotionDriver::MovingDirection dir;
+        {
+            driver.refreshData();
+            const geometry::Point2D currentPosition = driver.getPosition();
+            const int currentOrientation = driver.getOrientation();
+
+            const int angle = currentPosition.relativeAngleTo(position);
+
+            int deltaAngle = angle - currentOrientation;
+
+            deltaAngle = geometry::GeometryUtil::normalizeAngle(deltaAngle);
+
+            if((deltaAngle < 90) && (deltaAngle > -90))
+            {
+                dir = MotionDriver::FORWARD;
+            }
+            else
+            {
+                dir = MotionDriver::BACKWARD;
+            }
+        }
+        driver.moveToPosition(position, dir);
     }
 
 private:
@@ -204,9 +238,11 @@ private:
     int rSensor;
     bool useEnemyDetector;
     struct Enemy{
-        Enemy(int _angle=0):Angle(_angle),Detected(false){}
-        int Angle;
+        Enemy(int _angle=0):Detected(false),Id(-1),EnemyLeft(true){}
+        Point2D Position;
         bool Detected;
+        int Id;
+        bool EnemyLeft;
     };
     Enemy detectedEnemies[2];
 
@@ -215,8 +251,9 @@ private:
     int maxY;
     int minX;
     int minY;
+    int margin;
     bool checkField;
-    bool isInField(int angle, int r);
+    bool isInField(Point2D& enemyPosition);
 
     /* for slowing down motion on small distances */
     bool shouldUseSlow(int distance, int originalSpeed);
