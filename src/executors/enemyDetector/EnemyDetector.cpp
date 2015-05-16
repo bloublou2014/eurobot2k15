@@ -36,6 +36,18 @@ void EnemyDetector::suscribe(){
 
 #ifdef MALI_ROBOT
 
+    frontSensor.setConfig(char(4),char(1),frontLeftSensorID,this, true);
+    frontSensor.RegisterSensor();
+    frontSensor.StartSensor();
+
+    frontSensor.setConfig(char(4),char(1),frontRightSensorID,this, true);
+    frontSensor.RegisterSensor();
+    frontSensor.StartSensor();
+
+    backSensor.setConfig(char(4), char(5),backSesnorID, this, true);
+    backSensor.RegisterSensor();
+    backSensor.StartSensor();
+
 #endif
 
 }

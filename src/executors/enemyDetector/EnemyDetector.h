@@ -25,6 +25,10 @@ private:
     struct previousStateVeliki{
         bool detectionBack = false;
         bool detectionFront = false;
+        bool detectionSensorBack = false;
+        bool detectionSensorFront = false;
+        bool detectionBrkonFront = false;
+        bool detectionBrkonBack = false;
         int angleFront = 255;
         int angleBack = 255;
     };
