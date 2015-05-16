@@ -21,6 +21,7 @@ void BrkonDriver::startBrkon(){
     std::cout << "BRKON DRIVER [D] Starting Brkon" << std::endl;
     modbusClient->setReading(coilID.modID, true);
     modbusClient->setCoil(powerID.slave_address, powerID.function_address,1,false);
+    return;
 
 }
 

@@ -12,6 +12,7 @@ set(EXECUTORS_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/EnemyDetectorCommand.cpp
 
 
+
     PARENT_SCOPE
 )
 #smotani !!!! gde ti koza??????

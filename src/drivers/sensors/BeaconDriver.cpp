@@ -33,7 +33,6 @@ void BeaconDriver::registerBeacon(){
 
     beaconMali.modID_cordX = modbusClient->registerRegisterReading(this, beaconMali.slave_address, beaconMali.function_address_cordX);
     beaconMali.modID_cordY = modbusClient->registerRegisterReading(this, beaconMali.slave_address, beaconMali.function_address_cordY);
-
 }
 
 void BeaconDriver::startBeacon(){

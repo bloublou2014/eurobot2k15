@@ -42,5 +42,47 @@ private:
     bool detected;
 };
 
+class BeaconNotification: public Notification{
+public:
+
+
+    static string NAME;
+    static void Init(Handle<Object> exports);
+    //Getters
+    static void MaliValidDataGetter(Local<String> property, const PropertyCallbackInfo<Value>& info);
+    static void MaliCordXGetter(Local<String> property, const PropertyCallbackInfo<Value>& info);
+    static void MaliCordYGetter(Local<String> property, const PropertyCallbackInfo<Value>& info);
+    static void VelikiValidDataGetter(Local<String> property, const PropertyCallbackInfo<Value>& info);
+    static void VelikiCordXGetter(Local<String> property, const PropertyCallbackInfo<Value>& info);
+    static void VelikiCordYGetter(Local<String> property, const PropertyCallbackInfo<Value>& info);
+
+    BeaconNotification(bool _maliValidData, bool _velikiValidData, short _maliCordX, short _maliCordY, short _velikiCordX, short _velikiCordY ):Notification(NAME,"BeaconNotification"),
+        maliCordX(_maliCordX), maliCordY(_maliCordY), velikiCordX(_velikiCordX), velikiCordY(_velikiCordY),
+        maliValidData(_maliValidData), velikiValidData(_velikiValidData){}
+
+    BeaconNotification(const BeaconNotification& bn):Notification(bn),
+       maliCordX(bn.maliCordX),maliCordY(bn.maliCordY),velikiCordX(bn.velikiCordX),velikiCordY(bn.velikiCordY),
+       maliValidData(bn.maliValidData), velikiValidData(bn.velikiValidData){}
+
+    short getMaliCordX(){return maliCordX;}
+    short getMaliCordY(){return maliCordY;}
+    short getVelikiCordX(){return velikiCordX;}
+    short getVelikiCordY(){return velikiCordY;}
+    bool  getMaliValidData(){ return maliValidData;}
+    bool  getVelikiValidData(){ return velikiValidData;}
+
+    Message* clone(){
+        return new BeaconNotification(*this);
+    }
+
+private:
+    bool maliValidData;
+    bool velikiValidData;
+    short maliCordX;
+    short maliCordY;
+    short velikiCordX;
+    short velikiCordY;
+};
+
 }
 #endif // ENEMYDETECTEDNOTIFICATION_H

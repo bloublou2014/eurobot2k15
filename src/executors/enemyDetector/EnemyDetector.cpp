@@ -27,8 +27,8 @@ void EnemyDetector::suscribe(){
 
     //TODO
     //dodati za beacon
-    beacon.setBeaconConfig(char(2),char(1),char(2),char(2),char(3),char(4),char(2),char(1),char(2),2,this);
-//    beacon.registerBeacon();
+    //    beacon.setBeaconConfig(char(2),char(1),char(2),char(2),char(3),char(4),char(2),char(1),char(2),2,this);
+    //    beacon.registerBeacon();
     //    beacon.startBeacon();
 
 
@@ -56,23 +56,25 @@ void EnemyDetector::SensorDriverCallback(int _id, bool _detected){
     EnemyDetectedNotification* notification=NULL;
     //debug("SENSOR CALLBACK ");
     if(_id == this->sensorBackID || _id == backSesnorID){
-        if(previousState.sensorBack != _detected){
-            previousState.sensorBack = _detected;
+        if(previousState.detectionBack != _detected){
+            previousState.detectionBack = _detected;
 
-            if(_detected){
-                notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::BACK,0,true);
+            if(_detected ){
+                previousState.angleBack = 45;
+                notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::BACK,180,true);
                 debug("DOSO BACK");
-            }else{
-                notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::BACK,0,false);
+            }else {
+                notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::BACK,180,false);
                 debug("OTISAO BACK");
             }
         }
         backSensor.StartSensor();
     }else if(_id ==this->sensorFrontID || (_id == frontLeftSensorID) || ( _id == frontRightSensorID )){
-        if(previousState.sensorFront != _detected){
-            previousState.sensorFront = _detected;
+        if(previousState.detectionFront != _detected){
+            previousState.detectionFront = _detected;
 
             if(_detected){
+                previousState.angleFront = 50;
                 notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,0,true);
                 debug("DOSO FRONT");
             }else{
@@ -85,42 +87,54 @@ void EnemyDetector::SensorDriverCallback(int _id, bool _detected){
         debug("WROOONG ID ");
     }
 
+    if (notification!=NULL){
+           debug("Sending enemy detected notification!");
+           sendNotification(notification);
+       }
+
 }
 
 void EnemyDetector::brkonDriverCallback(unsigned char _dataFront, unsigned char _dataBack, bool _detected){
     EnemyDetectedNotification* notification=NULL;
-/*
+    /*
     std::cout << "angle front: " << _dataFront << std::endl
               << "angle back: " << _dataBack << std::endl
               << "coil" << _detected << std::endl;
               */
-    //printf("anglefront: %d \n angleBack: %d \n", _dataFront, _dataBack);
+//    printf("anglefront: %d \n angleBack: %d \n", _dataFront, _dataBack);
 
-    if (_detected){
-        if((_dataFront != 0xFF ) && (std::abs(previousState.angleFront - _dataFront) > ANGLE_DIFFERENCE)){
-            previousState.angleFrontDetected = true;
-            previousState.angleFront = _dataFront;
-            notification = new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,(_dataFront-50),true);
-            printf("BRKON FRONT enemy on: %d ", (_dataFront-50));
-        }else if( _dataFront == 0xFF && previousState.angleFrontDetected == true){
-            previousState.angleFrontDetected = false;
-            notification = new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,(previousState.angleFront - 50),false);
-            debug("BRKON FRONT enemy OFF");
-        }
+//        if (_detected){ // ne treba jer svakako proveramo da li je jednako 0xFF sto znaci da nema nista a iscitavanje regisra pocinje kada se
+    //    se coil setuje
 
-        if((_dataBack != 0xFF) && (std::abs(previousState.angleBack - _dataBack) > ANGLE_DIFFERENCE)){
-            previousState.angleBackDetected = true;
-            previousState.angleBack = _dataBack;
-            notification = new EnemyDetectedNotification(EnemyDetectedNotification::Type::BACK, (_dataBack + 135),true);
-            printf("BRKON BACK enemy on: %d ", (_dataBack+135));
-
-        }else if( _dataBack == 0xFF && previousState.angleBackDetected == true){
-            previousState.angleBackDetected = false;
-            notification = new EnemyDetectedNotification(EnemyDetectedNotification::Type::BACK,(previousState.angleBack +135),false);
-            debug("BRKON BACK eneme OFF");
-
-        }
+    if((_dataFront != 0xFF ) && (std::abs(previousState.angleFront - _dataFront) > ANGLE_DIFFERENCE)){
+        previousState.detectionFront = true;
+        previousState.angleFront = _dataFront;
+        notification = new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,(_dataFront-50),true);
+        printf("BRKON FRONT enemy ON: %d ", (_dataFront-50));
+    }else if( _dataFront == 0xFF && previousState.detectionFront == true){
+        previousState.detectionFront = false;
+        notification = new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,(previousState.angleFront - 50),false);
+        debug("BRKON FRONT enemy OFF");
     }
+
+    if((_dataBack != 0xFF) && (std::abs(previousState.angleBack - _dataBack) > ANGLE_DIFFERENCE)){
+        previousState.detectionBack = true;
+        previousState.angleBack = _dataBack;
+        notification = new EnemyDetectedNotification(EnemyDetectedNotification::Type::BACK, (_dataBack + 135),true);
+        printf("BRKON BACK enemy ON: %d ", (_dataBack+135));
+
+    }else if( _dataBack == 0xFF && previousState.detectionBack == true){
+        previousState.detectionBack = false;
+        notification = new EnemyDetectedNotification(EnemyDetectedNotification::Type::BACK,(previousState.angleBack +135),false);
+        debug("BRKON BACK eneme OFF");
+
+        //        }
+    }
+
+    if (notification!=NULL){
+           debug("Sending enemy detected notification!");
+           sendNotification(notification);
+       }
 
     /*
     BrkonCommand* command = new BrkonCommand(_dataFront, _dataBack, _detected);
@@ -235,40 +249,9 @@ bool EnemyDetector::BrkonCallbackFunction(short _dataFront, short _dataBack, boo
 }
 
 bool EnemyDetector::SensorCallbackFunction(int _id, bool _detected){
-    EnemyDetectedNotification* notification=NULL;
-    if(_id == this->sensorBackID){
-        if(previousState.sensorBack != _detected){
-            previousState.sensorBack = _detected;
 
-            if(_detected){
-                notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::BACK,0,true);
-                debug("DOSO BACK");
-            }else{
-                notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::BACK,0,false);
-                debug("OTISAO BACK");
-            }
-        }
-        backSensor.StartSensor();
-    }else if(_id ==this->sensorFrontID){
-        if(previousState.sensorFront != _detected){
-            previousState.sensorFront = _detected;
+    debug("Wrong Command sensorCallbakFunction");
 
-            if(_detected){
-                notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,0,true);
-                debug("DOSO FRONT");
-            }else{
-                notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,0,false);
-                debug("OTISAO FRONT");
-            }
-        }
-        frontSensor.StartSensor();
-    }else{
-        debug("WROOONG ID MSSG ");
-    }
-    if (notification!=NULL){
-        debug("Sending enemy detected notification!");
-        sendNotification(notification);
-    }
     return true;
 }
 
@@ -291,15 +274,22 @@ void EnemyDetector::main(){
             // position Y is ok
             positionTmp.mali_cordX = 1500 - positionTmp.mali_cordX;
         }
+        /*
+        std::cout << "BEACON:" << std::endl
+                  << "veliki  X: "  << positionTmp.veliki_cordX
+                  << " Y: " << positionTmp.veliki_cordY
+                  << std::endl
+                  << "mali    X: " << positionTmp.mali_cordX
+                  << " Y: " << positionTmp.mali_cordY
+                  << std::endl;
+        */
+        BeaconNotification* notification = new BeaconNotification(positionTmp.mali_valid_data,positionTmp.veliki_valid_data,
+                                                                  positionTmp.mali_cordX, positionTmp.mali_cordY,
+                                                                  positionTmp.veliki_cordX, positionTmp.veliki_cordY);
+//        debug("Sending enemy detected notification!");
+        sendNotification(notification);
 
-    std::cout << "BEACON:" << std::endl
-              << "veliki  X: "  << positionTmp.veliki_cordX
-              << " Y: " << positionTmp.veliki_cordY
-              << std::endl
-              << "mali    X: " << positionTmp.mali_cordX
-              << " Y: " << positionTmp.mali_cordY
-              << std::endl;
-    boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
+        boost::this_thread::sleep(boost::posix_time::milliseconds(2000));
 
     }
 }

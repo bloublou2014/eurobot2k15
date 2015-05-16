@@ -23,12 +23,10 @@ namespace executor {
 class EnemyDetector: public ExecutorCommon, public BeaconDriverInterface, public BrkonDriverInterface, public SensorDriverInterface{
 private:
     struct previousStateVeliki{
-        bool sensorBack = false;
-        bool sensorFront = false;
-        bool angleFrontDetected = false;
-        bool angleBackDetected = false;
-        int angleFront = 0;
-        int angleBack = 0;
+        bool detectionBack = false;
+        bool detectionFront = false;
+        int angleFront = 255;
+        int angleBack = 255;
     };
 
     struct previousStateMali{
@@ -38,12 +36,12 @@ private:
     };
 
     struct EnemyPosition{
-        short mali_cordX;
-        short mali_cordY;
-        short veliki_cordX;
-        short veliki_cordY;
-        bool mali_valid_data;
-        bool veliki_valid_data;
+        short mali_cordX = 5000;
+        short mali_cordY = 0;
+        short veliki_cordX = 5000;
+        short veliki_cordY = 0;
+        bool mali_valid_data = false;
+        bool veliki_valid_data = false;
     };
 
 
@@ -73,7 +71,7 @@ private:
     bool SensorCallbackFunction(int _id, bool _detected);
 
     boost::mutex m_mutex;
-    StartMessage::Color color;
+    StartMessage::Color color = StartMessage::Color::YELLOW;
     int sensorFrontID = 1;
     int sensorBackID = 2;
 
