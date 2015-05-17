@@ -93,7 +93,8 @@ void MotionExecutor::processEnemyDetectedNotification(Notification* notification
 
         detectedEnemies[detectedType].Id=dodajSestougao(enemyPosition.getX(),enemyPosition.getY(),triangleSide);
 
-        if (!detectedEnemies[detectedType].EnemyLeft && enemyPosition.euclidDist(detectedEnemies[detectedType].Position)<=200){
+        if (!detectedEnemies[detectedType].EnemyLeft &&
+                enemyPosition.euclidDist(detectedEnemies[detectedType].Position)<=100){
             debug("Enemy is in fact not detected!");
             detectedEnemies[detectedType].Detected=false;
         }

@@ -2,6 +2,7 @@
 #define LIFTNOTIFICATION_H
 
 #include "messages/Notification.h"
+#include "messages/CommandResponse.h"
 
 using namespace v8;
 using javascript::JavaScriptMessageProvider;
@@ -36,6 +37,35 @@ public:
 private:
     int side;
     int count;
+};
+
+class LiftProgressNotification : public Notification{
+public:
+    enum ProgressType{
+        SENSOR_TRIGGERED=0,
+        ROLLER_CATCHED=1
+    };
+
+    static string NAME;
+    /* Exports object */
+    static void Init(Handle<Object> exports);
+    /* Constructor */
+    static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+    LiftProgressNotification(ProgressType _type, const string& to):
+        Notification(NAME,"LiftExecutor"),progressType(_type) {}
+    LiftProgressNotification(const LiftProgressNotification& mcr):Notification(mcr),
+        progressType(mcr.progressType){}
+
+    static void TypeGetter(Local<String> property, const PropertyCallbackInfo<Value>& info);
+
+    inline int getType(){ return progressType; }
+
+    Message* clone(){
+        return new LiftProgressNotification(*this);
+    }
+private:
+    ProgressType progressType;
 };
 
 }

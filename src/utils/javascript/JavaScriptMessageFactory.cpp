@@ -26,6 +26,7 @@ void JavaScriptMessageFactory::init(Handle<Object> exportObject){
 
     executor::ActuatorCommandJS::Init(exportObject);
     executor::LIftNotification::Init(exportObject);
+    executor::LiftProgressNotification::Init(exportObject);
     executor::SideNotification::Init(exportObject);
 
     robot::TaskStateChangeNotification::Init(exportObject);
@@ -34,7 +35,8 @@ void JavaScriptMessageFactory::init(Handle<Object> exportObject){
     //Enemy detection
     executor::EnemyDetectedNotification::Init(exportObject);
     executor::BeaconNotification::Init(exportObject);
-    //motion::AddStaticObject::Init(exportObject);
+    debug("Adding addStaticObject");
+    motion::AddStaticObject::Init(exportObject);
 }
 
 Handle<Function> JavaScriptMessageFactory::getObjectConstructor(const string& name){
