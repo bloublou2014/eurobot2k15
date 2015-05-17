@@ -52,7 +52,7 @@ public:
     /* Constructor */
     static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-    LiftProgressNotification(ProgressType _type, const string& to):
+    LiftProgressNotification(ProgressType _type):
         Notification(NAME,"LiftExecutor"),progressType(_type) {}
     LiftProgressNotification(const LiftProgressNotification& mcr):Notification(mcr),
         progressType(mcr.progressType){}

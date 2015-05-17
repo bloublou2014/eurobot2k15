@@ -74,6 +74,8 @@ bool LiftLeftExecutor::liftProcess(){
             liftF(LEVEL0);
             handF(CLOSE);
             delayF(value.LiftConfigs.time.handOpenClose);
+            LiftProgressNotification* notification = new LiftProgressNotification(LiftProgressNotification::ProgressType::ROLLER_CATCHED);
+            sendNotification(notification);
             liftF(LEVEL2);
             doorF(CLOSE_);
 
@@ -105,6 +107,8 @@ bool LiftLeftExecutor::liftProcess(){
             liftF(LEVEL0);
             handF(CLOSE);
             delayF(value.LiftConfigs.time.handOpenClose);
+            LiftProgressNotification* notification = new LiftProgressNotification(LiftProgressNotification::ProgressType::ROLLER_CATCHED);
+            sendNotification(notification);
             liftF(LEVEL1);
             doorF(CLOSE_);
 
@@ -205,6 +209,8 @@ void LiftLeftExecutor::ProcessLiftLeftSensoreCallback(){
 void LiftLeftExecutor::SensorDriverCallback(int _id, bool _detected){
     std::cout << "LIRT LEFT" << std::endl;
     //readingSensore = true;
+    LiftProgressNotification* liftNotification = new LiftProgressNotification(LiftProgressNotification::ProgressType::SENSOR_TRIGGERED);
+    sendNotification(liftNotification);
     Command* cmd = ActuatorAction::LiftLeft(CALLBACK_GET_LEFT);
         commandQueueLock.lock();
         commandsToProcess.push(Instruction(cmd));
