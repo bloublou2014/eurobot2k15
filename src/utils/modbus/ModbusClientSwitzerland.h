@@ -141,7 +141,7 @@ private:
     statesEnum currentState = CHECK;
     statesEnum nextState = CHECK;
     errorType  errorElectronic = NO_ERROR;
-    ReadSpeed readSpeed = NORMAL;
+    ReadSpeed readSpeed = FAST;
     bool shouldStop = false;
     modbusConfig config;
 

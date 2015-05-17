@@ -123,9 +123,11 @@ int main(int argn, char** argc){
     taskMgr->start();
     execMgr->start();
 
+#ifndef CROSS_COMPILING
     getchar();
 //    boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
     execMgr->receiveMessage(new StartMessage(StartMessage::Color::YELLOW, "Milan"));
+#endif
 
     taskMgr->join();
     execMgr->join();

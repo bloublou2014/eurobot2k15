@@ -32,10 +32,10 @@ using executor::ActuatorCommandJS;
 
 namespace javascript{
 
-class JavaScriptMessageFactory : public JavaScriptMessageProvider
+class JavaScriptMessageFactory : public JavaScriptMessageProvider, public Logger
 {
 public:
-    JavaScriptMessageFactory(){}
+    JavaScriptMessageFactory():Logger("MessageFactory"){}
 
     void init(Handle<Object> exportObject);
 
