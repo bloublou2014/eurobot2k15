@@ -120,7 +120,7 @@ void EnemyDetector::brkonDriverCallback(unsigned char _dataFront, unsigned char 
               << "angle back: " << _dataBack << std::endl
               << "coil" << _detected << std::endl;
               */
-    printf("anglefront: %d \n angleBack: %d \n", _dataFront, _dataBack);
+//    printf("anglefront: %d \n angleBack: %d \n", _dataFront, _dataBack);
 
 //        if (_detected){ // ne treba jer svakako proveramo da li je jednako 0xFF sto znaci da nema nista a iscitavanje regisra pocinje kada se
     //    se coil setuje
