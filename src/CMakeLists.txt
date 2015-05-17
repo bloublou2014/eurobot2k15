@@ -6,8 +6,8 @@ if(CMAKE_CROSSCOMPILING)
     include_directories(${TOOLCHAIN_INCLUDE})
     link_directories(${TOOLCHAIN_LIB})
     #include wiringPi
-    include_directories(/home/milan/tools/rpi_tools/rootfs/usr/include)
-    link_directories(/home/milan/tools/rpi_tools/rootfs/lib)
+    include_directories(/home/project/RPI/rootfs/usr/local/include)
+    link_directories(/home/project/RPI/rootfs/usr/local/lib)
 
 
     #boost include
@@ -15,9 +15,9 @@ if(CMAKE_CROSSCOMPILING)
     link_directories(${PROJECT_SOURCE_DIR}/libs/boost_arm/stage/lib)
 
     #v8 include
-    include_directories(/home/milan/tools/v8)
-    link_directories(/home/milan/tools/v8/out/arm.release/obj.target/tools/gyp)
-    link_directories(/home/milan/tools/v8/out/arm.release/obj.target/third_party/icu)
+    include_directories(/home/project/libs/v8)
+    link_directories(/home/project/libs/v8/out/arm.release/obj.target/tools/gyp)
+    link_directories(/home/project/libs/v8/out/arm.release/obj.target/third_party/icu)
 else()
     message("CONFIGURING FOR LINUX")
 
