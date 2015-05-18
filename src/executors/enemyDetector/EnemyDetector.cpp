@@ -23,7 +23,7 @@ void EnemyDetector::suscribe(){
     brkon.setPowerCoilConfig(char(4),char(8));
     brkon.registerInerface(this);
     brkon.registerBrkon();
-    brkon.startBrkon();
+//    brkon.startBrkon();
 
     //TODO
     //dodati za beacon
@@ -36,15 +36,15 @@ void EnemyDetector::suscribe(){
 
 #ifdef MALI_ROBOT
 
-    frontSensor.setConfig(char(4),char(1),frontLeftSensorID,this, true);
-    frontSensor.RegisterSensor();
-    frontSensor.StartSensor();
+    frontLefttSensor.setConfig(char(4),char(1),frontLeftSensorID,this, true);
+    frontLefttSensor.RegisterSensor();
+    frontLefttSensor.StartSensor();
 
-    frontSensor.setConfig(char(4),char(1),frontRightSensorID,this, true);
-    frontSensor.RegisterSensor();
-    frontSensor.StartSensor();
+    frontRightSensor.setConfig(char(4),char(2),frontRightSensorID,this, true);
+    frontRightSensor.RegisterSensor();
+    frontRightSensor.StartSensor();
 
-    backSensor.setConfig(char(4), char(5),backSesnorID, this, true);
+    backSensor.setConfig(char(4), char(3),backSesnorID, this, true);
     backSensor.RegisterSensor();
     backSensor.StartSensor();
 
@@ -84,7 +84,12 @@ void EnemyDetector::SensorDriverCallback(int _id, bool _detected){
                 debug("OTISAO BACK");
             }
         }
+#ifdef VELIKI_ROBOT
         backSensor.StartSensor();
+#endif
+#ifdef MALI_ROBOT
+        backSensor.StartSensor();
+#endif
     }else if(_id ==this->sensorFrontID || (_id == frontLeftSensorID) || ( _id == frontRightSensorID )){
         if(previousState.detectionSensorFront != _detected){
 
@@ -101,15 +106,21 @@ void EnemyDetector::SensorDriverCallback(int _id, bool _detected){
                 debug("OTISAO FRONT");
             }
         }
+#ifdef VELIKI_ROBOT
         frontSensor.StartSensor();
+#endif
+#ifdef MALI_ROBOT
+        frontLefttSensor.StartSensor();
+        frontRightSensor.StartSensor();
+#endif
     }else{
         debug("WROOONG ID ");
     }
 
     if (notification!=NULL){
-           debug("Sending enemy detected notification!");
-           sendNotification(notification);
-       }
+        debug("Sending enemy detected notification!");
+        sendNotification(notification);
+    }
 
 }
 
@@ -120,9 +131,9 @@ void EnemyDetector::brkonDriverCallback(unsigned char _dataFront, unsigned char 
               << "angle back: " << _dataBack << std::endl
               << "coil" << _detected << std::endl;
               */
-//    printf("anglefront: %d \n angleBack: %d \n", _dataFront, _dataBack);
+    //    printf("anglefront: %d \n angleBack: %d \n", _dataFront, _dataBack);
 
-//        if (_detected){ // ne treba jer svakako proveramo da li je jednako 0xFF sto znaci da nema nista a iscitavanje regisra pocinje kada se
+    //        if (_detected){ // ne treba jer svakako proveramo da li je jednako 0xFF sto znaci da nema nista a iscitavanje regisra pocinje kada se
     //    se coil setuje
 
     if((_dataFront != 0xFF ) && (std::abs(previousState.angleFront - _dataFront) > ANGLE_DIFFERENCE)){
@@ -153,9 +164,9 @@ void EnemyDetector::brkonDriverCallback(unsigned char _dataFront, unsigned char 
     }
 
     if (notification!=NULL){
-           debug("Sending enemy detected notification!");
-           sendNotification(notification);
-       }
+        debug("Sending enemy detected notification!");
+        sendNotification(notification);
+    }
 
     /*
     BrkonCommand* command = new BrkonCommand(_dataFront, _dataBack, _detected);
@@ -275,7 +286,7 @@ bool EnemyDetector::SensorCallbackFunction(int _id, bool _detected){
 
     return true;
 }
-
+/*
 void EnemyDetector::main(){
     while(!shouldStop){
         EnemyPosition positionTmp;
@@ -295,6 +306,7 @@ void EnemyDetector::main(){
             // position Y is ok
             positionTmp.mali_cordX = 1500 - positionTmp.mali_cordX;
         }
+        */
         /*
         std::cout << "BEACON:" << std::endl
                   << "veliki  X: "  << positionTmp.veliki_cordX
@@ -304,19 +316,54 @@ void EnemyDetector::main(){
                   << " Y: " << positionTmp.mali_cordY
                   << std::endl;
         */
+/*
         BeaconNotification* notification = new BeaconNotification(positionTmp.mali_valid_data,positionTmp.veliki_valid_data,
                                                                   positionTmp.mali_cordX, positionTmp.mali_cordY,
                                                                   positionTmp.veliki_cordX, positionTmp.veliki_cordY);
-//        debug("Sending enemy detected notification!");
+        //        debug("Sending enemy detected notification!");
         sendNotification(notification);
 
         boost::this_thread::sleep(boost::posix_time::milliseconds(2000));
 
     }
 }
-
+*/
 void EnemyDetector::stop(){
     shouldStop = true;
+}
+
+bool EnemyDetector::StartDetectionFunction(){
+#ifdef VELIKI_ROBOT
+    frontSensor.StartSensor();
+    backSensor.StartSensor();
+    brkon.startBrkon();
+    beacon.startBeacon();
+#endif
+
+#ifdef MALI_ROBOT
+    frontLefttSensor.StartSensor();
+    frontRightSensor.StartSensor();
+    backSensor.StartSensor();
+
+#endif
+    return true;
+}
+
+bool EnemyDetector::StopDetectionFunction(){
+#ifdef VELIKI_ROBOT
+    frontSensor.StopSensor();
+    backSensor.StopSensor();
+    brkon.stopBrkon();
+    beacon.stopBeacon();
+#endif
+#ifdef MALI_ROBOT
+
+    frontLefttSensor.StopSensor();
+    frontRightSensor.StopSensor();
+    backSensor.StopSensor();
+
+#endif
+
 }
 
 } // end namespace

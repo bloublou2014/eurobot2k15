@@ -48,7 +48,11 @@ private:
         bool veliki_valid_data = false;
     };
 
-
+    struct DetectorState{
+        bool sensorRunning = false;
+        bool beaconRunning = false;
+        bool brkonRunning = false;
+    };
 
 
 public:
@@ -57,7 +61,7 @@ public:
 private:
     static string NAME;
     void suscribe();
-    void main();
+    //void main();
     void stop();
     // callbacs for sensors
     void brkonDriverCallback(unsigned char _dataFront, unsigned char _dataBack, bool _detected);
@@ -73,6 +77,8 @@ private:
     bool BeaconVelikiCallbackFunction(short _cordX, short _cordY, bool _running);
     bool BrkonCallbackFunction(short _dataFront, short _dataBack, bool _detected);
     bool SensorCallbackFunction(int _id, bool _detected);
+    bool StopDetectionFunction();
+    bool StartDetectionFunction();
 
     boost::mutex m_mutex;
     StartMessage::Color color = StartMessage::Color::YELLOW;
@@ -99,11 +105,20 @@ private:
 
 #endif
 
-#ifdef MALI ROBOT
+#ifdef MALI_ROBOT
     SensorDriver backSensor;
     SensorDriver frontLefttSensor;
     SensorDriver frontRightSensor;
 
+    previousStateVeliki previousState;
+    EnemyPosition enemyPosition;
+
+    BeaconDriver beacon;
+    BrkonDriver brkon;
+
+    int beaconRetryCounter = 0;
+    const int BEACON_RETRAY = 5;
+    const int ANGLE_DIFFERENCE = 20;
 
 #endif
 

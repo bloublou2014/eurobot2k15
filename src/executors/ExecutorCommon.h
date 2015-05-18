@@ -101,8 +101,8 @@ protected:
     virtual bool CarpetPositionCloseFunction(){ std::cout << "REDEFINE " << std::endl;return false;}
     virtual bool CallbackGetRightFunction(){std::cout << "REDEFINE " << std::endl; return false; }
     virtual bool CallbackGetLeftFunction(){std::cout << "REDEFINE " << std::endl; return false; }
-    virtual bool StartDetectionFunction(){ std::cout << "REDEFINE " << std::endl;return false; }
-    virtual bool StopDetectionFunction(){ std::cout << "REDEFINE " << std::endl;return false; }
+    virtual bool StartDetectionFunction(){ std::cout << "REDEFINE " << std::endl;return true; }
+    virtual bool StopDetectionFunction(){ std::cout << "REDEFINE " << std::endl;return true; }
 
     virtual bool BeaconMaliCallbackFunction(short _cordX, short _cordY, bool _running){ std::cout << "REDEFINE " << std::endl;return false;}
     virtual bool BeaconVelikiCallbackFunction(short _cordX, short _cordY, bool _running){ std::cout << "REDEFINE " << std::endl;return false;}
