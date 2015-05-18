@@ -62,7 +62,7 @@ private:
     static string NAME;
     void suscribe();
     //void main();
-    void stop();
+    //void stop();
     // callbacs for sensors
     void brkonDriverCallback(unsigned char _dataFront, unsigned char _dataBack, bool _detected);
     void beaconDriverCallbackVeliki(short _veliki_cordX, short _veliki_cordY, bool _running);

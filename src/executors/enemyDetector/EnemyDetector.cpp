@@ -328,9 +328,11 @@ void EnemyDetector::main(){
     }
 }
 */
+/*
 void EnemyDetector::stop(){
     shouldStop = true;
 }
+*/
 
 bool EnemyDetector::StartDetectionFunction(){
 #ifdef VELIKI_ROBOT
