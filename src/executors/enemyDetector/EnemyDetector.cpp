@@ -10,9 +10,17 @@ void EnemyDetector::suscribe(){
     this->registerCommand(ActuatorCommand::NAME, static_cast<commandCallback>(&EnemyDetector::processActuatorCommand));
 
 #ifdef VELIKI_ROBOT
-    frontSensor.setConfig(char(4),char(1),sensorFrontID,this, true);
-    frontSensor.RegisterSensor();
-    frontSensor.StartSensor();
+//    frontSensor.setConfig(char(4),char(1),sensorFrontID,this, true);
+//    frontSensor.RegisterSensor();
+//    frontSensor.StartSensor();
+
+    frontLefttSensor.setConfig(char(4),char(1),frontLeftSensorID,this, true);
+    frontLefttSensor.RegisterSensor();
+    frontLefttSensor.StartSensor();
+
+    frontRightSensor.setConfig(char(4),char(2),frontRightSensorID,this, true);
+    frontRightSensor.RegisterSensor();
+    frontRightSensor.StartSensor();
 
     backSensor.setConfig(char(4), char(5),sensorBackID, this, true);
     backSensor.RegisterSensor();
@@ -94,10 +102,11 @@ void EnemyDetector::SensorDriverCallback(int _id, bool _detected){
         if(previousState.detectionSensorFront != _detected){
 
             if(_detected && !previousState.detectionBrkonFront){
-                previousState.angleFront = 50;
+                if(_id == this->frontLeftSensorID) previousState.angleFront = 70;
+                else if(_id == this->frontRightSensorID) previousState.angleFront = 30;
                 previousState.detectionSensorFront = _detected;
                 previousState.detectionBrkonFront = true;
-                notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,0,true);
+                notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,(previousState.angleFront - 50),true);
                 debug("DOSO FRONT");
             }else if(!_detected && !previousState.detectionBrkonFront){
                 previousState.detectionSensorFront = _detected;
@@ -107,7 +116,9 @@ void EnemyDetector::SensorDriverCallback(int _id, bool _detected){
             }
         }
 #ifdef VELIKI_ROBOT
-        frontSensor.StartSensor();
+//        frontSensor.StartSensor();
+        frontLefttSensor.StartSensor();
+        frontRightSensor.StartSensor();
 #endif
 #ifdef MALI_ROBOT
         frontLefttSensor.StartSensor();
@@ -336,7 +347,8 @@ void EnemyDetector::stop(){
 
 bool EnemyDetector::StartDetectionFunction(){
 #ifdef VELIKI_ROBOT
-    frontSensor.StartSensor();
+    frontLefttSensor.StartSensor();
+    frontRightSensor.StartSensor();
     backSensor.StartSensor();
     brkon.startBrkon();
     beacon.startBeacon();
@@ -353,7 +365,8 @@ bool EnemyDetector::StartDetectionFunction(){
 
 bool EnemyDetector::StopDetectionFunction(){
 #ifdef VELIKI_ROBOT
-    frontSensor.StopSensor();
+    frontLefttSensor.StopSensor();
+    frontRightSensor.StopSensor();
     backSensor.StopSensor();
     brkon.stopBrkon();
     beacon.stopBeacon();

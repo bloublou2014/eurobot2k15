@@ -92,7 +92,9 @@ private:
 #ifdef VELIKI_ROBOT
 
     SensorDriver backSensor;
-    SensorDriver frontSensor;
+//    SensorDriver frontSensor;
+    SensorDriver frontLefttSensor;
+    SensorDriver frontRightSensor;
     BeaconDriver beacon;
     BrkonDriver brkon;
 
