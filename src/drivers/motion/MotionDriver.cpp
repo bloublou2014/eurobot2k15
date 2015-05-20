@@ -217,7 +217,7 @@ void MotionDriver::refreshData()
 	case 'M':
 	{
 		state = MOVING;
-		break;
+        break;
 	}
 	case 'R':
 	{

@@ -5,7 +5,6 @@
 #define MOTION_TRESHOLD 10
 #define SLOW_DISTANCE 100
 #define SLOW_SPEED 50
-static double PI=3.141592653584;
 
 using namespace std;
 
@@ -31,6 +30,11 @@ void MotionExecutor::init(){
 
         enemyDistance=v.second.get<int>("enemyDistance");
         triangleSide=v.second.get<int>("triangleSide");
+
+        enemyDimension.Front=v.second.get<int>("front");
+        enemyDimension.Back=v.second.get<int>("back");
+        enemyDimension.SideFront=v.second.get<int>("frontSide");
+        enemyDimension.SideBack=v.second.get<int>("backSide");
     }
 
     this->registerCommand(MotionCommand::NAME,static_cast<commandCallback>(&MotionExecutor::processMotionCommand));
@@ -55,6 +59,7 @@ void MotionExecutor::init(){
 }
 
 void MotionExecutor::processEnemyDetectedNotification(Notification* notification){
+    if (!matchStarted) return;
     debug("Enemy detected notification received");
     EnemyDetectedNotification* ed=static_cast<EnemyDetectedNotification*>(notification);
     EnemyDetectedNotification::Type detectedType=ed->getType();
@@ -64,7 +69,6 @@ void MotionExecutor::processEnemyDetectedNotification(Notification* notification
     pfLock.lock();    //Path finding logic
     if (!ed->isDetected()){
         detectedEnemies[detectedType].Detected=false;
-        detectedEnemies[detectedType].EnemyLeft=true;
         ss<<"Enemy NOT detected: "<<ed->getType()<<" detected angle: "<<ed->getAngle();
 
         if(detectedEnemies[detectedType].Id!=-1){
@@ -80,32 +84,29 @@ void MotionExecutor::processEnemyDetectedNotification(Notification* notification
         Point2D enemyPosition=lastState.Position;
         angle+=lastState.Orientation;
         stateLock.unlock();
-        enemyPosition.setX(enemyPosition.getX()+enemyDistance*cos(angle*PI/180.0));
-        enemyPosition.setY(enemyPosition.getY()+enemyDistance*sin(angle*PI/180.0));
+        enemyPosition.setX(enemyPosition.getX()+enemyDistance*cos(toRadian(angle)));
+        enemyPosition.setY(enemyPosition.getY()+enemyDistance*sin(toRadian(angle)));
+        detectedEnemies[detectedType].Position=enemyPosition;
 
         stringstream ss;
-        ss<<"Calculated enemy position: "<<enemyPosition;
+        ss<<"My position: "<<lastState.Position;
         debug(ss.str());
 
         if (detectedEnemies[detectedType].Id!=-1){
             pathFinder->removeObstacle(detectedEnemies[detectedType].Id);
         }
 
-        detectedEnemies[detectedType].Id=dodajSestougao(enemyPosition.getX(),enemyPosition.getY(),triangleSide);
-
-        if (!detectedEnemies[detectedType].EnemyLeft &&
-                enemyPosition.euclidDist(detectedEnemies[detectedType].Position)<=100){
-            debug("Enemy is in fact not detected!");
-            detectedEnemies[detectedType].Detected=false;
-        }
-        detectedEnemies[detectedType].EnemyLeft=false;
-        detectedEnemies[detectedType].Position=enemyPosition;
-
+//        detectedEnemies[detectedType].Id=dodajSestougao(enemyPosition.getX(),enemyPosition.getY(),triangleSide, lastState.Orientation);
+        detectedEnemies[detectedType].Id=dodajCustomOblik(enemyPosition.getX(),enemyPosition.getY(),lastState.Orientation);
         debug("Added new enemy in PF");
     }
     pfLock.unlock();
 
     debug(ss.str());
+}
+
+void MotionExecutor::startMatch(){
+    matchStarted=true;
 }
 
 void MotionExecutor::processMotionCommand(Command* command){
@@ -174,7 +175,8 @@ void MotionExecutor::stop(){
     shouldStop=true;
 }
 
-const int MotionInstruction::MaxRetryCount=80;
+const int MotionInstruction::MaxRetryCount=100;
+const int MotionInstruction::MaxPfAttempts=3;
 bool MotionExecutor::isEnemyDetected(MotionState& ms, bool isSuspended){
     if (ms.State!=MotionDriver::State::MOVING && !isSuspended) return false;  //We won't use enemy detection when not moving
     EnemyDetectedNotification::Type detectedType;
@@ -218,6 +220,7 @@ void MotionExecutor::main(){
             break;
         }
 
+        //Update data from dirver
         try{
             driver.refreshData();
         }catch(...){
@@ -240,30 +243,19 @@ void MotionExecutor::main(){
                 if (currentMotionInstruction.isSuspended()){
                     if (!currentMotionInstruction.canRetry(waitOnEnemyCountCheck)){  //If we can't wait any more
                         bool giveUp=true;
-                        if (currentMotionInstruction.shouldUsePF()){
+                        if (currentMotionInstruction.shouldUsePF() && currentMotionInstruction.canUsePf()){
                             debug("Calculating alternative route");
                             pfLock.lock();
-                            std::deque<geometry::Point2D> ret;
                             Point2D destination=currentMotionInstruction.getDestination().Position;
+                            currentMotionInstruction.getPfPositions().clear();
                             giveUp=!pathFinder->search(newState.Position,destination,
                                                        currentMotionInstruction.getPfPositions());
-
-                            cout<<"**Number of obstacles: "<<pathFinder->getAllObstacles().size()<<endl;
-
                             pfLock.unlock();
                             debug("Finished cacluating alternative route");
                             if (!giveUp){
                                 debug("Moving to next position returned from PF");
                                 currentMotionInstruction.moveToNextPoint(driver);
-                                // if we found path than remove detected enemy
-                                debug("Deleting detected enemy");
-                                EnemyDetectedNotification::Type detectedType;
-                                if (newState.Direction==MotionDriver::MovingDirection::FORWARD){
-                                    detectedType=EnemyDetectedNotification::Type::FRONT;
-                                }else{
-                                    detectedType=EnemyDetectedNotification::Type::BACK;
-                                }
-                                detectedEnemies[detectedType].Detected=false;
+                                boost::this_thread::sleep(boost::posix_time::seconds(2));
                             }
                         }
                         if (giveUp){
@@ -374,7 +366,7 @@ void MotionExecutor::main(){
             }
         }
 
-        boost::this_thread::sleep(boost::posix_time::milliseconds(5));
+        boost::this_thread::sleep(boost::posix_time::milliseconds(6));
     }
     debug("Stopping execution");
 }
@@ -478,10 +470,29 @@ void MotionExecutor::setSpeed(MotionCommand* _motionCommand){
 void MotionExecutor::setPosition(MotionCommand* _motionCommand){
     SetPosition* command=(SetPosition*)_motionCommand;
     debug(command->getSource()+" Received: Set position");
+
+    Point2D previousPosition =driver.getPosition();
+
     currentMotionInstruction.Set(_motionCommand, lastState);
     std::stringstream ss;
     debug(ss.str());
+    pfLock.lock();
     driver.setPositionAndOrientation(command->getPoint(),command->getOrientation());
+    for(int i=0;i<2;++i){
+        if (detectedEnemies[i].Id!=-1){
+            pathFinder->removeObstacle(detectedEnemies[i].Id);
+            detectedEnemies[i].Position.setX(detectedEnemies[i].Position.getX()+previousPosition.getX());
+            detectedEnemies[i].Position.setY(detectedEnemies[i].Position.getY()+previousPosition.getY());
+//            detectedEnemies[i].Id=dodajSestougao(detectedEnemies[i].Position.getX(),
+//                                                 detectedEnemies[i].Position.getY(),
+//                                                 triangleSide,driver.getOrientation());
+
+            detectedEnemies[i].Id=dodajCustomOblik(detectedEnemies[i].Position.getX(),
+                                                 detectedEnemies[i].Position.getY(),
+                                                 driver.getOrientation());
+        }
+    }
+    pfLock.unlock();
 }
 
 
@@ -505,11 +516,6 @@ bool MotionExecutor::isInField(Point2D& enemyPosition){
     static int yMinC=minY+margin;
     static int yMaxC=maxY-margin;
 
-//    if (!checkField) return true;
-//    Point2D robotPosition=driver.getPosition();
-//    int rotation=driver.getOrientation()+angle;
-
-//    Point2D enemyPosition(robotPosition.getX()+r*cos(rotation*PI/180.0),robotPosition.getY()+r*sin(rotation*PI/180.0));
     if ((enemyPosition.getX()<xMinC) || (enemyPosition.getX()>xMaxC)){
         return false;
     }
@@ -519,7 +525,7 @@ bool MotionExecutor::isInField(Point2D& enemyPosition){
     return true;
 }
 
-int MotionExecutor::dodajSestougao(int krugX, int krugY, int triangleSide){
+int MotionExecutor::dodajSestougao(int krugX, int krugY, int triangleSide, int angle){
     int triangleHeight = (sqrt(3)/2)*triangleSide;
     std::vector<geometry::Point2D> obsticlePoints;
 
@@ -530,13 +536,54 @@ int MotionExecutor::dodajSestougao(int krugX, int krugY, int triangleSide){
     obsticlePoints.push_back(geometry::Point2D(krugX - (triangleSide/2), krugY + triangleHeight));
     obsticlePoints.push_back(geometry::Point2D(krugX + (triangleSide/2), krugY + triangleHeight));
 
+    std::vector<geometry::Point2D> rotatedObsticlePoints;
+    double sinValue=sin(toRadian(angle));
+    double cosVal=cos(toRadian(angle));
     for (auto it=obsticlePoints.begin();it!=obsticlePoints.end();++it){
+        Point2D p=*it;
+        Point2D rp=geometry::Point2D(p.getX()*cosVal-p.getY()*sinValue,
+                                     p.getX()*sinValue+p.getY()*cosVal);
+        rotatedObsticlePoints.push_back(rp);
+//        stringstream ss;
+//        ss<<"Point: "<<rp;
+//        debug(ss.str());
+    }
+
+    return pathFinder->addObstacle(rotatedObsticlePoints);
+}
+
+int MotionExecutor::dodajCustomOblik(int krugX, int krugY, int angle){
+    stringstream ss;
+    ss<<"Enemy position: "<<krugX<<" y: "<<krugY<<" angle: "<<angle;
+    debug(ss.str());
+    std::vector<geometry::Point2D> obsticlePoints;
+
+    obsticlePoints.push_back(geometry::Point2D(krugX - (enemyDimension.SideFront/2), krugY+(enemyDimension.SideFront/2)));
+    obsticlePoints.push_back(geometry::Point2D(krugX - enemyDimension.Front, krugY));
+    obsticlePoints.push_back(geometry::Point2D(krugX - (enemyDimension.SideFront/2), krugY-(enemyDimension.SideFront/2)));
+    obsticlePoints.push_back(geometry::Point2D(krugX + (enemyDimension.SideBack/3), krugY-(enemyDimension.SideBack/2)));
+    obsticlePoints.push_back(geometry::Point2D(krugX + enemyDimension.Back, krugY));
+    obsticlePoints.push_back(geometry::Point2D(krugX + (enemyDimension.SideBack/3), krugY+(enemyDimension.SideBack/2)));
+
+    std::vector<geometry::Point2D> rotatedObsticlePoints;
+    double sinValue=sin(toRadian(angle));
+    double cosVal=cos(toRadian(angle));
+    for (auto it=obsticlePoints.begin();it!=obsticlePoints.end();++it){
+        Point2D p=*it;
+        Point2D rp=geometry::Point2D(
+                                (cosVal*(p.getX()-krugX)-sinValue*(p.getY()-krugY)+krugX),
+                                (sinValue*(p.getX()-krugX)+cosVal*(p.getY()-krugY)+krugY)
+                            );
+        rotatedObsticlePoints.push_back(rp);
         stringstream ss;
-        ss<<"Point: "<<*it;
+        ss<<rp;
         debug(ss.str());
     }
 
-    return pathFinder->addObstacle(obsticlePoints);
+    return pathFinder->addObstacle(rotatedObsticlePoints);
+
+
 }
+
 
 }

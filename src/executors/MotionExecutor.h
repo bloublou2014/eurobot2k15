@@ -42,6 +42,7 @@ namespace motion{
 class MotionInstruction{
 public:
     static const int MaxRetryCount;
+    static const int MaxPfAttempts;
 
     MotionInstruction():command(NULL),retryCount(0),suspended(false){}
 
@@ -56,6 +57,7 @@ public:
         command=NULL;
         usePathFinder=false;
         pfPositions.clear();
+        avoidAttempts=0;
     }
 
     void Set(MotionCommand* _motionCommand, MotionState& _destination, bool _usePf=false){
@@ -65,6 +67,7 @@ public:
         slowSpeed=false;
         previousSpeed=0;
         retryCount=0;
+        avoidAttempts=0;
         usePathFinder=_usePf;
         pfPositions.clear();
     }
@@ -79,11 +82,9 @@ public:
         retryCount=0;
         if (pfPositions.size()>0){
 //            driver.moveToPosition(pfPositions.front(),destination.Direction);
-
             MoveToAutoPosition(pfPositions.front(),driver);
         }else{
 //            driver.moveToPosition(destination.Position,destination.Direction);
-
             MoveToAutoPosition(destination.Position,driver);
         }
     }
@@ -98,6 +99,15 @@ public:
 
     inline bool isSet(){
         return command!=NULL;
+    }
+
+
+    bool canUsePf(){
+        avoidAttempts++;
+        if (avoidAttempts==MaxPfAttempts){
+            return false;
+        }
+        return true;
     }
 
     inline bool canRetry(bool increment=true){
@@ -135,7 +145,6 @@ public:
     }
 
     void moveToNextPoint(MotionDriver& driver){
-
         cout<<"**Move to next position: "<<pfPositions.front().getX()<<" Y: "<<pfPositions.front().getY()<<endl;
 
         resume(driver);
@@ -162,12 +171,10 @@ public:
 
             deltaAngle = geometry::GeometryUtil::normalizeAngle(deltaAngle);
 
-            if((deltaAngle < 90) && (deltaAngle > -90))
-            {
+            if((deltaAngle < 90) && (deltaAngle > -90)){
                 dir = MotionDriver::FORWARD;
             }
-            else
-            {
+            else{
                 dir = MotionDriver::BACKWARD;
             }
         }
@@ -183,6 +190,7 @@ private:
     bool usePathFinder;
     bool slowSpeed;
     int previousSpeed;
+    int avoidAttempts;
     std::deque<geometry::Point2D> pfPositions;
 };
 
@@ -191,7 +199,7 @@ public:
     static string CONFIG_FILENAME;
     static string NAME;
     MotionExecutor():AbstractExecutor(NAME),
-        useEnemyDetector(true),checkField(true){}
+        useEnemyDetector(true),checkField(true), matchStarted(false){}
 
     void init();
     void stop();
@@ -202,9 +210,12 @@ public:
     void processAddObstacle(Command* command);
 
     void processEnemyDetectedNotification(Notification* notification);
+    void startMatch();
 protected:
     void main();
 private:
+    bool matchStarted;
+
     mutex commandQueueLock;
     queue<Command*> commandsToProcess;
     MotionCommand* getNextMotionCommand();
@@ -238,11 +249,10 @@ private:
     int rSensor;
     bool useEnemyDetector;
     struct Enemy{
-        Enemy(int _angle=0):Detected(false),Id(-1),EnemyLeft(true){}
+        Enemy():Detected(false),Id(-1){}
         Point2D Position;
         bool Detected;
         int Id;
-        bool EnemyLeft;
     };
     Enemy detectedEnemies[2];
 
@@ -261,10 +271,17 @@ private:
 
     mutex pfLock;
     PathFinding* pathFinder;
-    vector<Point2D> enemyDimensions;
-    int dodajSestougao(int krugX, int krugY, int triangleSide);
+    int dodajSestougao(int krugX, int krugY, int triangleSide, int angle);
+    int dodajCustomOblik(int krugX, int krugY, int angle);
     int enemyDistance;
     int triangleSide;
+    struct EnemyDimensions{
+        int Front;
+        int Back;
+        int SideFront;
+        int SideBack;
+    };
+    EnemyDimensions enemyDimension;
 };
 
 }

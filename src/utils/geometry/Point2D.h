@@ -11,6 +11,8 @@
 
 #include <ostream>
 
+extern double PI;
+
 using std::ostream;
 
 namespace geometry {
@@ -35,6 +37,9 @@ public:
 };
 
 ostream& operator<< (ostream &out, Point2D &cPoint);
+inline double toRadian(double angle){
+    return angle*PI/180.0;
+}
 
 } /* namespace geometry */
 #endif /* POINT2D_H_ */

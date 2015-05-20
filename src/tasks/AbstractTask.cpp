@@ -78,6 +78,10 @@ AbstractTask::Instruction AbstractTask::fetchInstruction(){
 }
 
 void AbstractTask::updateState(TaskState _state){
+    if (state==_state) return;  //No need to update state
+    if (state==TaskState::RUNNING && _state==TaskState::READY) return;
+
+
     if (state==TaskState::FINISHED || state==TaskState::IMPOSSIBLE) return;
     handler->updateStatus(getName(),_state);
 }

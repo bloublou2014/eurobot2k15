@@ -85,6 +85,9 @@ void Scheduler::main(){
                     break;
                 case Instruction::Type::STATE_UPDATE:
                     if (instr.oldState==TaskState::RUNNING && instr.newState!=TaskState::RUNNING){
+                        stringstream ss;
+                        ss<<"Stopping task because it has changed state from running";
+                        debug(ss.str());
                         setActiveTask(NULL);
                     }
                     onStateUpdate(instr.task, instr.oldState, instr.newState);

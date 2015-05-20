@@ -8,6 +8,8 @@
 #include "utils/geometry/Point2D.h"
 #include "math.h"
 
+double PI=3.141592653584;
+
 namespace geometry {
 
 Point2D::Point2D():x(0),y(0) {}
@@ -62,7 +64,7 @@ bool Point2D::operator<(const Point2D &rhs) const
 
 ostream& operator<< (ostream &out, Point2D &cPoint){
     out << "(" << cPoint.x << ", " <<
-    cPoint.y << ", " << ")";
+    cPoint.y << ")";
     return out;
 }
 
