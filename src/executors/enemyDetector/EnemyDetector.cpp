@@ -10,9 +10,9 @@ void EnemyDetector::suscribe(){
     this->registerCommand(ActuatorCommand::NAME, static_cast<commandCallback>(&EnemyDetector::processActuatorCommand));
 
 #ifdef VELIKI_ROBOT
-//    frontSensor.setConfig(char(4),char(1),sensorFrontID,this, true);
-//    frontSensor.RegisterSensor();
-//    frontSensor.StartSensor();
+    //    frontSensor.setConfig(char(4),char(1),sensorFrontID,this, true);
+    //    frontSensor.RegisterSensor();
+    //    frontSensor.StartSensor();
 
     frontLefttSensor.setConfig(char(4),char(1),frontLeftSensorID,this, true);
     frontLefttSensor.RegisterSensor();
@@ -31,7 +31,7 @@ void EnemyDetector::suscribe(){
     brkon.setPowerCoilConfig(char(4),char(8));
     brkon.registerInerface(this);
     brkon.registerBrkon();
-//    brkon.startBrkon();
+    //    brkon.startBrkon();
 
     //TODO
     //dodati za beacon
@@ -98,12 +98,11 @@ void EnemyDetector::SensorDriverCallback(int _id, bool _detected){
 #ifdef MALI_ROBOT
         backSensor.StartSensor();
 #endif
+        /*
     }else if(_id ==this->sensorFrontID || (_id == frontLeftSensorID) || ( _id == frontRightSensorID )){
         if(previousState.detectionSensorFront != _detected){
 
             if(_detected && !previousState.detectionBrkonFront){
-                if(_id == this->frontLeftSensorID) previousState.angleFront = 70;
-                else if(_id == this->frontRightSensorID) previousState.angleFront = 30;
                 previousState.detectionSensorFront = _detected;
                 previousState.detectionBrkonFront = true;
                 notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,(previousState.angleFront - 50),true);
@@ -115,10 +114,41 @@ void EnemyDetector::SensorDriverCallback(int _id, bool _detected){
                 debug("OTISAO FRONT");
             }
         }
-#ifdef VELIKI_ROBOT
-//        frontSensor.StartSensor();
-        frontLefttSensor.StartSensor();
+        */
+    }else if(_id == this->frontRightSensorID){
+        if(previousState.detectionSensorFront != _detected){
+
+            if(_detected && !previousState.detectionBrkonFront && !previousState.detectionSensorLeftFront){
+                previousState.angleFront = 0;
+                previousState.detectionSensorRightFront = _detected;
+                notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,(previousState.angleFront - 50),true);
+                debug("DOSO FRONT");
+            }else if(!_detected && !previousState.detectionBrkonFront && !previousState.detectionSensorLeftFront){
+                previousState.detectionSensorRightFront = _detected;
+                previousState.angleFront = 255;
+                notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,0,false);
+                debug("OTISAO FRONT");
+            }
+        }
         frontRightSensor.StartSensor();
+    }else if(_id == this->frontLeftSensorID){
+        if(previousState.detectionSensorFront != _detected){
+            if(_detected && !previousState.detectionBrkonFront && !previousState.detectionSensorRightFront){
+                previousState.angleFront = 0;
+                previousState.detectionSensorLeftFront = _detected;
+                notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,(previousState.angleFront - 50),true);
+                debug("DOSO FRONT");
+            }else if(!_detected && !previousState.detectionBrkonFront && !previousState.detectionSensorRightFront){
+                previousState.detectionSensorLeftFront = _detected;
+                previousState.angleFront = 255;
+                notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,0,false);
+                debug("OTISAO FRONT");
+            }
+        }
+        frontLefttSensor.StartSensor();
+
+#ifdef VELIKI_ROBOT
+
 #endif
 #ifdef MALI_ROBOT
         frontLefttSensor.StartSensor();
@@ -152,7 +182,7 @@ void EnemyDetector::brkonDriverCallback(unsigned char _dataFront, unsigned char 
         previousState.angleFront = _dataFront;
         notification = new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,(_dataFront-50),true);
         printf("BRKON FRONT enemy ON: %d ", (_dataFront-50));
-    }else if( _dataFront == 0xFF && previousState.detectionBrkonFront == true){
+    }else if( _dataFront == 0xFF && previousState.detectionBrkonFront == true && !previousState.detectionSensorLeftFront && !previousState.detectionSensorRightFront){
         previousState.detectionBrkonFront = false;
         previousState.angleFront = 255;
         notification = new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,(previousState.angleFront - 50),false);
@@ -165,7 +195,7 @@ void EnemyDetector::brkonDriverCallback(unsigned char _dataFront, unsigned char 
         notification = new EnemyDetectedNotification(EnemyDetectedNotification::Type::BACK, (_dataBack + 135),true);
         printf("BRKON BACK enemy ON: %d ", (_dataBack+135));
 
-    }else if( _dataBack == 0xFF && previousState.detectionBrkonBack == true){
+    }else if( _dataBack == 0xFF && previousState.detectionBrkonBack == true && !previousState.detectionSensorLeftFront && !previousState.detectionSensorRightFront){
         previousState.detectionBrkonBack = false;
         previousState.angleBack = 255;
         notification = new EnemyDetectedNotification(EnemyDetectedNotification::Type::BACK,(previousState.angleBack +135),false);
@@ -318,7 +348,7 @@ void EnemyDetector::main(){
             positionTmp.mali_cordX = 1500 - positionTmp.mali_cordX;
         }
         */
-        /*
+/*
         std::cout << "BEACON:" << std::endl
                   << "veliki  X: "  << positionTmp.veliki_cordX
                   << " Y: " << positionTmp.veliki_cordY

@@ -23,8 +23,9 @@ namespace executor {
 class EnemyDetector: public ExecutorCommon, public BeaconDriverInterface, public BrkonDriverInterface, public SensorDriverInterface{
 private:
     struct previousStateVeliki{
-        bool detectionBack = false;
-        bool detectionFront = false;
+
+        bool detectionSensorLeftFront = false;
+        bool detectionSensorRightFront = false;
         bool detectionSensorBack = false;
         bool detectionSensorFront = false;
         bool detectionBrkonFront = false;
