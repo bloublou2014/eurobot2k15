@@ -31,6 +31,7 @@ void MotionExecutor::init(){
         enemyDistance=v.second.get<int>("enemyDistance");
         triangleSide=v.second.get<int>("triangleSide");
 
+        enemyDimension.Distance=v.second.get<int>("distance");
         enemyDimension.Front=v.second.get<int>("front");
         enemyDimension.Back=v.second.get<int>("back");
         enemyDimension.SideFront=v.second.get<int>("frontSide");
@@ -84,9 +85,15 @@ void MotionExecutor::processEnemyDetectedNotification(Notification* notification
         Point2D enemyPosition=lastState.Position;
         angle+=lastState.Orientation;
         stateLock.unlock();
-        enemyPosition.setX(enemyPosition.getX()+enemyDistance*cos(toRadian(angle)));
-        enemyPosition.setY(enemyPosition.getY()+enemyDistance*sin(toRadian(angle)));
+        enemyPosition.setX(enemyPosition.getX()+enemyDimension.Distance*cos(toRadian(angle)));
+        enemyPosition.setY(enemyPosition.getY()+enemyDimension.Distance*sin(toRadian(angle)));
+
+        Point2D enemyCentralPosition=lastState.Position;
+        enemyCentralPosition.setX(enemyCentralPosition.getX()+enemyDistance*cos(toRadian(angle)));
+        enemyCentralPosition.setY(enemyCentralPosition.getY()+enemyDistance*sin(toRadian(angle)));
+
         detectedEnemies[detectedType].Position=enemyPosition;
+        detectedEnemies[detectedType].CentralPosition=enemyCentralPosition;
 
         stringstream ss;
         ss<<"My position: "<<lastState.Position;
@@ -187,7 +194,7 @@ bool MotionExecutor::isEnemyDetected(MotionState& ms, bool isSuspended){
     }
     if (!detectedEnemies[detectedType].Detected)
         return false;  //We didn't find anything on moving side
-    if (isInField(detectedEnemies[detectedType].Position)){
+    if (isInField(detectedEnemies[detectedType].CentralPosition)){
         //than enemy is detected in moving direction
         return true;
     }
@@ -255,7 +262,7 @@ void MotionExecutor::main(){
                             if (!giveUp){
                                 debug("Moving to next position returned from PF");
                                 currentMotionInstruction.moveToNextPoint(driver);
-                                boost::this_thread::sleep(boost::posix_time::seconds(2));
+//                                boost::this_thread::sleep(boost::posix_time::seconds(2));
                             }
                         }
                         if (giveUp){
@@ -483,6 +490,9 @@ void MotionExecutor::setPosition(MotionCommand* _motionCommand){
             pathFinder->removeObstacle(detectedEnemies[i].Id);
             detectedEnemies[i].Position.setX(detectedEnemies[i].Position.getX()+previousPosition.getX());
             detectedEnemies[i].Position.setY(detectedEnemies[i].Position.getY()+previousPosition.getY());
+
+            detectedEnemies[i].CentralPosition.setX(detectedEnemies[i].CentralPosition.getX()+previousPosition.getX());
+            detectedEnemies[i].CentralPosition.setY(detectedEnemies[i].CentralPosition.getY()+previousPosition.getY());
 //            detectedEnemies[i].Id=dodajSestougao(detectedEnemies[i].Position.getX(),
 //                                                 detectedEnemies[i].Position.getY(),
 //                                                 triangleSide,driver.getOrientation());

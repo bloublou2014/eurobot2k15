@@ -44,7 +44,7 @@ public:
     static const int MaxRetryCount;
     static const int MaxPfAttempts;
 
-    MotionInstruction():command(NULL),retryCount(0),suspended(false){}
+    MotionInstruction():command(NULL),retryCount(0),suspended(false),stuckCount(0){}
 
     void reset(MotionDriver& driver){
         if (slowSpeed)
@@ -58,6 +58,7 @@ public:
         usePathFinder=false;
         pfPositions.clear();
         avoidAttempts=0;
+        stuckCount=0;
     }
 
     void Set(MotionCommand* _motionCommand, MotionState& _destination, bool _usePf=false){
@@ -68,6 +69,7 @@ public:
         previousSpeed=0;
         retryCount=0;
         avoidAttempts=0;
+        stuckCount=0;
         usePathFinder=_usePf;
         pfPositions.clear();
     }
@@ -191,6 +193,7 @@ private:
     bool slowSpeed;
     int previousSpeed;
     int avoidAttempts;
+    int stuckCount;
     std::deque<geometry::Point2D> pfPositions;
 };
 
@@ -250,7 +253,8 @@ private:
     bool useEnemyDetector;
     struct Enemy{
         Enemy():Detected(false),Id(-1){}
-        Point2D Position;
+        Point2D Position;   //Pozicija koja se koristi za path finder
+        Point2D CentralPosition;    //Pozicija koja se koristi za detekciju van terena
         bool Detected;
         int Id;
     };
@@ -276,6 +280,7 @@ private:
     int enemyDistance;
     int triangleSide;
     struct EnemyDimensions{
+        int Distance;
         int Front;
         int Back;
         int SideFront;
