@@ -116,7 +116,7 @@ void EnemyDetector::SensorDriverCallback(int _id, bool _detected){
         }
         */
     }else if(_id == this->frontRightSensorID){
-        if(previousState.detectionSensorFront != _detected){
+        if(previousState.detectionSensorRightFront != _detected){
 
             if(_detected && !previousState.detectionBrkonFront && !previousState.detectionSensorLeftFront){
                 previousState.angleFront = 0;
@@ -132,7 +132,7 @@ void EnemyDetector::SensorDriverCallback(int _id, bool _detected){
         }
         frontRightSensor.StartSensor();
     }else if(_id == this->frontLeftSensorID){
-        if(previousState.detectionSensorFront != _detected){
+        if(previousState.detectionSensorLeftFront != _detected){
             if(_detected && !previousState.detectionBrkonFront && !previousState.detectionSensorRightFront){
                 previousState.angleFront = 0;
                 previousState.detectionSensorLeftFront = _detected;
