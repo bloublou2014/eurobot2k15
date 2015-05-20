@@ -16,15 +16,15 @@ void EnemyDetector::suscribe(){
 
     frontLefttSensor.setConfig(char(4),char(1),frontLeftSensorID,this, true);
     frontLefttSensor.RegisterSensor();
-    frontLefttSensor.StartSensor();
+//    frontLefttSensor.StartSensor();
 
     frontRightSensor.setConfig(char(4),char(2),frontRightSensorID,this, true);
     frontRightSensor.RegisterSensor();
-    frontRightSensor.StartSensor();
+//    frontRightSensor.StartSensor();
 
     backSensor.setConfig(char(4), char(5),sensorBackID, this, true);
     backSensor.RegisterSensor();
-    backSensor.StartSensor();
+//    backSensor.StartSensor();
 
     brkon.setCoilConfig(char(4),char(7));
     brkon.setRegisterConfig(char(4),char(1));
@@ -119,30 +119,30 @@ void EnemyDetector::SensorDriverCallback(int _id, bool _detected){
         if(previousState.detectionSensorRightFront != _detected){
 
             if(_detected && !previousState.detectionBrkonFront && !previousState.detectionSensorLeftFront){
-                previousState.angleFront = 0;
-                previousState.detectionSensorRightFront = _detected;
+                previousState.angleFront = 50;
+                previousState.detectionSensorRightFront = true;
                 notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,(previousState.angleFront - 50),true);
-                debug("DOSO FRONT");
+                debug("DOSO FRONT RIGHT");
             }else if(!_detected && !previousState.detectionBrkonFront && !previousState.detectionSensorLeftFront){
-                previousState.detectionSensorRightFront = _detected;
+                previousState.detectionSensorRightFront = false;
                 previousState.angleFront = 255;
                 notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,0,false);
-                debug("OTISAO FRONT");
+                debug("OTISAO FRONT RIGHT");
             }
         }
         frontRightSensor.StartSensor();
     }else if(_id == this->frontLeftSensorID){
         if(previousState.detectionSensorLeftFront != _detected){
             if(_detected && !previousState.detectionBrkonFront && !previousState.detectionSensorRightFront){
-                previousState.angleFront = 0;
-                previousState.detectionSensorLeftFront = _detected;
+                previousState.angleFront = 50;
+                previousState.detectionSensorLeftFront = true;
                 notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,(previousState.angleFront - 50),true);
-                debug("DOSO FRONT");
+                debug("DOSO FRONT LEFT");
             }else if(!_detected && !previousState.detectionBrkonFront && !previousState.detectionSensorRightFront){
-                previousState.detectionSensorLeftFront = _detected;
+                previousState.detectionSensorLeftFront = false;
                 previousState.angleFront = 255;
                 notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,0,false);
-                debug("OTISAO FRONT");
+                debug("OTISAO FRONT LEFT");
             }
         }
         frontLefttSensor.StartSensor();
@@ -381,7 +381,7 @@ bool EnemyDetector::StartDetectionFunction(){
     frontRightSensor.StartSensor();
     backSensor.StartSensor();
     brkon.startBrkon();
-    beacon.startBeacon();
+    //beacon.startBeacon();
 #endif
 
 #ifdef MALI_ROBOT
@@ -399,7 +399,7 @@ bool EnemyDetector::StopDetectionFunction(){
     frontRightSensor.StopSensor();
     backSensor.StopSensor();
     brkon.stopBrkon();
-    beacon.stopBeacon();
+    //beacon.stopBeacon();
 #endif
 #ifdef MALI_ROBOT
 
