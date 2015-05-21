@@ -10,17 +10,24 @@ var lift_colored =
 	'YELLOW':{'first':'LiftRight', 'second':'LiftLeft'},
 }
 
-var position_colored = 
+var positions_colored = 
 {
-	'GREEN':{'x':289, 'y':539},
-	'YELLOW':{'x':-289, 'y':539},
+	'GREEN':
+	{
+		'prva_dva':{'x':289, 'y':539},
+		'treci_fail':{'x':470, 'y':530},
+	},
+	'YELLOW':{
+		'prva_dva':{'x':-289, 'y':539},
+		'treci_fail':{'x':-470, 'y':530},
+	},
 }
 
 Config.setup = function()
 {
 	Config['angle_first'] = angle_first_colored[Config.color];
 	Config['lift'] = lift_colored[Config.color];
-	Config['position'] = position_colored[Config.color];
+	Config['positions'] = positions_colored[Config.color];
 }
 
 var retry_count = 0;
@@ -38,9 +45,7 @@ function onRun()
 			this
 			.then(new RotateTo(Config.angle_first))
 			.then(new SetSpeedMotion(100))
-			//.then(new MoveForward(750))
-			.then(new MoveToPosition(Config.position.x, Config.position.y))
-			//.then(Commands.log_position)
+			.then(new MoveToPosition(Config.positions.prva_dva.x, Config.positions.prva_dva.y))
 			.progress(function(msg)
 			{
 				lift_getting(Config.lift.first, (Math.abs(msg.x) < 720 && Math.abs(msg.x) > 200)); // prvi kupi kad je x u nekim granicama
@@ -51,16 +56,16 @@ function onRun()
 				{
 					this
 					.then(new SleepCommand(1000))
-					.then(new MoveToPosition(Config.position.x, Config.position.y));
+					.then(new MoveToPosition(Config.positions.prva_dva.x, Config.positions.prva_dva.y));
 				}
 				else
 				{
 					// alter da ide do treceg valjka na poziciju
-					this.alter(Commands.finish_task);
+					this.alter(kupi_treci);
+					//.alter(Commands.finish_task);
 				}
 				return 'continue';
 			})
-			//.then(new SetSpeedMotion(90))
 			.then(new SleepCommand(300)) //500 // 350 
 			.then(new RotateTo(-90))
 			.then(new ActuatorCommand('LiftLeft', 'StartGetting'))
@@ -79,6 +84,24 @@ function onRun()
 	.then(new SetSpeedMotion(Config.default_speed))
 	.then(Commands.finish_task)
 	.execute();
+}
+
+function kupi_treci()
+{Logger.debug('nemoz prva dva, kupi treci!!!!, ide na '+Config.positions.treci_fail.x+' '+Config.positions.treci_fail.y);
+	this
+	.ignore_failure()
+	.then(new SleepCommand(1000))
+	.then(new SetSpeedMotion(Config.default_speed))
+	.then(new MoveToPosition(Config.positions.treci_fail.x, Config.positions.treci_fail.y))
+	.then(new RotateTo(-90))
+	.then(new ActuatorCommand('LiftLeft', 'StartGetting'))
+	.then(new ActuatorCommand('LiftRight', 'StartGetting'))
+	.then(new MoveForward(200))
+	.then(new SleepCommand(150))
+	.then(new ActuatorCommand('LiftLeft', 'StopGetting'))
+	.then(new ActuatorCommand('LiftRight', 'StopGetting'))
+	.catch(Commands.finish_task)
+	.then(Commands.finish_task);
 }
 
 var lift_started = {'LiftLeft':false,'LiftRight':false};

@@ -25,6 +25,7 @@ function onRun()
 	.then(new SetPosition(Config.init_position.x, Config.init_position.y, Config.init_position.o))
 	//.then(new ActuatorCommand("EnemyDetector", "StartBrkon"))
 	.then(init_pf_obstacles)
+	.then(Commands.set_world_state('our_color', Config.color))
 	.then(function()
 	{
 		Logger.debug('brkon started');

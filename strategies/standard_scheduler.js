@@ -27,7 +27,6 @@ var phase = 'initial'; // unloading, finalize
 
 var unloading_tasks = ['unload_all_center', 'unload_casa_start', 'unload_lights_center', 'unload_casa_enemy', 'unload_all_start', 'unload_loptice'];
 var current_area = 'none'; // enemy, our_down, our_up, none
-var color = 'GREEN';
 
 function init_world_state()
 {
@@ -48,6 +47,7 @@ var area_tasks =
 
 function area_bonus(task_name)
 {
+	Logger.debug('area_tasks '+area_tasks[current_area]);
 	if(is_in_array(task_name, area_tasks[current_area])) return 100;
 	else return 0;
 }
@@ -133,7 +133,7 @@ function find_max()
 			}
 			
 			if(!allowed_in_current_phase(task.name)) continue; // filtriraj za trenutnu fazu
-			
+				Logger.debug(task_name+': area_bonus '+area_bonus(task_name));
 			var rank = task.rank + area_bonus(task_name);
 			
 			if(rank > max_rank) // nadji sa max rankom
@@ -195,30 +195,36 @@ function allowed_in_current_phase(task_name)
 
 Notification.subscribe("MotionNotification",function(msg)
 {
-	if((msg.x >= 0 && color == 'GREEN') || (msg.x < 0 && color == 'YELLOW'))
+	var color = Scheduler.getWorldState('our_color');
+	Logger.debug('color: '+color);
+	if(color)
 	{
-		current_area = 'enemy';
+		if((msg.x <= 0 && color == 'GREEN') || (msg.x > 0 && color == 'YELLOW'))
+		{
+			current_area = 'enemy';
+		}
+		else // sa nase strae smo
+		{
+			if(msg.y < 780)
+			{
+				current_area = 'our_down';
+			}
+			else if(msg.y > 1210)
+			{
+				current_area = 'our_up';
+			}
+			else
+			{
+				current_area = 'none';
+			}
+		}
 	}
-	else // sa nase strae smo
-	{
-		if(msg.y < 780)
-		{
-			current_area = 'our_down';
-		}
-		else if(msg.y > 1210)
-		{
-			current_area = 'our_up';
-		}
-		else
-		{
-			current_area = 'none';
-		}
-	}
+	Logger.debug('MotionNotification '+msg.x+' '+msg.y+' current_area '+current_area);
 });
 
 function is_in_array(el, arr)
 {
-	for(var i=0;i>arr.length;i++)
+	for(var i=0;i<arr.length;i++)
 	{
 		if(arr[i] == el) return true;
 	}
