@@ -20,7 +20,7 @@ var orientation_colored = // TO_EDIT
 	'GREEN':163 // TODO
 };
 
-function setup()
+Config.setup = function()
 {
 	Config['prilazna'] = position_colored[Config.color];
 	Config['orientation'] = orientation_colored[Config.color];
@@ -29,45 +29,28 @@ function setup()
 	else Config['lift'] = 'LiftRight';
 }
 
-var succeeded = false;
-
 function onRun(){
 	
-	Config.do_setup(setup);
-	
-	CommandChain(new MoveToPosition(Config.prilazna.x, Config.prilazna.y))
+	CommandChain(Commands.pf_move(Config.prilazna))
 	.then(new RotateTo(Config.orientation))
 	.then(new SetSpeedMotion(50))
 	.then(new MoveForward(distance_prilaz))
 	.then(new RotateTo(270))
 	.then(new ActuatorCommand(Config.lift,'StartGetting'))
+	.catch(error)
 	.then(new MoveForward(distance_kupljenje))
-	.success(function()
-	{
-		succeeded = true;
-	})
 	.then(new SetSpeedMotion(Config.default_speed))
 	.then(new SleepCommand(2000))
 	.then(new ActuatorCommand(Config.lift,'StopGetting'))
-	.success(function()
-	{
-		if(succeeded)
-		{
-			Manager.updateState("Finished");
-		}
-		else
-		{
-			Logger.debug('catch!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
-			CommandChain(new SetSpeedMotion(Config.default_speed))
-			.success(function()
-			{
-				Manager.updateState("Suspended");
-			})
-			.ignore_failure()
-			.execute();
-		}
-	})
-	.ignore_failure()
+	.then(Commands.finish_task)
+	.execute();
+}
+
+function error()
+{
+	Logger.debug('drugi valjak stepeniste error');
+	CommandChain(new SetSpeedMotion(Config.default_speed))
+	.then(Commands.suspend_task)
 	.execute();
 }
 

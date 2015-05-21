@@ -1,5 +1,6 @@
 /**
-	Istovara sve na nasu startnu poziciju.
+	Istovara casu na nasu startnu poziciju.
+	DEPRECATED NERADI KORISTITI UNLOAD ALL
 */
 
 var pos_y = 1000; // TO_EDIT
@@ -17,7 +18,7 @@ var orientation_colored = // TO_EDIT
 	'GREEN':0,
 };
 
-function setup()
+Config.setup = function()
 {
 	Config['prilazna'] = position_colored[Config.color];
 	Config['orientation'] = orientation_colored[Config.color];
@@ -25,40 +26,18 @@ function setup()
 
 var distance = 350;
 
-function onRun(){
-	
-	Config.do_setup(setup);
-	
-	CommandChain(new MoveToPosition(Config.prilazna.x, Config.prilazna.y))
+function onRun()
+{
+	CommandChain(Commands.pf_move(Config.prilazna))
 	.then(new RotateTo(Config.orientation))
 	.then(new MoveForward(distance))
-	.success(function()
-	{
-		CommandChain(new ActuatorCommand('LiftCenter','Unload'))
-		.then(new SetSpeedMotion(70))
-		.then(new MoveForward(-100))
-		.success(function()
-		{
-			CommandChain(new ActuatorCommand('LiftLeft','Unload')).execute();
-			CommandChain(new ActuatorCommand('LiftRight','Unload')).execute();
-			
-			CommandChain(new SleepCommand(1000))
-			.then(new MoveForward(-200))
-			.then(new SetSpeedMotion(Config.default_speed))
-			.success(function()
-			{
-				Manager.updateState("Finished");
-			})
-			.ignore_failure()
-			.execute();
-		})
-		.ignore_failure()
-		.execute();
-	})
-	.catch(function()
-	{
-		Manager.updateState("Suspended");
-	})
+	.catch(Commands.ready_after(7000))
+	.then(new ActuatorCommand('LiftCenter','Unload'))
+	.then(Commands.set_world_state('nosi_casu', 'false'))
+	.then(new SetSpeedMotion(70))
+	.then(new MoveForward(-distance))
+	.then(new SetSpeedMotion(Config.default_speed))
+	.then(Commands.finish_task)
 	.execute();
 }
 

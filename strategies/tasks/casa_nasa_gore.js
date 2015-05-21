@@ -6,8 +6,8 @@ var distance = 130;  // TO_EDIT
 
 var yellow_positions = // TO_EDIT
 {
-	's_nase':{'x':-780, 'y':1050},
-	's_njihove':{'x':123, 'y':234},
+	's_nase':{'x':-790, 'y':1050},
+	's_njihove':{'x':123, 'y':234}, // TODO set
 };
 var green_points = Motion.invert_x(yellow_positions);
 var positions_colored={'YELLOW':yellow_positions, 'GREEN':green_points};
@@ -26,49 +26,58 @@ var orientations_colored = // TO_EDIT
 	}
 };
 
-function setup()
+Config.setup = function()
 {
 	Config['positions'] = positions_colored[Config.color];
 	Config['orientations'] = orientations_colored[Config.color];
 }
 
-function onRun(){
-	
-	Config.do_setup(setup);
-	
-	Motion.update_current_status(function()
+function onRun()
+{
+	CommandChain(new GetMotionState())
+	.then(function(msg)
 	{
-		/*if(Math.abs(Motion.current_status.x) > 123)
+		if(Math.abs(msg.x) > 590) // TODO set
 		{
 			var side = 's_nase';
 		}
 		else
 		{
 			var side = 's_njihove';
-		}*/
-		var side = 's_nase'; // hardcode
+		}
 		
 		var prilazna = Config.positions[side];
 		var orientation = Config.orientations[side];
 		
-		CommandChain(new MoveToPosition(prilazna.x, prilazna.y))
+		this
+		.then(Commands.pf_move(prilazna))
 		.then(new RotateTo(orientation))
-		.then(new SetSpeedMotion(50))
-		.then(new MoveForward(distance))
-		.then(new SetSpeedMotion(Config.default_speed))
-		.then(new ActuatorCommand('LiftCenter','Get'))
-		.success(function()
-		{
-			Manager.updateState("Finished");
-		})
-		.catch(function()
-		{
-			Manager.updateState("Suspended");
-		})
+		.catch(Commands.wake_up_after(7000, check_ready));
+	})
+	.then(new SetSpeedMotion(50))
+	.then(new ActuatorCommand('LiftCenter','Unload'))
+	.then(new MoveForward(distance))
+	.then(new SetSpeedMotion(Config.default_speed))
+	.then(new ActuatorCommand('LiftCenter','Get'))
+	.then(new SleepCommand(1000))
+	.then(Commands.finish_task)
+	.catch(function()
+	{
+		CommandChain(new SetSpeedMotion(Config.default_speed))
+		.then(Commands.suspend_task)
 		.execute();
-	});
+	})
+	.execute();
 }
 
-function onPause(){}
+function check_ready()
+{
+	if(Lift.has_room_for(1, 'LiftCenter') && !Task.sleeping) Manager.updateState("Ready");
+	else Manager.updateState("Suspended");
+}
+
+Lift.on_update(check_ready);
 
 Manager.updateState("Ready");
+
+function onPause(){}

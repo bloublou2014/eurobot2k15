@@ -8,9 +8,6 @@ var positions = // TO_EDIT
 	'desno':{'x':-740, 'y':333}
 };
 
-var left_count = 0;
-var right_count = 0;
-
 var orientations = // TO_EDIT
 {
 	'levo':{'LiftRight':123, 'LiftLeft':234},
@@ -21,10 +18,12 @@ var distance = 100; // TO_EDIT
 
 var current_position = {'x':0, 'y':0};
 
-function onRun(){
-	
-	Motion.update_current_status(function(){
-		if(Motion.current_status.x > 0)
+function onRun()
+{
+	CommandChain(GetMotionState())
+	.then(function(msg)
+	{
+		if(msg.x > 0)
 		{
 			var side = 'desno';
 		}
@@ -35,20 +34,16 @@ function onRun(){
 		
 		var lift = 'LiftRight'; // TODO
 		
-		CommandChain(new MoveToPosition(points[side].x, points[side].y))
+		this
+		.then(Commands.pf_move(points[side]))
 		.then(new RotateTo(orientations[side][lift]))
 		.then(new MoveForward(distance))
 		.then(new ActuatorCommand(lift, 'Unload'))
-		.success(function()
-		{
-			Manager.updateState("Finished");
-		})
-		.catch(function()
-		{
-			Manager.updateState("Suspended");
-		})
-		.execute();
-	});
+		.catch(Commands.suspend_task)
+		.then(new MoveForward(-distance));
+	})
+	.then(Commands.finish_task)
+	.execute();
 }
 
 function onPause(){}
