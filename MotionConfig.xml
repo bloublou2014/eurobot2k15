@@ -1,0 +1,19 @@
+<motionConfig>
+	<params>
+		<rBrkon>500</rBrkon>
+		<rSensor>280</rSensor>
+		<maxX>1500</maxX>
+		<maxY>2000</maxY>
+		<minX>-1500</minX>
+		<minY>0</minY>
+		<margin>80</margin>
+		<enemyDistance>600</enemyDistance>
+		<triangleSide>500</triangleSide>
+		
+		<distance>370</distance>
+		<front>300</front>
+		<back>350</back>
+		<frontSide>650</frontSide>
+		<backSide>820</backSide>
+	</params>
+</motionConfig>
