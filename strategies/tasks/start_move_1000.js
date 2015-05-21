@@ -1,5 +1,5 @@
 /**
-	Izvlacenje iz startne pozicije.
+	Izvlacenje iz startne pozicije. start_move_1000
 */
 
 function onRun(){
@@ -14,9 +14,14 @@ function onRun(){
 	.then(new ActuatorCommand('LiftLeft', 'StopGetting'))
 	.execute()
 	*/
-	CommandChain(new MoveForward(1000))
+	CommandChain(new MoveForward(650)) // zabag
+	.then(new RotateTo(90))
+	.then(new MoveForward(150))
 	.then(Commands.finish_task)
 	.execute();
+	/*CommandChain(Commands.pf_move({'x':800,'y':1000}))
+	.then(Commands.finish_task)
+	.execute();*/
 }
 
 function onPause(){}

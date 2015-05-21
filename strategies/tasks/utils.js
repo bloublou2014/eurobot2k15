@@ -55,6 +55,9 @@ var Motion =
 		}
 		return ret;
 	},
+	'FORWARD':1,
+	'BACKWARD':-1,
+	'AUTO':1, // za sad napred
 }
 
 /**
@@ -64,13 +67,15 @@ Config utils.
 var Config = 
 {
 	'color':'COLOR_NOT_SET',
-	'do_setup':function do_setup(setup_fun)
-	{
-		Config.color = Manager.getColor();
-		if(setup_fun) setup_fun();
-	},
+	'setup':null,
 	// globalna podesavanja
-	'default_speed':'120',
+	'default_speed':'160',
+}
+
+function onSetup(color) // standardna onSetup, wrapuje Config.setup() i setuje Config.color
+{
+	Config.color = color;
+	if(Config.setup) Config.setup();
 }
 
 /**
@@ -191,7 +196,11 @@ function CommandChainNode(new_command)
 			catch(err)
 			{
 				if(err === 'command_error') failure_fun(); // ako baci 'command_error' tretiraj kao fail
-				else throw err; // TODO mozda da suspenduje da se nebi zapucao ceo robot
+				else
+				{
+					Logger.error('Task has thrown an exception.');
+					Manager.updateState("Impossible"); // ako baci neki drugi exception suspenduj
+				}
 			}
 		}
 		else // async command
@@ -233,6 +242,29 @@ var Commands = // convinience helper objekat sa funkcijama koje mogu da se prosl
 	{
 		return function(){Task.ready_after(timeout);};
 	},
+	'set_world_state':function(key, value) // Commands.ready_after(timeout)
+	{
+		return function(){Manager.setWorldState(key, value);};
+	},
+	'get_world_state':function(key) // Commands.ready_after(timeout)
+	{
+		return function(){return Manager.getWorldState(key);};
+	},
+	'pf_move':function(point, direction)
+	{
+		if(direction) var _dir = direction;
+		else var _dir = Motion.AUTO;
+		return new MoveToPosition(point.x, point.y, _dir, true);
+	},
+	'log_position':function()
+	{
+		this
+		.then(new GetMotionState())
+		.then(function(msg)
+		{
+			Logger.debug('logging position: x: '+msg.x+' y: '+msg.y);
+		});
+	},
 }
 
 //////////////////////////
@@ -244,6 +276,15 @@ var Commands = // convinience helper objekat sa funkcijama koje mogu da se prosl
 var Task = 
 {
 	'sleeping':false,
+	'running':false,
+	'suspend':function()
+	{
+		if(this.running) Manager.updateState("Suspended");
+	},
+	'ready':function()
+	{
+		if(!this.running) Manager.updateState("Ready");
+	},
 	'wake_up_after':function(timeout, wake_up)
 	{
 		Task.sleeping = true;
@@ -296,13 +337,14 @@ var Lift =
 	{
 		if(!this._subscribed) // ako nisi vec subscribuj se
 		{
-			Notification.subscribe("LiftNotification", function(side, count)
+			Notification.subscribe("LiftNotification", function(msg)
 			{
-				switch(side) 
+				//Logger.debug('Lift notif side:'+msg.side+' count:'+msg.count);
+				switch(msg.side) 
 				{
-					case 1: Lift.item_count['LiftRight'] = count; break;
-					case 2: Lift.item_count['LiftLeft'] = count; break;
-					case 3: Lift.item_count['LiftCenter'] = count; break; // 3??
+					case 1: Lift.item_count['LiftRight'] = msg.count; break;
+					case 2: Lift.item_count['LiftLeft'] = msg.count; break;
+					case 3: Lift.item_count['LiftCenter'] = msg.count; break; // 3??
 				}
 				
 				if(Lift._update_callback) Lift._update_callback(); // ako je definisan callback pozovi ga
@@ -314,12 +356,12 @@ var Lift =
 	'on_update':function(update_callback)
 	{
 		this._update_callback = update_callback;
-		subscribe();
+		this.subscribe();
 	},
 	'unloading':function(lift)
 	{
 		this.unloading_items[lift] = true;
-		subscribe();
+		this.subscribe();
 	},
 	
 	'has_room_for':function(number, lift)
@@ -342,10 +384,12 @@ var Lift =
 	},
 	'has_items_to_unload_with':function(lift)
 	{
+		//Logger.debug('unloading '+this.unloading_items[lift]);
 		return this.unloading_items[lift] && this.has_items_in(lift);
 	},
 	'has_items_in':function(lift)
 	{
+		//Logger.debug('has_items_in '+lift+' '+this.item_count[lift]);
 		return this.item_count[lift] > 0;
 	},
 }

@@ -20,7 +20,7 @@ var orientation_colored = // TO_EDIT
 	'GREEN':163 // TODO
 };
 
-function setup()
+Config.setup = function()
 {
 	Config['prilazna'] = position_colored[Config.color];
 	Config['orientation'] = orientation_colored[Config.color];
@@ -31,9 +31,7 @@ function setup()
 
 function onRun(){
 	
-	Config.do_setup(setup);
-	
-	CommandChain(new MoveToPosition(Config.prilazna.x, Config.prilazna.y))
+	CommandChain(Commands.pf_move(Config.prilazna))
 	.then(new RotateTo(Config.orientation))
 	.then(new SetSpeedMotion(50))
 	.then(new MoveForward(distance_prilaz))

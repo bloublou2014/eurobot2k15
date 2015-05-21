@@ -6,7 +6,7 @@ var distance = 130;  // TO_EDIT
 
 var yellow_positions = // TO_EDIT
 {
-	's_nase':{'x':-780, 'y':1050},
+	's_nase':{'x':-790, 'y':1050},
 	's_njihove':{'x':123, 'y':234}, // TODO set
 };
 var green_points = Motion.invert_x(yellow_positions);
@@ -26,23 +26,18 @@ var orientations_colored = // TO_EDIT
 	}
 };
 
-function setup()
+Config.setup = function()
 {
 	Config['positions'] = positions_colored[Config.color];
 	Config['orientations'] = orientations_colored[Config.color];
 }
 
-var prilazna = null;
-var orientation = null;
-
 function onRun()
-{	
-	Config.do_setup(setup);
-	
+{
 	CommandChain(new GetMotionState())
 	.then(function(msg)
 	{
-		if(Math.abs(msg.x) > 123) // TODO set
+		if(Math.abs(msg.x) > 590) // TODO set
 		{
 			var side = 's_nase';
 		}
@@ -51,16 +46,20 @@ function onRun()
 			var side = 's_njihove';
 		}
 		
-		Config['prilazna'] = Config.positions[side];
-		Config['orientation'] = Config.orientations[side];
+		var prilazna = Config.positions[side];
+		var orientation = Config.orientations[side];
+		
+		this
+		.then(Commands.pf_move(prilazna))
+		.then(new RotateTo(orientation))
+		.catch(Commands.wake_up_after(7000, check_ready));
 	})
-	.then(new MoveToPosition(Config.prilazna.x, Config.prilazna.y))
-	.then(new RotateTo(Config.orientation))
-	.catch(Commands.wake_up_after(7000, check_ready))
 	.then(new SetSpeedMotion(50))
+	.then(new ActuatorCommand('LiftCenter','Unload'))
 	.then(new MoveForward(distance))
 	.then(new SetSpeedMotion(Config.default_speed))
 	.then(new ActuatorCommand('LiftCenter','Get'))
+	.then(new SleepCommand(1000))
 	.then(Commands.finish_task)
 	.catch(function()
 	{

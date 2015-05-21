@@ -35,7 +35,7 @@ function onRun()
 		var lift = 'LiftRight'; // TODO
 		
 		this
-		.then(new MoveToPosition(points[side].x, points[side].y))
+		.then(Commands.pf_move(points[side]))
 		.then(new RotateTo(orientations[side][lift]))
 		.then(new MoveForward(distance))
 		.then(new ActuatorCommand(lift, 'Unload'))

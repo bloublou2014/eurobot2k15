@@ -1,9 +1,9 @@
 /**
-	Istovara casu na polje kod protivnickog startnog polja.
+	Istovara loptice.
 */
 
-var pos_y = 450; // TO_EDIT
-var pos_x = 450; // TO_EDIT
+var pos_y = 1000; // TO_EDIT
+var pos_x = 800; // TO_EDIT
 
 var position_colored = 
 {
@@ -13,8 +13,8 @@ var position_colored =
 
 var orientation_colored = // TO_EDIT
 {
-	'YELLOW':45,
-	'GREEN':135,
+	'YELLOW':0,
+	'GREEN':180,
 };
 
 Config.setup = function()
@@ -23,21 +23,28 @@ Config.setup = function()
 	Config['orientation'] = orientation_colored[Config.color];
 }
 
-var distance = 100;
+var distance = 480; // 500 je previse
 
 function onRun()
 {
 	CommandChain(Commands.pf_move(Config.prilazna))
 	.then(new RotateTo(Config.orientation))
-	.then(new MoveForward(distance))
 	.catch(Commands.ready_after(7000))
-	.then(new ActuatorCommand('LiftCenter','Unload'))
-	.then(Commands.set_world_state('nosi_casu', 'false'))
 	.then(new MoveForward(-distance))
+	.then(new ActuatorCommand('Popcorn','Unload'))
+	.then(Commands.set_world_state('istovario_loptice', 'true'))
+	//.then(new SetSpeedMotion(70))
+	.then(new MoveForward(400))
+	//.then(new SetSpeedMotion(Config.default_speed))
 	.then(Commands.finish_task)
 	.execute();
 }
 
-function onPause(){}
+function onPause()
+{
+	//Logger.debug("PUASE");
+	CommandChain(new SetSpeedMotion(Config.default_speed))
+	.execute();
+}; 
 
 Manager.updateState("Ready");

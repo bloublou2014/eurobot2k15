@@ -5,11 +5,12 @@
 
 var udarena = {'prva':false, 'druga':false}
 
-var pos_y = 370; // TO_EDIT // TOME EDIT 350 
+var pos_y_prilazna = 370; // TO_EDIT // TOME EDIT 350 // 370
+var pos_y_uvucen = 220;
 var yellow_positions = // TO_EDIT
 {
-	'prilazna_prva':{'x':-1280, 'y':pos_y}, // TOME EDIT 1278 // 1288
-	'prilazna_druga':{'x':-800, 'y':pos_y}, //zuta x:-752 // TOME EDIT 780
+	'prilazna_prva':{'x':-1260, 'y':pos_y_prilazna}, // TOME EDIT 1278 // 1288
+	'prilazna_druga':{'x':-800, 'y':pos_y_prilazna}, //zuta x:-752 // TOME EDIT 780
 };
 var green_points = Motion.invert_x(yellow_positions);
 var yellow_kraj_prva_x = -1162;
@@ -22,7 +23,7 @@ var kraj_prva_x_colored = {'YELLOW':yellow_kraj_prva_x, 'GREEN':-yellow_kraj_prv
 
 var distance = 150;
 
-function setup()
+Config.setup = function()
 {
 	Config['positions'] = positions_colored[Config.color];
 	Config['orientation'] = orientation_colored[Config.color];
@@ -34,8 +35,6 @@ function setup()
 
 function onRun()
 {
-	Config.do_setup(setup);
-
 	Logger.debug('running task: klapne');
 	
 	if(udarena.prva && udarena.druga) // za svaki slucaj
@@ -44,15 +43,30 @@ function onRun()
 		return;
 	}
 	
-	if(!udarena.prva) // idi na prvu
+	if(!udarena.prva && Manager.getWorldState('tried_casa_nasa_dole') == 'true') // idi na prvu (ako je probana casa dole)
 	{
-		CommandChain(new SetSpeedMotion(50))
-		.then(new MoveToPosition(Config.positions.prilazna_prva.x,Config.positions.prilazna_prva.y)) // pridji
+		CommandChain(new SetSpeedMotion(40)) // jer za svaki slucaj budz //  Config.default_speed
 		.then(new SetSpeedMotion(Config.default_speed))
-		.then(new RotateTo(90)) // uvuci se u rikverc
-		.then(new SetSpeedMotion(50))
-		.then(new MoveForward(-distance))
-		.then(new SetSpeedMotion(Config.default_speed))
+		.then(new GetMotionState())
+		.then(function(msg)
+		{Logger.debug('klapne provera : x='+msg.x+' y='+msg.y);
+			if((msg.y < 500 && Math.abs(msg.x) > 1100)) // ako nije blizu
+			{
+				Logger.debug('odlucio da NE ide na prilaznu');
+				this
+				.then(new MoveToPosition(msg.x, pos_y_uvucen, -1));
+			}
+			else
+			{
+				Logger.debug('odlucio da ide na prilaznu');
+				this
+				.then(Commands.pf_move(Config.positions.prilazna_prva)) // pridji
+				.then(new MoveToPosition(Config.positions.prilazna_prva.x, pos_y_uvucen, -1));
+			}
+		})
+		//CommandChain() // pridji
+		//.then(new RotateTo(90)) // uvuci se u rikverc
+		//.then(new MoveForward(-distance))
 		.then(new RotateTo(Config.orientation))
 		.then(set_flap_otvoren(true))
 		.then(function()
@@ -60,7 +74,7 @@ function onRun()
 			if(!udarena.druga) // idi skroz do kraja, udari obe
 			{
 				this
-				.then(new MoveForward(750)) // kolko da ide napred // TO_EDIT
+				.then(new MoveForward(730)) // kolko da ide napred // TO_EDIT
 				.progress(function(msg)
 				{
 					if(should_close(msg.x))
@@ -86,34 +100,43 @@ function onRun()
 				.then(set_udarena('prva'));
 			}
 		})
-		.then(Commands.finish_task)
 		.catch(error)
+		.then(new SetSpeedMotion(Config.default_speed)) // jer za svaki slucaj budz
+		.then(new RotateTo(90))
+		.then(Commands.finish_task)
 		.execute();
 	}
 	else // udarena prva, idi odma na drugu
 	{
-		CommandChain(new MoveToPosition(Config.positions.prilazna_druga.x,Config.positions.prilazna_druga.y+100))
-		.then(new MoveToPosition(Config.positions.prilazna_druga.x,Config.positions.prilazna_druga.y))
-		.then(set_flap_otvoren(true))
+		CommandChain(new SetSpeedMotion(40)) // jer za svaki slucaj budz
+		.then(new SetSpeedMotion(Config.default_speed))
+		.then(Commands.pf_move(Config.positions.prilazna_druga))
+		.then(new RotateTo(90)) // uvuci se u rikverc
+		.then(new MoveForward(-distance))
 		.then(new RotateTo(Config.orientation))
-		.then(new MoveForward(200))
+		.then(set_flap_otvoren(true))
+		.then(new MoveForward(250))
 		.then(set_flap_otvoren(false))
 		.then(set_udarena('druga'))
 		.then(unload_lights) // istovari valjke
-		.then(Commands.finish_task)
 		.catch(error)
+		.then(new SetSpeedMotion(Config.default_speed)) // jer za svaki slucaj budz
+		.then(new RotateTo(90))
+		.then(Commands.finish_task)
 		.execute();
 	}
 }
 
-function onPause(){}
+function onPause()
+{
+	CommandChain(set_flap_otvoren(false))
+	.execute();
+}
 
 function error()
 {
 	Logger.error('error in klapne nase');
-	CommandChain(new SetSpeedMotion(Config.default_speed))
-	.then(set_flap_otvoren(false))
-	.then(function()
+	CommandChain(function()
 	{
 		if(udarena.prva && udarena.druga)
 		{
@@ -138,10 +161,11 @@ function set_udarena(klapna)
 function unload_lights()
 {
 	if(Lift.has_items_to_unload()) // istovari valjke ako ih ima
-	{
+	{Logger.debug('has_items_to_unload');
 		this
-		.then(new SetSpeedMotion(20))
+		.then(new SetSpeedMotion(40))
 		.then(new MoveForward(5))
+		.then(new ActuatorCommand(Config.lift,'StopGetting'))
 		.then(new ActuatorCommand(Config.lift,'Unload'))
 		.then(new MoveForward(-100))
 		.then(new SetSpeedMotion(Config.default_speed));
