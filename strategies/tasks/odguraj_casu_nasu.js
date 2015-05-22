@@ -1,5 +1,5 @@
 /**
-	Odgura casu ispred naseg startnog polja.
+	Odgura/obidje casu ispred naseg startnog polja.
 */
 
 var distance = 150;  // TO_EDIT
@@ -26,7 +26,7 @@ var orientations_colored = // TO_EDIT
 	}
 };
 
-function setup()
+Config.setup = function()
 {
 	Config['positions'] = positions_colored[Config.color];
 	Config['orientations'] = orientations_colored[Config.color];
@@ -34,18 +34,12 @@ function setup()
 
 function onRun(){
 	
-	Config.do_setup(setup);
-	
 	var side = 's_nase'; // hardcode
 		
 	var prilazna = Config.positions[side];
 	
-	CommandChain(new MoveToPosition(prilazna.x, prilazna.y))
-	.success(function()
-	{
-		Manager.updateState("Finished");
-	})
-	.ignore_failure()
+	CommandChain(Commands.pf_move(prilazna))
+	.then(Commands.finish_task)
 	.execute();
 }
 
