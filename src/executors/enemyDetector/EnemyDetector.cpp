@@ -84,7 +84,7 @@ void EnemyDetector::SensorDriverCallback(int _id, bool _detected){
                 previousState.detectionBrkonBack = true;
                 notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::BACK,180,true);
                 debug("DOSO BACK");
-            }else if(!_detected && !previousState.detectionBrkonBack) {
+            }else if(!_detected && !previousState.detectionBrkonBack && previousState.detectionSensorBack) {
                 previousState.angleBack = 255;
 
                 previousState.detectionSensorBack = _detected;
