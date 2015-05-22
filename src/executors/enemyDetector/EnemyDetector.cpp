@@ -80,14 +80,14 @@ void EnemyDetector::SensorDriverCallback(int _id, bool _detected){
 
             if(_detected && !previousState.detectionBrkonBack ){
                 previousState.angleBack = 45;
-                previousState.detectionSensorBack = _detected;
+                previousState.detectionSensorBack = true;
                 previousState.detectionBrkonBack = true;
                 notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::BACK,180,true);
                 debug("DOSO BACK");
             }else if(!_detected && !previousState.detectionBrkonBack && previousState.detectionSensorBack) {
                 previousState.angleBack = 255;
 
-                previousState.detectionSensorBack = _detected;
+                previousState.detectionSensorBack = false;
                 notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::BACK,180,false);
                 debug("OTISAO BACK");
             }
@@ -195,7 +195,7 @@ void EnemyDetector::brkonDriverCallback(unsigned char _dataFront, unsigned char 
         notification = new EnemyDetectedNotification(EnemyDetectedNotification::Type::BACK, (_dataBack + 135),true);
         printf("BRKON BACK enemy ON: %d ", (_dataBack+135));
 
-    }else if( _dataBack == 0xFF && previousState.detectionBrkonBack == true && !previousState.detectionSensorLeftFront && !previousState.detectionSensorRightFront){
+    }else if( _dataBack == 0xFF && previousState.detectionBrkonBack == true && !previousState.detectionSensorBack){
         previousState.detectionBrkonBack = false;
         previousState.angleBack = 255;
         notification = new EnemyDetectedNotification(EnemyDetectedNotification::Type::BACK,(previousState.angleBack +135),false);
