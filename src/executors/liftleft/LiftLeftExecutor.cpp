@@ -61,7 +61,7 @@ bool LiftLeftExecutor::GetObjectFunction(){
 bool LiftLeftExecutor::liftProcess(){
     //debug("DOING SOMETHING");
 
-        if(lastState.Quantity < 3 && shoulGetObject){
+        if(lastState.Quantity < 3 && shoulGetObject){ // 3
             debug("FIRST ONE ");
             stateLock.lock();
             //readingSensore = false;
@@ -94,7 +94,7 @@ bool LiftLeftExecutor::liftProcess(){
 
             return true;
 
-        }else if(lastState.Quantity == 3 && shoulGetObject){
+        }else if(lastState.Quantity == 3 && shoulGetObject){ //3
 
             debug(" SECOND .... ");
 
@@ -127,8 +127,8 @@ bool LiftLeftExecutor::liftProcess(){
             return true;
 
 
-        }else if(lastState.Quantity < 5  && shoulGetObject){
-            //readingSensore = false;
+        }else if(lastState.Quantity < 5  && shoulGetObject){ //5
+            //readingSensore = false5
             error("NO MORE SPACE IN STORAGE");
             //sendResponseFromCommand(currentActuatorCommand, ERROR);
             return false;

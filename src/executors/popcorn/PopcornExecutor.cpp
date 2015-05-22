@@ -61,6 +61,7 @@ bool PopcornExecutor::UnloadPopcornFunction(){
 
     boost::this_thread::sleep(boost::posix_time::milliseconds(value.PopcornConfigs.time.unloadPopcorn));
 
+    /*
     successOne = backDoor.rotateToPosition(value.PopcornConfigs.backDoor.open+20);
      if(!successOne) success = false;
 
@@ -87,7 +88,7 @@ bool PopcornExecutor::UnloadPopcornFunction(){
     successOne = backDoor.rotateToPosition(value.PopcornConfigs.backDoor.open);
 
     boost::this_thread::sleep(boost::posix_time::milliseconds(value.PopcornConfigs.time.unloadPopcorn));
-
+    */
 
     successOne = backDoor.rotateToPosition(value.PopcornConfigs.backDoor.close);
     if(!successOne) success = false;
