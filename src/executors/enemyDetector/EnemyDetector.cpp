@@ -123,7 +123,7 @@ void EnemyDetector::SensorDriverCallback(int _id, bool _detected){
                 previousState.detectionSensorRightFront = true;
                 notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,(previousState.angleFront - 50),true);
                 debug("DOSO FRONT RIGHT");
-            }else if(!_detected && !previousState.detectionBrkonFront && !previousState.detectionSensorLeftFront){
+            }else if(!_detected && !previousState.detectionBrkonFront && !previousState.detectionSensorLeftFront && previousState.detectionSensorRightFront){
                 previousState.detectionSensorRightFront = false;
                 previousState.angleFront = 255;
                 notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,0,false);
@@ -138,7 +138,7 @@ void EnemyDetector::SensorDriverCallback(int _id, bool _detected){
                 previousState.detectionSensorLeftFront = true;
                 notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,(previousState.angleFront - 50),true);
                 debug("DOSO FRONT LEFT");
-            }else if(!_detected && !previousState.detectionBrkonFront && !previousState.detectionSensorRightFront){
+            }else if(!_detected && !previousState.detectionBrkonFront && !previousState.detectionSensorRightFront && previousState.detectionSensorLeftFront){
                 previousState.detectionSensorLeftFront = false;
                 previousState.angleFront = 255;
                 notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,0,false);
@@ -172,7 +172,7 @@ void EnemyDetector::brkonDriverCallback(unsigned char _dataFront, unsigned char 
               << "angle back: " << _dataBack << std::endl
               << "coil" << _detected << std::endl;
               */
-    //    printf("anglefront: %d \n angleBack: %d \n", _dataFront, _dataBack);
+        printf("anglefront: %d \n angleBack: %d \n", _dataFront, _dataBack);
 
     //        if (_detected){ // ne treba jer svakako proveramo da li je jednako 0xFF sto znaci da nema nista a iscitavanje regisra pocinje kada se
     //    se coil setuje
