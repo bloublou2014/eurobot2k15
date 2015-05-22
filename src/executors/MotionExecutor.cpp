@@ -26,6 +26,11 @@ void MotionExecutor::init(){
         maxY=v.second.get<int>("maxY");
         minX=v.second.get<int>("minX");
         minY=v.second.get<int>("minY");
+
+        //Za stepenice:
+        stairsWidth=v.second.get<int>("stairsWidth");
+        stairsHeight=v.second.get<int>("stairsHeight");
+
         margin=v.second.get<int>("margin");
 
         enemyDistance=v.second.get<int>("enemyDistance");
@@ -525,6 +530,20 @@ bool MotionExecutor::isInField(Point2D& enemyPosition){
     static int xMaxC=maxX-margin;
     static int yMinC=minY+margin;
     static int yMaxC=maxY-margin;
+
+    static int xStairsMin=0-stairsWidth;
+    static int xStairsMax=0+stairsWidth;
+    static int yStairsMin=2000-stairsHeight;
+    static int yStairsMax=2000;
+
+    //TODO: proveri da nije slucajno na stepenklicama
+    if (((enemyPosition.getX()>xStairsMin) && (enemyPosition.getX()<xStairsMax)) &&
+            ((enemyPosition.getY()>yStairsMin) && (enemyPosition.getY()<yStairsMax))){
+        return false;
+    }
+    if ((enemyPosition.getY()<yMinC) || (enemyPosition.getY()>yMaxC)){
+        return false;
+    }
 
     if ((enemyPosition.getX()<xMinC) || (enemyPosition.getX()>xMaxC)){
         return false;

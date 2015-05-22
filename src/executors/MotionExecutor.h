@@ -266,6 +266,8 @@ private:
     int minX;
     int minY;
     int margin;
+    int stairsWidth;
+    int stairsHeight;
     bool checkField;
     bool isInField(Point2D& enemyPosition);
 
