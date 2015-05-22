@@ -80,14 +80,14 @@ void EnemyDetector::SensorDriverCallback(int _id, bool _detected){
 
             if(_detected && !previousState.detectionBrkonBack ){
                 previousState.angleBack = 45;
-                previousState.detectionSensorBack = _detected;
+                previousState.detectionSensorBack = true;
                 previousState.detectionBrkonBack = true;
                 notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::BACK,180,true);
                 debug("DOSO BACK");
             }else if(!_detected && !previousState.detectionBrkonBack && previousState.detectionSensorBack) {
                 previousState.angleBack = 255;
 
-                previousState.detectionSensorBack = _detected;
+                previousState.detectionSensorBack = false;
                 notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::BACK,180,false);
                 debug("OTISAO BACK");
             }
