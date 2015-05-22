@@ -1,77 +1,122 @@
 <tasks>
 	<task>
 		<name>init</name>
-		<filename>init.js</filename>
 		<rank>1000</rank>
 		<time>100</time>
 	</task>
 	<task>
 		<name>monitor</name>
-		<filename>monitor.js</filename>
 		<rank>2000</rank>
 		<time>20</time>
 	</task>
 	
+	<!--
 	<task>
-		<name>start_move</name>
-		<filename>start_move.js</filename>
+		<name>test_kretanja</name>
 		<rank>999</rank>
 		<time>5</time>
 	</task>
+	-->
+	<!--
 	<task>
-		<name>tri_valjka</name>
-		<filename>tri_valjka.js</filename>
+		<name>test_pf</name>
+		<rank>900</rank>
+		<time>5</time>
+	</task>-->
+	
+	<!--<task>
+		<name>test_kretanja</name>
+		<rank>1999</rank>
+		<time>5</time>
+	</task>-->
+	
+	<task>
+		<name>start_move</name>
+		<rank>999</rank>
+		<time>5</time>
+	</task>
+	<!--<task>
+		<name>read_position</name>
+		<rank>990</rank>
+		<time>5</time>
+	</task>-->
+	<task>
+		<name>tri_valjka_loptica</name>
 		<rank>30</rank>
 		<time>20</time>
 	</task>
-	<task>
+	<!-- <task>
+		<name>tri_valjka</name>
+		<rank>30</rank>
+		<time>20</time>
+	</task> -->
+ 	<task>
 		<name>casa_nasa_dole</name>
-		<filename>casa_nasa_dole.js</filename>
 		<rank>29</rank>
 		<time>20</time>
 	</task>
-	<task>
+ 	<task>
 		<name>klapne_nase</name>
-		<filename>klapne_nase.js</filename>
 		<rank>28</rank>
 		<time>20</time>
 	</task>
-	<task>
+<!-- 	<task>
 		<name>odguraj_casu_nasu</name>
-		<filename>odguraj_casu_nasu.js</filename>
 		<rank>26</rank>
+		<time>20</time>
+	</task> -->
+	
+	<!--<task>
+		<name>unload_casa_start</name>
+		<rank>27</rank>
 		<time>20</time>
 	</task>
 	<task>
+		<name>casa_nasa_gore</name>
+		<rank>26</rank>
+		<time>20</time>
+	</task>-->
+ 	<task>
 		<name>valjak_prvi_stepeniste</name>
-		<filename>valjak_prvi_stepeniste.js</filename>
 		<rank>25</rank>
 		<time>20</time>
 	</task>
+	<!--
 	<task>
+		<name>debeg_task</name>
+		<rank>24</rank>
+		<time>20</time>
+	</task>-->
+	
+ 	<task>
 		<name>valjak_gore_ugao</name>
-		<filename>valjak_gore_ugao.js</filename>
 		<rank>24</rank>
 		<time>20</time>
 	</task>
-
 	<task>
-		<name>unload_all_start</name>
-		<filename>unload_all_start.js</filename>
+		<name>loptice</name>
+		<rank>23</rank>
+		<time>20</time>
+	</task>
+ 	<task>
+		<name>unload_loptice</name>
 		<rank>22</rank>
+		<time>20</time>
+	</task>
+ 	<task>
+		<name>unload_all_start</name>
+		<rank>21</rank>
 		<time>20</time>
 	</task>
 	<task>
 		<name>klapna_njihova</name>
-		<filename>klapna_njihova.js</filename>
-		<rank>21</rank>
+		<rank>20</rank>
 		<time>20</time>
 	</task>
 	
 	<task>
 		<name>finalize_task</name>
-		<filename>finalize_task.js</filename>
-		<rank>0</rank>
+		<rank>-5</rank>
 		<time>20</time>
 		<finalize>1</finalize>
 	</task>

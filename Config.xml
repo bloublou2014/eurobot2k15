@@ -1,21 +1,22 @@
 <?xml version="1.0"?>
 <LiftLeftExecutor>
   <LieftLevelsConfig>
-    <level0>750</level0>
-    <level1>300</level1>
-    <level2>300</level2>
+    <level0>870</level0>
+    <level1>790</level1>
+    <level2>210</level2>
+    <levelBall>500</levelBall>
   </LieftLevelsConfig>
   <DoorConfig>
-    <openGetObject>900</openGetObject>
-    <openLeaveObject>900</openLeaveObject>
-    <close>780</close>
+    <openGetObject>850</openGetObject>
+    <openLeaveObject>950</openLeaveObject>
+    <close>790</close>
   </DoorConfig>
   <HandConfig>
-    <grab>580</grab>
-    <relese>480</relese>
+    <grab>740</grab>
+    <relese>840</relese>
   </HandConfig>
   <TimeConfig>
-    <liftUp>500</liftUp>
+    <liftUp>1100</liftUp>
     <liftDown>800</liftDown> 
     <doorOpenClose>300</doorOpenClose>
     <handOpenClose>300</handOpenClose>
@@ -24,21 +25,22 @@
 
 <LiftCenterExecutor>
   <DoorConfig>
-    <openGetObject>200</openGetObject>
-    <openLeaveObject>200</openLeaveObject>
+    <openGetObject>150</openGetObject>
+    <openLeaveObject>210</openLeaveObject>
     <close>300</close>
   </DoorConfig>
   <HandConfig>
-    <grab>750</grab>
-    <relese>830</relese>
+    <grab>150</grab>
+    <relese>210</relese>
   </HandConfig>
 </LiftCenterExecutor>
 
 <LiftRightExecutor>
   <LieftLevelsConfig>
-    <level0>800</level0>
-    <level1>150</level1>
+    <level0>840</level0>
+    <level1>500</level1>
     <level2>150</level2>
+    <levelBall>400</levelBall>
   </LieftLevelsConfig>
   <DoorConfig>
     <openGetObject>200</openGetObject>
@@ -46,12 +48,12 @@
     <close>270</close>
   </DoorConfig>
   <HandConfig>
-    <grab>750</grab>
+    <grab>740</grab>
     <relese>830</relese>
   </HandConfig>
   <TimeConfig>
-    <liftUp>500</liftUp>
-    <liftDown>800</liftDown> 
+    <liftUp>900</liftUp>
+    <liftDown>1100</liftDown> 
     <doorOpenClose>300</doorOpenClose>
     <handOpenClose>300</handOpenClose>
   </TimeConfig>
@@ -59,20 +61,20 @@
 
 <PopcornExecutor>
   <PipeLeftConfig>
-    <open>760</open>
+    <open>780</open>
     <close>990</close>
   </PipeLeftConfig>
   <PipeRightConfig>
-    <open>270</open>
+    <open>240</open>
     <close>50</close>
   </PipeRightConfig>
   <BackStorageConfig>
-    <open>470</open>
-    <close>760</close>
+    <open>118</open>
+    <close>400</close>
   </BackStorageConfig>
   <TimeConfig>
-    <getPopcorn>2000</getPopcorn>
-    <unloadPopcorn>2000</unloadPopcorn> 
+    <getPopcorn>3000</getPopcorn>
+    <unloadPopcorn>250</unloadPopcorn> 
   </TimeConfig>
 </PopcornExecutor>
 
@@ -86,3 +88,18 @@
     <close>50</close>
   </FlapRightConfig>
 </FlapExecutor>
+
+<CarpetExecutor>
+  <armRightConfig>
+    <open>100</open>
+    <close>100</close>
+  </armRightConfig>
+  <armLeftConfig>
+    <open>100</open>
+    <close>100</close>
+  </armLeftConfig>
+  <TimeConfig>
+    <OpenArmTime>100</OpenArmTime>
+    <LeaveCarpetTime>100</LeaveCarpetTime>
+  </TimeConfig>
+</CarpetExecutor>
