@@ -195,7 +195,7 @@ void EnemyDetector::brkonDriverCallback(unsigned char _dataFront, unsigned char 
         notification = new EnemyDetectedNotification(EnemyDetectedNotification::Type::BACK, (_dataBack + 135),true);
         printf("BRKON BACK enemy ON: %d ", (_dataBack+135));
 
-    }else if( _dataBack == 0xFF && previousState.detectionBrkonBack == true && !previousState.detectionSensorLeftFront && !previousState.detectionSensorRightFront){
+    }else if( _dataBack == 0xFF && previousState.detectionBrkonBack == true && !previousState.detectionSensorBack){
         previousState.detectionBrkonBack = false;
         previousState.angleBack = 255;
         notification = new EnemyDetectedNotification(EnemyDetectedNotification::Type::BACK,(previousState.angleBack +135),false);
