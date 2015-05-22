@@ -76,7 +76,7 @@ void EnemyDetector::SensorDriverCallback(int _id, bool _detected){
     EnemyDetectedNotification* notification=NULL;
     //debug("SENSOR CALLBACK ");
     if(_id == this->sensorBackID || _id == backSesnorID){
-        if(previousState.detectionSensorBack != _detected){
+//        if(previousState.detectionSensorBack != _detected){
 
             if(_detected && !previousState.detectionBrkonBack ){
                 previousState.angleBack = 45;
@@ -91,7 +91,7 @@ void EnemyDetector::SensorDriverCallback(int _id, bool _detected){
                 notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::BACK,180,false);
                 debug("OTISAO BACK");
             }
-        }
+//        }
 #ifdef VELIKI_ROBOT
         backSensor.StartSensor();
 #endif
@@ -116,35 +116,35 @@ void EnemyDetector::SensorDriverCallback(int _id, bool _detected){
         }
         */
     }else if(_id == this->frontRightSensorID){
-        if(previousState.detectionSensorRightFront != _detected){
+//        if(previousState.detectionSensorRightFront != _detected){
 
             if(_detected && !previousState.detectionBrkonFront && !previousState.detectionSensorLeftFront){
                 previousState.angleFront = 50;
                 previousState.detectionSensorRightFront = true;
                 notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,(previousState.angleFront - 50),true);
                 debug("DOSO FRONT RIGHT");
-            }else if(!_detected && !previousState.detectionBrkonFront && !previousState.detectionSensorLeftFront){
+            }else if(!_detected && !previousState.detectionBrkonFront && !previousState.detectionSensorLeftFront && previousState.detectionSensorRightFront){
                 previousState.detectionSensorRightFront = false;
                 previousState.angleFront = 255;
                 notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,0,false);
                 debug("OTISAO FRONT RIGHT");
             }
-        }
+//        }
         frontRightSensor.StartSensor();
     }else if(_id == this->frontLeftSensorID){
-        if(previousState.detectionSensorLeftFront != _detected){
+//        if(previousState.detectionSensorLeftFront != _detected){
             if(_detected && !previousState.detectionBrkonFront && !previousState.detectionSensorRightFront){
                 previousState.angleFront = 50;
                 previousState.detectionSensorLeftFront = true;
                 notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,(previousState.angleFront - 50),true);
                 debug("DOSO FRONT LEFT");
-            }else if(!_detected && !previousState.detectionBrkonFront && !previousState.detectionSensorRightFront){
+            }else if(!_detected && !previousState.detectionBrkonFront && !previousState.detectionSensorRightFront && previousState.detectionSensorLeftFront){
                 previousState.detectionSensorLeftFront = false;
                 previousState.angleFront = 255;
                 notification=new EnemyDetectedNotification(EnemyDetectedNotification::Type::FRONT,0,false);
                 debug("OTISAO FRONT LEFT");
             }
-        }
+//        }
         frontLefttSensor.StartSensor();
 
 #ifdef VELIKI_ROBOT
@@ -172,7 +172,7 @@ void EnemyDetector::brkonDriverCallback(unsigned char _dataFront, unsigned char 
               << "angle back: " << _dataBack << std::endl
               << "coil" << _detected << std::endl;
               */
-    //    printf("anglefront: %d \n angleBack: %d \n", _dataFront, _dataBack);
+        printf("anglefront: %d \n angleBack: %d \n", _dataFront, _dataBack);
 
     //        if (_detected){ // ne treba jer svakako proveramo da li je jednako 0xFF sto znaci da nema nista a iscitavanje regisra pocinje kada se
     //    se coil setuje
