@@ -72,19 +72,29 @@ void MotionExecutor::processEnemyDetectedNotification(Notification* notification
     std::stringstream ss;
     int angle=ed->getAngle();
 
+//    debug("Printing enemy state!");
+//    stringstream s;
+//    s<<"Front enemy: "<<detectedEnemies[0].Detected;
+//    debug(s.str());
+//    stringstream s1;
+//    s1<<"Back enemy: "<<detectedEnemies[1].Detected;
+//    debug(s1.str());
+
     pfLock.lock();    //Path finding logic
     if (!ed->isDetected()){
         detectedEnemies[detectedType].Detected=false;
-        ss<<"Enemy NOT detected: "<<ed->getType()<<" detected angle: "<<ed->getAngle();
+//        ss<<"Enemy NOT detected: "<<ed->getType()<<" detected angle: "<<ed->getAngle();
+
+//        debug("**Enemy NOT detected!**");
 
         if(detectedEnemies[detectedType].Id!=-1){
             pathFinder->removeObstacle(detectedEnemies[detectedType].Id);
-            debug("Removed enemy from PF");
+//            debug("Removed enemy from PF");
             detectedEnemies[detectedType].Id=-1;
         }
     }else{
         detectedEnemies[detectedType].Detected=true;
-        ss<<"Enemy detected type: "<<ed->getType()<<" detected angle: "<<ed->getAngle();
+//        ss<<"Enemy detected type: "<<ed->getType()<<" detected angle: "<<ed->getAngle();
 
         stateLock.lock();
         Point2D enemyPosition=lastState.Position;
@@ -102,7 +112,7 @@ void MotionExecutor::processEnemyDetectedNotification(Notification* notification
 
         stringstream ss;
         ss<<"My position: "<<lastState.Position;
-        debug(ss.str());
+//        debug(ss.str());
 
         if (detectedEnemies[detectedType].Id!=-1){
             pathFinder->removeObstacle(detectedEnemies[detectedType].Id);
@@ -114,7 +124,7 @@ void MotionExecutor::processEnemyDetectedNotification(Notification* notification
     }
     pfLock.unlock();
 
-    debug(ss.str());
+//    debug(ss.str());
 }
 
 void MotionExecutor::startMatch(){
@@ -252,6 +262,7 @@ void MotionExecutor::main(){
         /* Proverim da li robot moze da ide tamo gde se uputio */
         if (currentMotionInstruction.isSet()){
             if (isEnemyDetected(newState, currentMotionInstruction.isSuspended())){
+                debug("!!Enemy is detected!");
                 if (currentMotionInstruction.isSuspended()){
                     if (!currentMotionInstruction.canRetry(waitOnEnemyCountCheck)){  //If we can't wait any more
                         bool giveUp=true;
@@ -539,6 +550,7 @@ bool MotionExecutor::isInField(Point2D& enemyPosition){
     //TODO: proveri da nije slucajno na stepenklicama
     if (((enemyPosition.getX()>xStairsMin) && (enemyPosition.getX()<xStairsMax)) &&
             ((enemyPosition.getY()>yStairsMin) && (enemyPosition.getY()<yStairsMax))){
+        debug("Enemy is on stairs");
         return false;
     }
     if ((enemyPosition.getY()<yMinC) || (enemyPosition.getY()>yMaxC)){
@@ -606,7 +618,7 @@ int MotionExecutor::dodajCustomOblik(int krugX, int krugY, int angle){
         rotatedObsticlePoints.push_back(rp);
         stringstream ss;
         ss<<rp;
-        debug(ss.str());
+//        debug(ss.str());
     }
 
     return pathFinder->addObstacle(rotatedObsticlePoints);

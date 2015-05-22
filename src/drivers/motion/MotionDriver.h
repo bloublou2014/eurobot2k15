@@ -58,7 +58,7 @@ public:
 	State getState();
 	int getDirection();
 
-	void setSpeed(char speed);
+	void setSpeed(unsigned char speed);
 	void setPositionAndOrientation(const geometry::Point2D position, int orientation=0);
 
 	void refreshData();

@@ -158,12 +158,17 @@ int MotionDriver::getDirection()
 	return direction;
 }
 
-void MotionDriver::setSpeed(char speed)
+void MotionDriver::setSpeed(unsigned char speed)
 {
+    unsigned char newSpeed=0;
+
     std::stringstream ss;
     ss<<"Set speed "<<(int)speed;
     debug(ss.str());
-	boost::lock_guard<boost::mutex> lock(*io_mutex);
+    boost::lock_guard<boost::mutex> lock(*io_mutex);
+
+    uart.flushOutput();
+    uart.flushInput();
 
 	this->speed = speed;
 
@@ -171,8 +176,13 @@ void MotionDriver::setSpeed(char speed)
 			'V',
 			speed
 	};
-
 	uart.writeUart(message, 2);
+    uart.readAll(&newSpeed, 1);
+
+    if (newSpeed!=speed){
+        error("Speed is not set!!");
+    }
+    printf("--Received speed: %c %hex: X\n", newSpeed);
 }
 
 void MotionDriver::setPositionAndOrientation(const geometry::Point2D position, int orientation)
