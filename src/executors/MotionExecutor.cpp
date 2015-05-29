@@ -361,10 +361,16 @@ void MotionExecutor::main(){
         //If driver throws an error, report it
         if ((newState.State==MotionDriver::State::ERROR || newState.State==MotionDriver::State::STUCK)
                 && currentMotionInstruction.isSet()){
-            error("Robot stuck, canceling movement");
+            if (newState.State==MotionDriver::State::STUCK){
+                error("Robot stuck, canceling movement");
+            }
+            if (newState.State==MotionDriver::State::ERROR){
+                error("Robot motion error, canceling movement");
+            }
             sendResponse(currentMotionInstruction.getErrorMessage(MotionCommandError::STUCK));
             //driver.stop();
             currentMotionInstruction.reset(driver);
+            driver.stop();
         }
 
         //Send progress if there is a command for it

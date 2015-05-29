@@ -109,7 +109,7 @@ bool LiftLeftExecutor::liftProcess(){
             delayF(value.LiftConfigs.time.handOpenClose);
             LiftProgressNotification* notification = new LiftProgressNotification(LiftProgressNotification::ProgressType::ROLLER_CATCHED);
             sendNotification(notification);
-            liftF(LEVEL1);
+//            liftF(LEVEL1);
             doorF(CLOSE_);
 
             delayF(value.LiftConfigs.time.doorOpenClose);
